@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+<title>Yggdrasil Research Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a dark observatory notebook. One 70ch reading column; figures and the architecture
+   widen to 1040px. Yellow = exogenous / BOT (matches the animations), blue = narrative flow. */
+:root {
+  --bg: #0d1217;
+  --surface: #141b22;
+  --surface-2: #1a232c;
+  --ink: #e7ecef;
+  --ink-2: #a5afb7;
+  --muted: #76828c;
+  --rule: #26313a;
+  --exo: #f4d35e;
+  --flow: #58c4dd;
+  --self: #83c167;
+  --warn: #ff9b54;
+  --bad: #fc6255;
+  --code-bg: #111820;
+  --f-display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f1f3f4; --surface: #fbfcfc; --surface-2: #eef1f3; --ink: #121a21; --ink-2: #4a5661; --muted: #6c7882;
+    --rule: #d7dde1; --exo: #8a6400; --flow: #1b7393; --self: #3c7d24; --warn: #b2560f; --bad: #b8322b; --code-bg: #e8ecee;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f1f3f4; --surface: #fbfcfc; --surface-2: #eef1f3; --ink: #121a21; --ink-2: #4a5661; --muted: #6c7882;
+  --rule: #d7dde1; --exo: #8a6400; --flow: #1b7393; --self: #3c7d24; --warn: #b2560f; --bad: #b8322b; --code-bg: #e8ecee;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 1rem; line-height: 1.62; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 44px 110px; }
+.col { max-width: 70ch; display: flex; flex-direction: column; gap: 0.9rem; }
+h1, h2 { font-family: var(--f-display); font-weight: 700; line-height: 1.08; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2.3rem, 6vw, 3.6rem); }
+h2 { font-size: clamp(1.55rem, 3.4vw, 2.15rem); }
+h3 { font-family: var(--f-body); font-weight: 600; font-size: 1.12rem; margin: 0; }
+p { margin: 0; }
+a { color: var(--flow); text-underline-offset: 2px; }
+a:focus-visible, video:focus-visible, summary:focus-visible { outline: 2px solid var(--exo); outline-offset: 3px; }
+code, .mono { font-family: var(--f-mono); font-size: 0.88em; }
+code { background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 3px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 1.1rem; }
+.lede { font-size: 1.16rem; color: var(--ink-2); max-width: 62ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font-size: 0.8rem; padding: 0.22rem 0.65rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink-2); }
+.chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.toc { display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; font-family: var(--f-mono); font-size: 0.8rem; }
+.toc a { color: var(--ink-2); text-decoration: none; }
+.toc a:hover { color: var(--exo); }
+section { display: flex; flex-direction: column; gap: 1.3rem; margin-top: 3.4rem; padding-top: 2.6rem; border-top: 1px solid var(--rule); }
+section > .eyebrow { margin-bottom: -0.6rem; }
+.math { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding-block: 0.15rem; }
+mjx-container { color: var(--ink); }
+mjx-container[display="true"] { margin: 0.4rem 0 !important; }
+.tablewrap { overflow-x: auto; max-width: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.6rem 0.85rem 0.6rem 0; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--f-mono); font-weight: 500; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--f-mono); }
+td:first-child { font-weight: 500; }
+.x { color: var(--bad); }
+.ok { color: var(--self); }
+figure { margin: 0; display: flex; flex-direction: column; gap: 0.65rem; }
+.video { width: 100%; max-width: 100%; aspect-ratio: 16 / 9; background: #10151b; border-radius: 8px; border: 1px solid var(--rule); display: block; }
+figcaption { font-size: 0.9rem; color: var(--ink-2); max-width: 74ch; }
+figcaption b { color: var(--ink); font-weight: 600; }
+.split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 1.6rem; align-items: start; }
+.split > * { min-width: 0; }
+.lemma { border-left: 2px solid var(--flow); padding: 0.7rem 0 0.7rem 1rem; background: linear-gradient(90deg, var(--surface), transparent); display: flex; flex-direction: column; gap: 0.4rem; max-width: 74ch; }
+.lemma.exo { border-left-color: var(--exo); }
+.lemma .tag { font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lemma .tag b { color: var(--exo); font-weight: 500; }
+ul.plain { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.45rem; max-width: 72ch; }
+/* architecture */
+.arch { display: flex; flex-direction: column; gap: 10px; }
+.band { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 14px; align-items: stretch; }
+.band .lbl { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 0.7rem 0.9rem; border-radius: 6px; background: var(--surface-2); border-left: 3px solid var(--c); }
+.band .lbl b { font-family: var(--f-display); font-size: 1.15rem; font-weight: 700; color: var(--ink); }
+.band .lbl span { font-size: 0.76rem; color: var(--muted); }
+.stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr)); gap: 8px; }
+.stage { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 0.6rem 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.stage .id { font-family: var(--f-mono); font-size: 0.7rem; color: var(--c); }
+.stage b { font-size: 0.92rem; font-weight: 600; }
+.stage span { font-size: 0.8rem; color: var(--ink-2); line-height: 1.45; }
+.arrowdown { text-align: center; color: var(--muted); font-family: var(--f-mono); font-size: 0.8rem; }
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 10px; }
+.vcard { border: 1px solid var(--rule); border-radius: 6px; padding: 0.8rem 0.9rem; background: var(--surface); display: flex; flex-direction: column; gap: 0.35rem; border-top: 3px solid var(--c); }
+.vcard b { font-family: var(--f-mono); font-size: 0.82rem; letter-spacing: 0.04em; color: var(--ink); }
+.vcard span { font-size: 0.85rem; color: var(--ink-2); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 1.1rem; }
+.stat { border-top: 2px solid var(--ink); padding-top: 0.4rem; display: flex; flex-direction: column; gap: 0.1rem; }
+.stat .v { font-family: var(--f-display); font-size: 2rem; font-weight: 700; line-height: 1.1; }
+.stat .l { font-size: 0.84rem; color: var(--ink-2); }
+details { font-size: 0.9rem; }
+details summary { cursor: pointer; color: var(--ink-2); font-family: var(--f-mono); font-size: 0.82rem; }
+details[open] summary { margin-bottom: 0.6rem; }
+pre.code { background: var(--code-bg); border-radius: 6px; padding: 0.9rem 1rem; overflow-x: auto; font-family: var(--f-mono); font-size: 0.8rem; line-height: 1.55; margin: 0; max-width: 100%; color: var(--ink); }
+.footer { font-size: 0.85rem; color: var(--ink-2); display: flex; flex-direction: column; gap: 0.5rem; max-width: 74ch; }
+
+.film-chapters { display: flex; flex-wrap: wrap; gap: 6px; }
+.film-chapters button { font: inherit; font-size: 0.78rem; font-family: var(--f-mono); padding: 0.3rem 0.6rem; border-radius: 4px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink-2); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.film-chapters button:hover, .film-chapters button:focus-visible { border-color: var(--exo); color: var(--ink); outline: none; }
+.film-chapters button i { width: 7px; height: 7px; border-radius: 50%; flex: none; display: inline-block; }
+.chap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 12px; }
+.chap { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; border-top: 3px solid var(--c); }
+.chap-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.8rem; }
+.chap-head b { font-family: var(--f-display); font-size: 1.12rem; }
+.chap-head button { font: inherit; font-family: var(--f-mono); font-size: 0.75rem; padding: 0.1rem 0.5rem; border-radius: 4px; border: 1px solid var(--rule); background: var(--surface-2); color: var(--ink-2); cursor: pointer; }
+.chap-head button:hover, .chap-head button:focus-visible { border-color: var(--exo); color: var(--ink); outline: none; }
+.chap-head .st { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--c); margin-left: auto; }
+.chap ul { margin: 0; padding-left: 1.05rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.86rem; color: var(--ink-2); }
+.chap .pic { font-size: 0.86rem; color: var(--ink); border-left: 2px solid var(--c); padding-left: 0.7rem; }
+.chap .open { font-size: 0.82rem; color: var(--warn); }
+.chap .math { font-size: 0.92rem; }
+
+.chap .math + .math { margin-top: -0.35rem; }
+.chap pre.code { font-size: 0.78rem; }
+@media (max-width: 760px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .band { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] }, svg: { fontCache: "global" }, options: { enableMenu: false } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Market Event Forensics · research brief · 4 October 2026</div>
+  <h1>Yggdrasil Research Brief</h1>
+  <p class="lede">Yggdrasil watches the world's news all the time, builds a graph of narratives and the attention each one gets, and, when a stock moves abnormally, searches that graph for competing explanations and proves which ones the evidence supports. This brief condenses six research tracks and a 25,600-word report into what changed, the architecture, and the mathematics, with animations where motion explains better than text.</p>
+  <div class="chips">
+    <span class="chip"><i style="background: var(--flow)"></i>Architecture: proposal, not locked</span>
+    <span class="chip"><i style="background: var(--warn)"></i>Derived proofs: spot-checked, not independently reviewed</span>
+    <span class="chip"><i style="background: var(--exo)"></i>Real data measured: one GDELT day</span>
+    <span class="chip"><i style="background: var(--bad)"></i>Models fitted to narratives: none yet</span>
+  </div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#film">Pipeline film</a><a href="#changed">What changed</a><a href="#arch">Architecture</a><a href="#attention">Attention</a><a href="#competition">Competition</a><a href="#weights">Transition weights</a><a href="#search">Search</a><a href="#verdicts">Verdicts</a><a href="#evidence">Prior art and data</a><a href="#tests">Experiments</a><a href="#ship">Shipping</a><a href="#decide">Open decisions</a>
+  </nav>
+</header>
+
+
+
+<section id="film">
+  <div class="eyebrow">The whole pipeline, animated</div>
+  <h2>From a raw news batch to a proven verdict, in under three minutes</h2>
+  <div class="col"><p>Thirteen chapters follow one story, DeepSeek-R1 and NVIDIA's fall, through every stage. Each chapter shows its math with the terms labeled and a physical picture, and the badge in its corner says how ready that stage is. Pause anywhere; the cards below carry the same math in readable form. The film's numbers are illustrative except where marked as measured.</p></div>
+  <figure>
+    <video id="film-video" class="video" controls playsinline preload="metadata" poster="media/PipelineFilm.jpg" src="media/PipelineFilm.mp4" aria-label="Animated walkthrough of the full Yggdrasil pipeline in thirteen chapters"></video>
+    <div class="film-chapters" aria-label="Jump to chapter"><button type="button" data-t="0.0"><i style="background: var(--muted)"></i>0 · Overview · 0:00</button><button type="button" data-t="10.7"><i style="background: var(--self)"></i>1 · Ingestion · 0:10</button><button type="button" data-t="24.07"><i style="background: var(--self)"></i>2 · Deduplication · 0:24</button><button type="button" data-t="37.17"><i style="background: var(--self)"></i>3 · Objects and clocks · 0:37</button><button type="button" data-t="48.87"><i style="background: var(--warn)"></i>4 · Cold-starting narratives · 0:48</button><button type="button" data-t="64.87"><i style="background: var(--warn)"></i>5 · How objects move attention · 1:04</button><button type="button" data-t="82.57"><i style="background: var(--self)"></i>6 · New information and transition weights · 1:22</button><button type="button" data-t="95.87"><i style="background: var(--warn)"></i>7 · An anomaly is observed · 1:35</button><button type="button" data-t="109.37"><i style="background: var(--self)"></i>8 · Searching for the smallest explanation · 1:49</button><button type="button" data-t="126.87"><i style="background: var(--self)"></i>9 · Competing explanations · 2:06</button><button type="button" data-t="136.17"><i style="background: var(--warn)"></i>10 · From subgraph to clingo verdicts · 2:16</button><button type="button" data-t="152.17"><i style="background: var(--warn)"></i>11 · Certificates and the dossier · 2:32</button><button type="button" data-t="162.67"><i style="background: var(--muted)"></i>12 · What is ready · 2:42</button></div>
+  </figure>
+  <div class="lemma exo">
+    <span class="tag"><b>One correction the film makes</b></span>
+    <p>clingo does not generate the competing explanations. The search does: it returns the cheapest explanation through each entry point, plus "we do not know". clingo then judges that fixed list. Letting clingo search an open space of explanations would be logic-based abduction, which is Σ2P-complete; judging a fixed list keeps every verdict inside NP and coNP.</p>
+  </div>
+  <div class="chap-grid">
+<div class="chap" style="--c: var(--self)">
+<div class="chap-head"><button type="button" data-t="10.7" aria-label="Play chapter 1 from 0:10">▶ 0:10</button><b>1 · Ingestion</b><span class="st">Specified</span></div>
+<div class="math">\[ \mathtt{raw\_blob\_id} = \mathrm{sha256}(\mathtt{raw\_bytes}) \]</div>
+<div class="math">\[ \mathrm{window}(o) = \left\lfloor \frac{t_{\mathrm{obs}}(o) - t_0}{\Delta} \right\rfloor \]</div>
+<ul><li>sha256: a content address. The same bytes always get the same id, so replays and re-downloads change nothing.</li><li>Δ = 15 minutes, GDELT's batch heartbeat; t₀ is the start of the replay.</li><li>Measured: 96 batches and 130,852 English documents on 27 January 2025.</li></ul>
+<p class="pic">A seismograph drum: the world is sampled at a fixed rate, and nothing recorded is ever overwritten.</p>
+</div>
+<div class="chap" style="--c: var(--self)">
+<div class="chap-head"><button type="button" data-t="24.07" aria-label="Play chapter 2 from 0:24">▶ 0:24</button><b>2 · Deduplication</b><span class="st">Specified</span></div>
+<div class="math">\[ v_o = \begin{cases} 1 & \text{first copy in its group} \\ \alpha_{\mathrm{copy}} = 0.1 & \text{later copies} \end{cases} \]</div>
+<div class="math">\[ \text{group mass} = 1 + \alpha_{\mathrm{copy}}\,(n-1) \]</div>
+<ul><li>Exact keys collapse records: native id, then canonical URL, then content hash. First match wins.</li><li>Near-copies (SimHash, MinHash) are never deleted; they only lower the weight of later copies.</li><li>n is the number of copies; one story on 271 iHeart stations counts 28 units, not 271.</li></ul>
+<p class="pic">Count witnesses, not echoes. A rumor repeated by 271 radio stations is still one source.</p>
+</div>
+<div class="chap" style="--c: var(--self)">
+<div class="chap-head"><button type="button" data-t="37.17" aria-label="Play chapter 3 from 0:37">▶ 0:37</button><b>3 · Objects and clocks</b><span class="st">Specified</span></div>
+<div class="math">\[ \mathrm{admissible}(o, \tau^{*}) \;=\; \mathtt{first\_seen}_o < \tau^{*} \]</div>
+<ul><li>Five clocks per object: event, published, observed, ingested, first seen.</li><li>first_seen is when Yggdrasil first held the object; τ* is the moment the market first showed the move.</li><li>A story first seen after τ* (the distillation allegations, 29 January) can never explain the move.</li></ul>
+<p class="pic">Chain of custody: evidence counts from the moment we first held it, not from the date printed on it.</p>
+</div>
+<div class="chap" style="--c: var(--warn)">
+<div class="chap-head"><button type="button" data-t="48.87" aria-label="Play chapter 4 from 0:48">▶ 0:48</button><b>4 · Cold-starting narratives</b><span class="st">Partly open</span></div>
+<div class="math">\[ p_{o,n} = \frac{e^{s_{o,n}/T}}{Z_o} \]</div>
+<div class="math">\[ y_{n,t} = \sum_{o} v_o\, p_{o,n} \]</div>
+<div class="math">\[ \sum_{n\ge1} y_{n,t} + y_{0,t} = V_t \]</div>
+<ul><li>s is the similarity of article o to narrative n's centroid; T is a calibrated temperature; n = 0 is the null narrative "none".</li><li>y is attention mass: a weighted soft count. Each article's single unit is split, never copied, so the total equals ingested volume V.</li><li>Cold start: three weeks of history (three times the longest memory) set the priors, and traces start at their historical means.</li><li>A split hands memory to the children in proportion to overlap, z_c = q_c z_N, so nothing is created or lost.</li></ul>
+<p class="pic">A prism: one beam of light, one article, is split across colors without adding any light.</p>
+<p class="open">Open: the seed narratives, membership calibration (200 to 500 labeled pairs), the lineage threshold, and the rule for brand-new narratives (a conjecture). The hackathon seeds from GDELT themes.</p>
+</div>
+<div class="chap" style="--c: var(--warn)">
+<div class="chap-head"><button type="button" data-t="64.87" aria-label="Play chapter 5 from 1:04">▶ 1:04</button><b>5 · How objects move attention</b><span class="st">Specified, not fitted</span></div>
+<div class="math">\[ z_{j,m,t} = a_m\, z_{j,m,t-1} + (1-a_m)\, y_{j,t-1} \]</div>
+<div class="math">\[ \eta_i = \mathrm{base}_i + \sum_{j,m} A_{ij,m}\, z_{j,m} \]</div>
+<div class="math">\[ \lambda_i = s\log\!\left(1+e^{\eta_i/s}\right)\cdot\left(\frac{B}{B+S^{\mathrm{raw}}}\right)^{\omega} \]</div>
+<ul><li>a_m = exp(−Δ/τ_m) is how much memory survives one window, at timescales 1 h, 6 h, 1 day, 1 week; 1 − a_m is the share of new mass that enters.</li><li>base: outside inflow (hour of week, CPI, FOMC, earnings). A_ij,m: attention units on i caused per unit on j at timescale m.</li><li>softplus keeps the rate positive and is linear once large. The last factor is one gain shared by every narrative: ω = 0 means no competition, ω = 1 a hard capacity B.</li><li>Fitted by a convex sparse group lasso under a quasi-Poisson likelihood; a zero group means no edge.</li></ul>
+<p class="pic">Each trace is an RC circuit, a capacitor charged by news and leaking with time constant τ. Competition is automatic gain control in a radio: when the band gets loud, every station is turned down by the same factor.</p>
+<p class="open">Not fitted yet: needs the 6 to 27 January 2025 GDELT replay. ω, the timescales and every edge are hypotheses that experiments F1 to F4 decide.</p>
+</div>
+<div class="chap" style="--c: var(--self)">
+<div class="chap-head"><button type="button" data-t="82.57" aria-label="Play chapter 6 from 1:22">▶ 1:22</button><b>6 · New information and transition weights</b><span class="st">Specified</span></div>
+<div class="math">\[ r_{i,t} = \frac{y_{i,t}-\lambda_{i,t}}{\sqrt{\varphi\,\lambda_{i,t}}} \]</div>
+<div class="math">\[ \alpha_{j\to i} = \frac{\sigma(\eta_i/s)\sum_m A_{ij,m}\, z_{j,m}}{\lambda^{\mathrm{raw}}_i} \]</div>
+<div class="math">\[ p(\mathrm{BOT}\to i) = 1-\sum_j \alpha_{j\to i} \]</div>
+<ul><li>r is the surprise: what arrived minus what the graph predicted, in units of its own noise; φ is overdispersion.</li><li>R1's release: (400 − 43.5) / √43.5 ≈ 54σ, so new information entered the AI narrative through BOT.</li><li>α is the share of i's attention that j caused this window. The shares, plus BOT's remainder, are the edge probabilities the search uses (toy values 0.20 / 0.44 / 0.36).</li></ul>
+<p class="pic">Gauss's law on a graph: attention the flows cannot account for must have a source, and that source is the outside world.</p>
+</div>
+<div class="chap" style="--c: var(--warn)">
+<div class="chap-head"><button type="button" data-t="95.87" aria-label="Play chapter 7 from 1:35">▶ 1:35</button><b>7 · An anomaly is observed</b><span class="st">Partly open</span></div>
+<div class="math">\[ AR_t = R_t - \left(\alpha + \beta R^{m}_t + \gamma R^{\mathrm{sec}}_t\right) \]</div>
+<div class="math">\[ M_z = 0.6745\cdot\frac{AR - \mathrm{median}}{\mathrm{MAD}} \]</div>
+<ul><li>AR is the abnormal return: the move minus what the market and sector would have predicted.</li><li>M_z is a robust z-score: medians and MAD, so one crash cannot inflate its own yardstick.</li><li>A case opens if |SAR| ≥ 4 or |M_z| ≥ 5 and a jump test or abnormal volume agrees. Same-day movers (NVDA −16.9%, AVGO −17.4%, VST −28.3%, CEG −20.9%) form one cluster case.</li><li>τ* is the earliest first abnormal print in the cluster, which may be pre-market or the European open.</li></ul>
+<p class="pic">A seismometer trigger: only a jolt far beyond the background noise opens an investigation.</p>
+<p class="open">Open: the price data source (no intraday prices obtained yet), the thresholds, and the overnight-gap cutoff rule. Bars before 27 January in the film are illustrative.</p>
+</div>
+<div class="chap" style="--c: var(--self)">
+<div class="chap-head"><button type="button" data-t="109.37" aria-label="Play chapter 8 from 1:49">▶ 1:49</button><b>8 · Searching for the smallest explanation</b><span class="st">Specified</span></div>
+<div class="math">\[ c(u\to v) = -\log p(u\to v) + \lambda_{\mathrm{node}} \]</div>
+<div class="math">\[ \Gamma = \min_x \min\!\left(-\log\frac{R_x}{\alpha(1-\alpha)^{L}} + \lambda_{\mathrm{node}},\; (L+1)\,\lambda_{\mathrm{node}}\right) \]</div>
+<ul><li>−log p is the surprise of an edge in nats; λ_node is a price per extra node, which is what makes the answer parsimonious.</li><li>Push sends probability mass backwards from the market events; R_x is the mass left unpushed.</li><li>Exact dynamic programming over (node, set of events): grow a tree upward, or merge two trees at the same node. The first time (BOT, all events) is popped, its cost is optimal.</li><li>If the best cost is at most Γ, nothing the push never reached can beat it: the answer is the smallest in the whole graph.</li></ul>
+<p class="pic">Cost is energy. The best explanation is the ground state, rivals are excited states, and their odds are Boltzmann factors exp(−ΔE).</p>
+<p class="open">Open: λ_node, the push settings (α, ε, L), and the abstention prior p₀. The film uses toy numbers.</p>
+</div>
+<div class="chap" style="--c: var(--self)">
+<div class="chap-head"><button type="button" data-t="126.87" aria-label="Play chapter 9 from 2:06">▶ 2:06</button><b>9 · Competing explanations</b><span class="st">Specified</span></div>
+<div class="math">\[ \mathrm{odds}(S_1 : S_2) = e^{\,\mathrm{cost}(S_2)-\mathrm{cost}(S_1)} \]</div>
+<ul><li>The best explanation through each entry point (Lemma 11.2), plus "we do not know", reported if within log 20 of the best.</li><li>Toy example: R1 release 5.39 (best), capex 5.79 (odds 1.5 : 1), we do not know 6.59 (odds 3.3 : 1).</li><li>The search generates the competing explanations. clingo never invents them; it judges them. Open-ended abduction would be Σ2P-complete.</li></ul>
+<p class="pic">Like ranking routes on a map: the best route through each starting junction, compared by total travel cost.</p>
+</div>
+<div class="chap" style="--c: var(--warn)">
+<div class="chap-head"><button type="button" data-t="136.17" aria-label="Play chapter 10 from 2:16">▶ 2:16</button><b>10 · From subgraph to clingo verdicts</b><span class="st">Partly designed</span></div>
+<div class="math">\[ \begin{aligned} \mathrm{SUPPORTED} &\iff c_{\mathrm{IN}} \\ \mathrm{CONTRADICTED} &\iff c_{\mathrm{OUT}} \\ \mathrm{UNRESOLVED} &\iff b_{\mathrm{OUT}} \wedge \neg c_{\mathrm{OUT}} \\ \mathrm{CONSISTENT\text{-}BUT\text{-}UNPROVEN} &\iff \neg b_{\mathrm{OUT}} \wedge \neg c_{\mathrm{IN}} \end{aligned} \]</div>
+<ul><li>Graph-derived facts are deterministic: trigger(h, event), before(event, move), signature_ok(h), schema_refuter(h, claim).</li><li>Each report is assumed accurate (ok) unless an independent contrary report of equal or better tier overrides it; claims hold only through accepted reports.</li><li>Each consistent reading is a stable model. b = in some reading, c = in every reading, for expl(H) (IN) and refuted(H) (OUT).</li><li>Toy verdicts that match the report's predictions: H1 consistent but unproven, H3 ($5.6M all-in) contradicted, H4 (chip smuggling) unresolved, H6 (attention cascade) supported.</li></ul>
+<p class="pic">Two witnesses of equal standing contradict each other: the court keeps both readings open and calls the matter unresolved.</p>
+<p class="open">Not designed yet: turning article text into reported(...) facts (claim extraction), explanation schemas for each hypothesis type, and the source-tier policy.</p>
+</div>
+<div class="chap" style="--c: var(--warn)">
+<div class="chap-head"><button type="button" data-t="152.17" aria-label="Play chapter 11 from 2:32">▶ 2:32</button><b>11 · Certificates and the dossier</b><span class="st">Designed, not built</span></div>
+<pre class="code">theorem nvda_h3 : verdict P_pre h3 = .contradicted
+#print axioms nvda_h3</pre>
+<ul><li>clingo and CaDiCaL are untrusted; their witness models and LRAT refutation proofs are checked by a Lean 4 checker proved sound once.</li><li>#print axioms records whether the Lean compiler was trusted for each verdict.</li><li>Lean proves: given this program, the verdict is V. Whether the program matches the world stays outside any proof.</li></ul>
+<p class="pic">A notary checks the paperwork, not the facts: the certificate guarantees the reasoning, not the evidence.</p>
+<p class="open">Open: kernel-only Lean speed at 10,000 to 100,000 clauses has never been benchmarked, and no Lean library for ASP semantics exists yet.</p>
+</div>
+  </div>
+</section>
+
+<section id="changed">
+  <div class="eyebrow">Findings</div>
+  <h2>Five parts of the earlier plan did not survive the literature</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Earlier idea</th><th>What the research showed</th><th>Replacement</th></tr></thead>
+    <tbody>
+      <tr><td class="x">Subtract κ · total attention</td><td>Tilts shares toward big narratives, wipes out small ones, and changes the predicted total when a narrative is split. Every competition mechanism with empirical support is proportional.</td><td class="ok">Divide by a common factor with a fitted exponent ω</td></tr>
+      <tr><td class="x">Gaussian priors, MAP</td><td>Equivalent to ridge regression: no zero edges, no sign structure, no guarantees.</td><td class="ok">Sparse group lasso, convex, unique minimizer; a zero group is exactly "no influence edge"</td></tr>
+      <tr><td class="x">MCTS / PUCT as the search core</td><td>UCT's original proof was incomplete; PUCT has no finite guarantee and a near-zero prior blinds it.</td><td class="ok">Exact dynamic programming on a certified local subgraph, started from a Levin tree search solution</td></tr>
+      <tr><td class="x">EC2 bound 2 ln(1/p<sub>min</sub>) + 1</td><td>Rested on a theorem whose proof was withdrawn in 2017.</td><td class="ok">The corrected bound is squared</td></tr>
+      <tr><td class="x">Classical entailment over news reports</td><td>Conflicting accepted claims make everything provable; keeping only "source S reported φ" makes nothing provable.</td><td class="ok">Each report is an assumption that conflicting reports can override; verdicts read across all consistent readings</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="lemma exo">
+    <span class="tag"><b>Biggest structural finding</b> · Lemma 5.1, derived</span>
+    <p>Yggdrasil's own measurement already conserves attention. Each article's soft memberships sum to one, including a "none of the above" narrative, so in every window the tracked attention plus the null narrative equals ingested volume exactly:</p>
+    <div class="math">\[ \sum_{n=1}^{N} y_{n,t} + y_{0,t} = V_t \]</div>
+    <p>So "is attention conserved?" is trivially yes and tells you nothing. The real question is how strongly narratives compete for the supply the newswires are expected to deliver, and the exponent ω measures exactly that.</p>
+  </div>
+</section>
+
+<section id="arch">
+  <div class="eyebrow">Architecture</div>
+  <h2>One deterministic function from news archive to proven verdict</h2>
+  <div class="col"><p>Seventeen stages in four layers. The first two layers run all the time, whatever stock anyone cares about. The last two run only when the market does something abnormal.</p></div>
+  <div class="arch">
+    <div class="band" style="--c: var(--muted)">
+      <div class="lbl"><b>Observe</b><span>always on</span></div>
+      <div class="stages">
+        <div class="stage" style="--c: var(--muted)"><span class="id">S0</span><b>Ingest</b><span>GDELT 15-minute batches, RSS, SerpApi on demand; raw bytes stored under their sha256</span></div>
+        <div class="stage" style="--c: var(--muted)"><span class="id">S1</span><b>Dedup</b><span>Exact keys collapse copies; near-duplicates only annotate copy groups and down-weight repeats</span></div>
+        <div class="stage" style="--c: var(--muted)"><span class="id">S2</span><b>Five clocks</b><span>Event, published, observed, ingested, first seen. Evidence counts only if first seen before the cutoff</span></div>
+      </div>
+    </div>
+    <div class="band" style="--c: var(--flow)">
+      <div class="lbl"><b>Understand</b><span>always on, stock-agnostic</span></div>
+      <div class="stages">
+        <div class="stage" style="--c: var(--flow)"><span class="id">S3–S4</span><b>Events and narratives</b><span>Fixed-seed clustering; narrative identity carried by lineage (split, merge, emerge); soft membership</span></div>
+        <div class="stage" style="--c: var(--flow)"><span class="id">S5</span><b>Attention</b><span>Softplus Hawkes with memory traces at 1 h, 6 h, 1 d, 1 w and divisive competition</span></div>
+        <div class="stage" style="--c: var(--flow)"><span class="id">S6–S7</span><b>Spawning and updates</b><span>Residual bursts mark new information; fixed update order every window; periodic convex refit</span></div>
+        <div class="stage" style="--c: var(--flow)"><span class="id">S8–S9</span><b>Compression and weights</b><span>Merge nodes only where a lumpability test passes; attribution shares become transition weights</span></div>
+      </div>
+    </div>
+    <div class="band" style="--c: var(--exo)">
+      <div class="lbl"><b>Investigate</b><span>on an abnormal move</span></div>
+      <div class="stages">
+        <div class="stage" style="--c: var(--exo)"><span class="id">S10</span><b>Trigger</b><span>Abnormal return, robust z, jump test; opens a case and fixes the information cutoff</span></div>
+        <div class="stage" style="--c: var(--exo)"><span class="id">S11</span><b>Explanation graph</b><span>Edge cost −log p; an edge from BOT straight to the event means "we do not know"</span></div>
+        <div class="stage" style="--c: var(--exo)"><span class="id">S12</span><b>Search</b><span>Local push, Levin search, exact DP, then a certificate that the answer is the smallest</span></div>
+        <div class="stage" style="--c: var(--exo)"><span class="id">S13</span><b>Queries</b><span>SerpApi budget goes to the queries that best separate competing explanations</span></div>
+      </div>
+    </div>
+    <div class="band" style="--c: var(--self)">
+      <div class="lbl"><b>Judge</b><span>per explanation</span></div>
+      <div class="stages">
+        <div class="stage" style="--c: var(--self)"><span class="id">S14</span><b>Verdicts</b><span>Evidence as a logic program; four yes/no checks across all consistent readings</span></div>
+        <div class="stage" style="--c: var(--self)"><span class="id">S15</span><b>Certification</b><span>Solver witnesses and LRAT refutation proofs checked by Lean 4; the axiom audit is recorded</span></div>
+        <div class="stage" style="--c: var(--self)"><span class="id">S16</span><b>Dossier</b><span>Competing explanations, verdicts, provenance, before/after split, or "we do not know"</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="lemma">
+    <span class="tag">Theorem 3.1, derived · end-to-end replay determinism</span>
+    <p>If no stage reads the wall clock, every random draw comes from a counter-based generator keyed on the configuration and record IDs, every floating-point reduction runs in a fixed order on a pinned binary, and every tie is broken by a fixed key, then every table and every verdict is a pure function of the archived input and the frozen configuration. Proof by induction over the ordered input stream.</p>
+  </div>
+</section>
+
+<section id="attention">
+  <div class="eyebrow">Attention model</div>
+  <h2>Every event raises the rate, and the raise fades</h2>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/HawkesBumps.jpg" src="media/HawkesBumps.mp4" aria-label="Animation: events arrive and each adds a fading bump to the rate"></video>
+    <figcaption><b>A Hawkes process, built one event at a time.</b> Each event adds a bump that decays. The rate at any moment is the baseline (outside news) plus every bump still fading. The area of one bump, n, is the average number of follow-on events.</figcaption>
+  </figure>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/BranchingTree.jpg" src="media/BranchingTree.mp4" aria-label="Animation: the same process as a family tree, subcritical then supercritical"></video>
+    <figcaption><b>The same process as a family tree.</b> Immigrants arrive from outside; every event has on average n children. Below n = 1 every cascade dies out, the average cascade has 1/(1 − n) events, and a share 1 − n of all events is new information. Above 1 it runs away, like a chain reaction past critical mass.</figcaption>
+  </figure>
+  <div class="col">
+    <h3>The exact model, one 15-minute window at a time</h3>
+    <p>Narrative i's attention mass in window t is \(y_{i,t}\). Four memory traces per narrative remember it at different timescales, the drive combines baseline and excitation, softplus keeps the rate positive, and a common factor applies competition:</p>
+  </div>
+  <div class="math">\[ z_{j,m,t} = a_m\, z_{j,m,t-1} + (1-a_m)\, y_{j,t-1}, \qquad a_m = e^{-\Delta/\tau_m}, \quad \tau \in \{1\text{h}, 6\text{h}, 1\text{d}, 1\text{w}\} \]</div>
+  <div class="math">\[ \eta_{i,t} = \text{base}_{i,t} + \sum_{j}\sum_{m} A_{ij,m}\, z_{j,m,t}, \qquad \lambda^{\text{raw}}_{i,t} = s\,\log\!\left(1 + e^{\eta_{i,t}/s}\right) \]</div>
+  <div class="math">\[ \lambda_{i,t} = \lambda^{\text{raw}}_{i,t}\left(\frac{B_t}{B_t + S^{\text{raw}}_t}\right)^{\omega}, \qquad S^{\text{raw}}_t = \sum_i \lambda^{\text{raw}}_{i,t}, \qquad y_{i,t} \sim \text{quasi-Poisson}(\lambda_{i,t}) \]</div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Parameter</th><th>Meaning</th><th>How it is set</th></tr></thead>
+    <tbody>
+      <tr><td>base<sub>i,t</sub></td><td>Outside inflow: narrative level, hour-of-week Fourier terms, scheduled releases (CPI, FOMC, earnings)</td><td>Fitted</td></tr>
+      <tr><td>A<sub>ij,m</sub></td><td>How much narrative j's attention raises narrative i's, at timescale m; negative means inhibition</td><td>Sparse group lasso, only on candidate edges</td></tr>
+      <tr><td>ω, B<sub>t</sub></td><td>Competition strength (0 none, 1 hard capacity) and capacity from <em>predicted</em> supply</td><td>ω fitted in [0, 1]</td></tr>
+      <tr><td>s</td><td>Where softplus bends from exponential to linear</td><td>Chosen on held-out data (it mattered in the BTC fit)</td></tr>
+      <tr><td>φ</td><td>Overdispersion</td><td>Estimated from residuals</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="split">
+    <div class="lemma">
+      <span class="tag">Lemma 6.5, derived · bounded attention</span>
+      <p>With ω = 0, mean attention stays bounded if the spectral radius of the positive parts of A, times the maximum hour-of-week gain, is below 1. Inhibitory weights never hurt. With any ω &gt; 0, mean attention is bounded for any excitation strength at all, and with ω = 1 the total is below B on every path.</p>
+    </div>
+    <div class="lemma">
+      <span class="tag">Lemma 6.6, derived · the 15-minute grid</span>
+      <p>For a 1-hour kernel, on average 11.5% of a parent's offspring land in the parent's own bin, where a model with lags ≥ 1 cannot see them. The fitted coefficient is then low by an exact factor, 0.885 for the 1-hour kernel, and the correction is:</p>
+      <div class="math">\[ \hat A_{\text{cont}} = \hat A_{\text{disc}} \cdot \frac{x}{1-e^{-x}}, \qquad x = \frac{\Delta}{\tau} \]</div>
+    </div>
+  </div>
+</section>
+
+<section id="competition">
+  <div class="eyebrow">Semi-conservation</div>
+  <h2>Narratives compete by division, and ω says how much</h2>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/Competition.jpg" src="media/Competition.mp4" aria-label="Animation: subtractive versus divisive competition, then splitting a narrative"></video>
+    <figcaption><b>The split test.</b> Subtracting the same amount from every narrative tilts shares toward the biggest one and wipes out the smallest. Dividing every narrative by the same factor keeps the ratios. Split the AI narrative in two and the subtractive model changes AI's total (4.2 to 3.4) purely because of how you clustered, while the divisive model gives the same 3.0.</figcaption>
+  </figure>
+  <div class="split">
+    <div class="col">
+      <p><b>Proposition 6.2 (divisive, derived).</b> Ratios are preserved, the total is capped by \(B^{\omega} (S^{\text{raw}})^{1-\omega}\), more drive never lowers the total, and splitting or merging a narrative leaves every other narrative unchanged. At ω = 1 it is exactly the steady state of Grossberg's shunting equations (Lemma 6.4).</p>
+      <p><b>Proposition 6.3 (subtractive, derived).</b> Shares tilt to large narratives, predicted totals depend on clustering granularity, it matches resource depletion only when κ is proportional to each narrative's own drive (which is division), and it makes every narrative Granger-cause every other by construction.</p>
+    </div>
+    <div class="lemma">
+      <span class="tag">Conjecture 6.B · what "semi-conservative" now means</span>
+      <ul class="plain">
+        <li><b>SC1</b> ω &gt; 0 on held-out data, with B from predicted supply.</li>
+        <li><b>SC2</b> total supply mean-reverts once the number of ingested sources is controlled.</li>
+        <li><b>SC3</b> an outside shock lowers every tracked narrative by the same proportion, not the same amount.</li>
+      </ul>
+      <p>Accept semi-conservation only if all three hold. If ω comes out near 0, that is a finding: newsroom supply behaves like excitation without a budget, and the competition in the literature belongs to readers.</p>
+    </div>
+  </div>
+</section>
+
+<section id="weights">
+  <div class="eyebrow">Transition weights</div>
+  <h2>Attribution shares, with the unexplained part sent to BOT</h2>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/AttributionFlow.jpg" src="media/AttributionFlow.mp4" aria-label="Animation: a shock enters the AI narrative through BOT and spills into GPU"></video>
+    <figcaption><b>Where GPU's attention came from (toy numbers from the design discussion).</b> R1's release enters the AI narrative through BOT as a 54σ surprise. One window later AI's memory trace rises from 43.5 to 58.0 and its share of GPU's attention grows from 37% to 44%. Those shares are the edge probabilities the search uses.</figcaption>
+  </figure>
+  <div class="math">\[ \alpha_{j\to i,t} = \frac{\sigma(\eta_{i,t}/s)\sum_m A_{ij,m}\, z_{j,m,t}}{\lambda^{\text{raw}}_{i,t}}, \qquad p(\text{BOT}\to i) = 1 - \sum_j \alpha_{j\to i} \]</div>
+  <div class="split">
+    <div class="col">
+      <p><b>Lemmas 7.1 to 7.3 (derived):</b> the shares are proper probabilities, divisive competition leaves them unchanged (subtraction would break them), and over a horizon they form a proper policy over parents.</p>
+      <p><b>Lemma 7.4 (derived):</b> Hawkes coefficients measure offspring, not transfer. Attention on j that begets attention on i is not removed from j. Means cannot separate the two; the spread of the counts partly can. Transport-style flows are therefore only a cross-check.</p>
+    </div>
+    <div class="lemma exo">
+      <span class="tag"><b>One node, four jobs</b></span>
+      <ul class="plain">
+        <li>The source of outside attention in the Hawkes model</li>
+        <li>The root of every explanation</li>
+        <li>The entry point for new information</li>
+        <li>The "we do not know" answer, priced at −log p<sub>0</sub>, so abstention competes with every story on equal terms</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="search">
+  <div class="eyebrow">Search</div>
+  <h2>The smallest explanation, with a certificate for each case</h2>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/CertifiedSearch.jpg" src="media/CertifiedSearch.mp4" aria-label="Animation: push mass backwards from the events, solve exactly, then certify"></video>
+    <figcaption><b>Push, solve, certify (toy numbers).</b> Probability mass is pushed backwards from the market events, so only the plausible neighborhood is explored. Exact dynamic programming finds the cheapest tree that explains both NVDA and Vistra through one shared root. The leftover mass proves that no unexplored chain could cost less than Γ, so the answer is the smallest in the whole graph. The runner-up and "we do not know" are reported with their odds.</figcaption>
+  </figure>
+  <div class="col">
+    <p>An explanation is an arborescence rooted at BOT that reaches every market event. Its cost is the sum of edge costs, and the smallest one is also the most probable one under independent edges, so competing explanations come with honest odds:</p>
+  </div>
+  <div class="math">\[ c(u\to v) = -\log p(u\to v) + \lambda_{\text{node}}, \qquad S^{*} = \arg\min_{S} \sum_{e\in S} c(e), \qquad \frac{P(S_1)}{P(S_2)} = e^{\,\text{cost}(S_2) - \text{cost}(S_1)} \]</div>
+  <div class="split">
+    <div class="lemma">
+      <span class="tag">Theorem 12.6, derived · certified smallest explanation</span>
+      <p>Run push from every event with leftover mass \(R_x\), solve the explored subgraph exactly to get \(C_X\), and set</p>
+      <div class="math">\[ \Gamma = \min_{x}\, \min\!\left(-\log\frac{R_x}{\alpha(1-\alpha)^{L}} + \lambda_{\text{node}},\; (L+1)\,\lambda_{\text{node}}\right) \]</div>
+      <p>If \(C_X \le \Gamma\), no explanation anywhere in the graph is cheaper. The proof was re-checked line by line and holds. When the check fails, Yggdrasil says so instead of claiming minimality.</p>
+    </div>
+    <div class="lemma">
+      <span class="tag">Theorem 12.7, proven · Corollary 12.9, derived</span>
+      <p>Levin tree search with the transition weights as its policy expands at most</p>
+      <div class="math">\[ N \le d_0(S)\cdot \exp\!\Big(\sum_{e\in S} -\log p(e)\Big) \]</div>
+      <p>nodes: effort grows with the surprisal of the true explanation. A better attention model directly means cheaper proofs. Mixing a little uniform probability into the policy keeps a finite bound even when the prior is badly wrong (Lemma 12.10), which PUCT cannot offer.</p>
+    </div>
+  </div>
+  <div class="col">
+    <p><b>Exactness is affordable.</b> Smallest connecting subgraphs are NP-hard and the directed and group variants approximate badly, but exact DP is exponential only in the number of events: \(O(3^k n + 2^k((k+\log n)n + m))\). For the NVIDIA cluster, k ≈ 6 and a 10,000-node local graph costs about 7 million basic steps.</p>
+    <p><b>Query budget.</b> SerpApi queries go to whatever best separates the competing explanations, using EC2 with the corrected guarantee \((2\ln(1/p_{\min})+1)^2\), or \(1 - 1/e\) for a fixed budget. Retrieved pages count as pre-move evidence only if Yggdrasil had seen them before the cutoff.</p>
+  </div>
+</section>
+
+<section id="verdicts">
+  <div class="eyebrow">Verdicts</div>
+  <h2>Four yes/no checks across every consistent reading of the evidence</h2>
+  <div class="col">
+    <p>The evidence becomes a small logic program in which each report is assumed accurate unless a conflicting, copied, retracted or lower-tier report overrides it. Each consistent reading is a stable model. A solver asks, for explanation H, whether some or all readings support it, and whether some or all refute it:</p>
+  </div>
+  <div class="verdict">
+    <div class="vcard" style="--c: var(--self)"><b>SUPPORTED</b><span>Every consistent reading supports H.</span></div>
+    <div class="vcard" style="--c: var(--bad)"><b>CONTRADICTED</b><span>Every consistent reading refutes H.</span></div>
+    <div class="vcard" style="--c: var(--warn)"><b>UNRESOLVED</b><span>Some reading refutes H, but not all. Disconfirmation is surfaced, never hidden.</span></div>
+    <div class="vcard" style="--c: var(--flow)"><b>CONSISTENT-BUT-UNPROVEN</b><span>No reading refutes H, and not every reading supports it.</span></div>
+  </div>
+  <ul class="plain">
+    <li><b>Total and exclusive</b> (Theorem 14.1, derived): every explanation gets exactly one verdict. If no consistent reading exists at all, the output is INCOHERENT-EVIDENCE, with a proof.</li>
+    <li><b>Cheap to decide</b> (proven): "some reading" checks are NP-complete, "all readings" checks are coNP-complete, each verdict needs at most four SAT calls, and a linear-time grounded core backs every firm verdict.</li>
+    <li><b>Proven in Lean 4</b>: the solver is untrusted. Its witness models and LRAT refutation proofs are checked in Lean, and <code>#print axioms</code> records whether the compiler was trusted for each verdict.</li>
+    <li><b>What Lean cannot do</b>: it proves "given this program, the verdict is V". Whether the program reflects the world depends on extraction, copy detection and source tiers, which stay outside any proof.</li>
+  </ul>
+</section>
+
+<section id="evidence">
+  <div class="eyebrow">Prior art and data</div>
+  <h2>What the field already knows, and what we measured</h2>
+  <div class="stats">
+    <div class="stat"><span class="v">17%</span><span class="l">of US index jumps since 1900 had no identifiable reason in next-day newspapers (Baker, Bloom, Davis &amp; Sammon, rev. 2025)</span></div>
+    <div class="stat"><span class="v">58–78%</span><span class="l">human agreement on a jump's cause, against 18.6% by chance: the ceiling and floor for evaluating Yggdrasil</span></div>
+    <div class="stat"><span class="v">71%</span><span class="l">of date-filtered Google queries still returned pages with post-cutoff information (El Lahib et al. 2026)</span></div>
+    <div class="stat"><span class="v">51.5%</span><span class="l">of generative-search sentences fully supported by their citations (Liu, Zhang &amp; Liang 2023)</span></div>
+  </div>
+  <ul class="plain">
+    <li><b>The gap is real.</b> Benzinga, Google Finance AI and Perplexity each give one summary; AlphaSense adds citations; RavenPack and Dataminr detect events. None of the vendor material describes competing hypotheses, contradicting evidence, abstention, or a strict time cutoff.</li>
+    <li><b>Hindsight is the main threat.</b> LLMs recall pre-cutoff headlines and returns exactly, and instructions do not stop it. Yggdrasil's own first-seen timestamps are the defense, plus a contamination probe on any model used.</li>
+    <li><b>The CIA's Analysis of Competing Hypotheses has a weak empirical record</b> (Dhami et al. 2019), so it inspires the verdict design but is not used as validation.</li>
+  </ul>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Measured on GDELT, 27 January 2025</th><th class="num">Value</th><th>What it means</th></tr></thead>
+    <tbody>
+      <tr><td>English GKG records</td><td class="num">130,852</td><td>One row per document; GDELT does not deduplicate GKG</td></tr>
+      <tr><td>Translated-document stream</td><td class="num">908.6 MB</td><td>English-only dropped about 74% of one batch's documents; must be disclosed</td></tr>
+      <tr><td>Events with NumSources = 1 at first sighting</td><td class="num">97.1%</td><td>First-batch counts are useless as attention; count documents and mentions</td></tr>
+      <tr><td>Metadata-identical documents</td><td class="num">19.0%</td><td>Syndication is large: one story ran on 271 iHeart subdomains</td></tr>
+      <tr><td>Documents matching "deepseek"</td><td class="num">1,417</td><td>From 681 sources, at most 47 per 15-minute batch: a low-count regime</td></tr>
+      <tr><td>Parse time for one English day</td><td class="num">11.5 s</td><td>A 3-week replay parses in about 5 minutes; the download (about 2 hours) is the bottleneck</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <details>
+    <summary>DeepSeek and NVIDIA timeline</summary>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Date</th><th>Fact</th><th>Relative to the move</th></tr></thead>
+      <tbody>
+        <tr><td>2024-12-27</td><td>DeepSeek-V3 report: 2.788M H800 GPU-hours, $5.576M at $2/hour, excluding prior research and ablations</td><td>Before</td></tr>
+        <tr><td>2025-01-20</td><td>R1 released under MIT license, claiming parity with OpenAI o1</td><td>Before</td></tr>
+        <tr><td>2025-01-24/25</td><td>"The Short Case for Nvidia Stock" post</td><td>Before</td></tr>
+        <tr><td>2025-01-26</td><td>DeepSeek reaches No. 1 on the US App Store; "Sputnik moment" post</td><td>Before the Monday open</td></tr>
+        <tr><td>2025-01-27</td><td>NVDA closes at $118.42, down 16.9%; about $589–593B of market value lost; Broadcom −17.4%, Vistra −28.3%</td><td>The move</td></tr>
+        <tr><td>2025-01-28</td><td>NVDA rebounds about 8.9%</td><td>After</td></tr>
+        <tr><td>2025-01-28 onward</td><td>Distillation allegations, chip-count estimates, export-control probe, the Nature cost paper</td><td>After: cannot be causes</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </details>
+</section>
+
+<section id="tests">
+  <div class="eyebrow">Falsification</div>
+  <h2>Five experiments decide the open hypotheses</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Experiment</th><th>Question</th><th>Decision rule</th></tr></thead>
+    <tbody>
+      <tr><td>F1 Semi-conservation</td><td>Is there competition for predicted supply?</td><td>Accept only if SC1, SC2 and SC3 all hold; reject if ω's interval contains 0</td></tr>
+      <tr><td>F2 Competition form</td><td>Divisive, subtractive, log, or share model?</td><td>Subtraction is falsified if it loses on held-out score and fails the granularity test</td></tr>
+      <tr><td>F3 Timescales and binning</td><td>Are 1 h / 6 h / 1 d / 1 w enough? Is the 0.885 factor right?</td><td>Add a timescale only if held-out deviance beats its bootstrap interval</td></tr>
+      <tr><td>F4 Cross-narrative excitation</td><td>Are influence edges real?</td><td>Report an edge only if it survives bootstrap stability, a ±7-day placebo shift, and a common-shock control</td></tr>
+      <tr><td>F5 Locality</td><td>Does the certificate succeed on real cases?</td><td>Holds for a case class if it succeeds and the human-coded cause is inside the explored region in about 90% of cases</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="col"><p><b>The decisive DeepSeek test:</b> does the model attribute the weekend attention surge to BOT (an outside attention event) or to the R1 narrative as its offspring? Information was public on 20 January; attention peaked on 25–26 January. Separating those two arrivals is exactly what the attention layer is for. This needs GDELT for 20–26 January, which has not been downloaded yet.</p></div>
+</section>
+
+<section id="ship">
+  <div class="eyebrow">Shipping</div>
+  <h2>For 10 October: every layer present, each in its simplest provable form</h2>
+  <div class="col"><p>The full architecture is months of work. A thin version that runs end to end fits in about 25 hours: Sunday, a couple of weekday evenings, and Saturday for the README, video and submission. SerpApi stays central as the evidence sensor for every explanation, which is what the judges score.</p></div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Ship for the hackathon</th><th>Defer</th></tr></thead>
+    <tbody>
+      <tr><td>GDELT English replay, about 6–27 January 2025</td><td>Translated documents, live RSS</td></tr>
+      <tr><td>Exact-key dedup</td><td>Near-duplicate detection</td></tr>
+      <tr><td>Narratives seeded from GDELT themes and entities</td><td>Lineage split/merge, level-of-detail compression</td></tr>
+      <tr><td>Softplus Hawkes with fitted ω (convex, scipy)</td><td>Online updates</td></tr>
+      <tr><td>BOT attribution as transition weights</td><td>Transport-flow cross-check</td></tr>
+      <tr><td>Explanation graph, exact DP, push certificate</td><td>Levin search</td></tr>
+      <tr><td>SerpApi evidence per explanation, even budget split</td><td>EC2 query selection</td></tr>
+      <tr><td>Four-bit verdicts from clingo</td><td>Full LRAT certification</td></tr>
+      <tr><td>Lean: one verdict proved end to end (stretch)</td><td>Lean for every verdict</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="decide">
+  <div class="eyebrow">Open decisions</div>
+  <h2>The six choices that matter first</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Decision</th><th>Recommendation</th></tr></thead>
+    <tbody>
+      <tr><td>Language scope</td><td>English for the proof of concept, disclosing the 74% drop; translations as a robustness run</td></tr>
+      <tr><td>Capacity B</td><td>Predicted supply. Using concurrent volume would make competition true by construction (Lemma 5.1)</td></tr>
+      <tr><td>Abstention prior p<sub>0</sub></td><td>Calibrated per instrument class on historical jump coding</td></tr>
+      <tr><td>Search-graph granularity</td><td>Narrative level; time-resolved attribution later</td></tr>
+      <tr><td>Lean trust policy</td><td>Kernel-only for the grounded core, native LRAT checking, axioms recorded; benchmark first</td></tr>
+      <tr><td>LLM role</td><td>Extraction only: archived, contamination-probed, never in the reasoning path</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Sources</div>
+  <div class="footer">
+    <p>Full report: <code>~/yggdrasil-research/reports/Yggdrasil attention model and search.md</code> (17 sections, a ledger of every cited theorem with its conditions, 261 citations). Research notes: <code>~/yggdrasil-research/research_notes/</code>.</p>
+    <p>Labels used above: <b>proven</b> means a published theorem; <b>derived</b> means proved in the report and not yet independently reviewed; <b>conjecture</b> means a hypothesis the experiments must test. Toy numbers in the animations are illustrations, not fitted results.</p>
+    <p>Background on Hawkes processes, with a fit to real Bitcoin order flow: <a href="https://claude.ai/artifact/35fLKb8PddzwmpXQj26chy">Hawkes From Scratch</a>. Animations rendered with Manim Community 0.20.1.</p>
+  </div>
+</section>
+
+</div>
+<script>
+(function () {
+  var v = document.getElementById("film-video");
+  if (!v) return;
+  document.querySelectorAll("[data-t]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      v.currentTime = parseFloat(b.getAttribute("data-t")) + 0.05;
+      var p = v.play(); if (p && p.catch) p.catch(function () {});
+      v.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    });
+  });
+})();
+</script>
+</body>
+</html>
