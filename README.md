@@ -56,3 +56,7 @@ ffmpeg -f concat -safe 0 -i list.txt \
 ## Data and sources
 
 Measurements come from public GDELT 2.0 files for 27 January 2025. All literature is cited inline in the report and notes. Numbers in the animations are illustrative except where marked as measured.
+
+## License
+
+MIT. See `LICENSE`.
