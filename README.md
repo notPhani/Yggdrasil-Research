@@ -33,7 +33,7 @@ Research and design for **Yggdrasil**, a market event forensics system. Yggdrasi
 
 ## Viewing the brief
 
-Open `brief/index.html` in a browser (it loads fonts and MathJax from public CDNs). To view it online, enable GitHub Pages for this repository (Settings, Pages, deploy from the `main` branch, root folder) and open `/brief/` on the Pages site.
+Online: https://notphani.github.io/Yggdrasil-Research/ (GitHub Pages, served from the `main` branch root; the site root redirects to the brief). Locally: open `brief/index.html` in a browser (it loads fonts and MathJax from public CDNs).
 
 ## Re-rendering the animations
 
