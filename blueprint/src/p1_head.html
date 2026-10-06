@@ -1,0 +1,130 @@
+<title>Yggdrasil Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: the same dark observatory notebook as the research brief, one 72ch reading column with
+   figures, tables and diagrams widening to 1100px. Yellow = exogenous / BOT, blue = narrative flow,
+   green = proven or specified, orange = open or risky. Chart series use the validated dataviz slots. */
+:root {
+  --bg: #0d1217; --surface: #141b22; --surface-2: #1a232c; --ink: #e7ecef; --ink-2: #a5afb7; --muted: #76828c;
+  --rule: #26313a; --exo: #f4d35e; --flow: #58c4dd; --self: #83c167; --warn: #ff9b54; --bad: #fc6255; --code-bg: #111820;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --neutral: #4a5560; --axis: #55616b;
+  --f-display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f1f3f4; --surface: #fbfcfc; --surface-2: #eef1f3; --ink: #121a21; --ink-2: #4a5661; --muted: #6c7882;
+    --rule: #d7dde1; --exo: #8a6400; --flow: #1b7393; --self: #3c7d24; --warn: #b2560f; --bad: #b8322b; --code-bg: #e8ecee;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --neutral: #b4bcc2; --axis: #9aa5ad; color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f1f3f4; --surface: #fbfcfc; --surface-2: #eef1f3; --ink: #121a21; --ink-2: #4a5661; --muted: #6c7882;
+  --rule: #d7dde1; --exo: #8a6400; --flow: #1b7393; --self: #3c7d24; --warn: #b2560f; --bad: #b8322b; --code-bg: #e8ecee;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --neutral: #b4bcc2; --axis: #9aa5ad; color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 1rem; line-height: 1.62; }
+.wrap { max-width: 1100px; margin: 0 auto; padding-inline: 20px; padding-block: 44px 120px; }
+.col { max-width: 72ch; display: flex; flex-direction: column; gap: 0.85rem; }
+h1, h2 { font-family: var(--f-display); font-weight: 700; line-height: 1.08; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2.4rem, 6.5vw, 4rem); }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.3rem); }
+h3 { font-family: var(--f-body); font-weight: 600; font-size: 1.14rem; margin: 0.4rem 0 0; }
+p { margin: 0; }
+a { color: var(--flow); text-underline-offset: 2px; }
+a:focus-visible, video:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--exo); outline-offset: 3px; }
+code { font-family: var(--f-mono); font-size: 0.86em; background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 3px; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+header { display: flex; flex-direction: column; gap: 1.1rem; }
+.lede { font-size: 1.17rem; color: var(--ink-2); max-width: 64ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font-size: 0.8rem; padding: 0.22rem 0.65rem; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink-2); }
+.chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.toc { display: flex; flex-wrap: wrap; gap: 0.3rem 1.1rem; font-family: var(--f-mono); font-size: 0.8rem; }
+.toc a { color: var(--ink-2); text-decoration: none; }
+.toc a:hover { color: var(--exo); }
+section { display: flex; flex-direction: column; gap: 1.3rem; margin-top: 3.6rem; padding-top: 2.6rem; border-top: 1px solid var(--rule); }
+section > .eyebrow { margin-bottom: -0.6rem; }
+.math { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding-block: 0.1rem; }
+mjx-container { color: var(--ink); }
+mjx-container[display="true"] { margin: 0.35rem 0 !important; }
+.tablewrap { overflow-x: auto; max-width: 100%; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.8rem 0.55rem 0; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--f-mono); font-weight: 500; font-size: 0.71rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--f-mono); }
+td:first-child { font-weight: 500; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.video { width: 100%; max-width: 100%; aspect-ratio: 16 / 9; background: #10151b; border-radius: 8px; border: 1px solid var(--rule); display: block; }
+figcaption { font-size: 0.89rem; color: var(--ink-2); max-width: 76ch; }
+figcaption b { color: var(--ink); font-weight: 600; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.4rem; align-items: start; }
+.split > * { min-width: 0; }
+.eli5 { border: 1px dashed var(--exo); border-radius: 10px; padding: 0.9rem 1.1rem; background: var(--surface); display: flex; flex-direction: column; gap: 0.45rem; max-width: 76ch; }
+.eli5 .tag { font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--exo); }
+.eli5 p { font-size: 1.02rem; }
+.box { border-left: 2px solid var(--flow); padding: 0.65rem 0 0.65rem 1rem; background: linear-gradient(90deg, var(--surface), transparent); display: flex; flex-direction: column; gap: 0.4rem; max-width: 80ch; }
+.box.proof { border-left-color: var(--self); }
+.box.warn { border-left-color: var(--warn); }
+.box .tag { font-family: var(--f-mono); font-size: 0.71rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.box .tag b { font-weight: 500; }
+.lab { font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.05em; padding: 0.05rem 0.4rem; border-radius: 3px; border: 1px solid currentColor; text-transform: uppercase; white-space: nowrap; }
+.lab.proven { color: var(--self); } .lab.derived { color: var(--flow); } .lab.conj { color: var(--warn); } .lab.measured { color: var(--exo); } .lab.design { color: var(--ink-2); }
+ul.plain, ol.plain { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.4rem; max-width: 76ch; }
+pre.code, pre.tui { background: var(--code-bg); border-radius: 6px; padding: 0.9rem 1rem; overflow-x: auto; font-family: var(--f-mono); font-size: 0.78rem; line-height: 1.5; margin: 0; max-width: 100%; color: var(--ink); }
+pre.tui { border: 1px solid var(--rule); background: #0a0f13; color: #d7e0e6; }
+.tui .y { color: #f4d35e; } .tui .b { color: #58c4dd; } .tui .g { color: #83c167; } .tui .o { color: #ff9b54; } .tui .r { color: #fc6255; } .tui .d { color: #76828c; }
+.diagram { overflow-x: auto; max-width: 100%; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; }
+.diagram svg { display: block; min-width: 860px; width: 100%; height: auto; color: var(--ink); }
+.chart { position: relative; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 8px 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.8rem; color: var(--ink-2); padding: 2px 6px 6px; }
+.legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 6px; border-radius: 1px; }
+.legend i.dot { width: 9px; height: 9px; border-radius: 50%; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0.45rem 0.6rem; font-size: 0.78rem; box-shadow: 0 2px 10px rgba(0,0,0,0.25); min-width: 9rem; z-index: 3; }
+.tip .row { display: flex; align-items: center; gap: 0.45rem; white-space: nowrap; }
+.tip .row b { font-family: var(--f-mono); font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+.tip .row span { color: var(--muted); }
+.tip .key { width: 12px; height: 2px; border-radius: 1px; flex: none; }
+.tip .head { color: var(--muted); font-family: var(--f-mono); margin-bottom: 0.2rem; }
+details.tv { font-size: 0.86rem; }
+details.tv summary { cursor: pointer; color: var(--ink-2); font-family: var(--f-mono); font-size: 0.8rem; }
+details.tv[open] summary { margin-bottom: 0.5rem; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 0.8rem 0.95rem; display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+.card b { font-weight: 600; }
+.card span { font-size: 0.86rem; color: var(--ink-2); }
+.qed { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.08em; color: var(--muted); white-space: nowrap; }
+.footer { font-size: 0.86rem; color: var(--ink-2); display: flex; flex-direction: column; gap: 0.45rem; max-width: 80ch; }
+@media (max-width: 780px) { .split { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] }, svg: { fontCache: "global" }, options: { enableMenu: false } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Market Event Forensics · final architecture · design locked through Session 7 (+ 4.2′) · 6 October 2026</div>
+  <h1>Yggdrasil Blueprint</h1>
+  <p class="lede">Yggdrasil reads the world's news every 15 minutes, builds a graph of stories and the attention each one gets, and when a stock moves abnormally it finds the simplest competing explanations, tests them against evidence, and proves which ones survive. This is the complete design: every engine, every formula with its intermediate terms, every knob and how sensitive it is, the bounds and stability proofs, the extreme cases and how each is avoided, the terminal screens, and the sources.</p>
+  <div class="chips">
+    <span class="chip"><i style="background: var(--self)"></i>Design locked: Sessions 0 to 7</span>
+    <span class="chip"><i style="background: var(--bad)"></i>Build: not started, no code yet</span>
+    <span class="chip"><i style="background: var(--exo)"></i>Measured facts are labeled</span>
+    <span class="chip"><i style="background: var(--flow)"></i>Proofs: cited or derived (derived ones not yet independently reviewed)</span>
+  </div>
+  <div class="box">
+    <span class="tag">How to read every section</span>
+    <p>Each part opens with a yellow-dashed box written for a ten-year-old. Then come the mechanism, the full math with every intermediate term named, the knobs and their sensitivity, the bounds and proofs that keep it stable, and the extreme cases with how they are avoided. Claim labels: <span class="lab proven">proven</span> a published theorem, cited; <span class="lab derived">derived</span> proved here, not yet independently reviewed; <span class="lab conj">conjecture</span> a hypothesis the experiments must test; <span class="lab conj">proposed</span> my suggestion, not yet your decision; <span class="lab measured">measured</span> produced from real data in this project; <span class="lab design">design</span> a locked decision.</p>
+  </div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#machine">The machine</a><a href="#e1">Engine 1 · Observation</a><a href="#observer">Stock observer</a><a href="#e2a">Engine 2a · Grouping</a><a href="#e2b">Engine 2b · Attention</a><a href="#e3a">Engine 3a · Search</a><a href="#e3b">Engine 3b · Verdicts</a><a href="#knobs">All knobs</a><a href="#extremes">Extreme cases</a><a href="#analogies">Physics and games</a><a href="#tui">Terminal screens</a><a href="#build">Build plan</a><a href="#facts">Measured facts</a><a href="#sources">Sources</a>
+  </nav>
+</header>

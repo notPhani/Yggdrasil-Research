@@ -1,0 +1,174 @@
+
+<section id="e3b">
+  <div class="eyebrow">§7 · Engine 3b · Evidence and verdicts · Session 6, locked (6.1–6.13′)</div>
+  <h2>Put every story on trial, and prove the verdict</h2>
+
+  <div class="eli5">
+    <span class="tag">For a ten-year-old</span>
+    <p>Now every story goes on trial. For each one we search for one clue that would help it and <i>two</i> clues that would hurt it. Looking for what could prove you wrong is how good detectives avoid fooling themselves.</p>
+    <p>Every fact has to be copied word for word from a real page. Nobody is allowed to make things up. A logic judge then tries every way of believing the witnesses that doesn't contradict itself. If the story survives in all of them, it's SUPPORTED. If it dies in all of them, CONTRADICTED. If it dies in some, UNRESOLVED. If nothing touches it, CONSISTENT-BUT-UNPROVEN.</p>
+    <p>For one verdict, a math robot (Lean) checks the judge's logic line by line.</p>
+  </div>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 350" role="img" aria-label="Verdict pipeline. Explanation trees become hypotheses, which spend at most fifteen SerpApi queries. Results pass through Engine 1, then the claim cascade turns pages into typed facts. Facts split into the pre-cutoff program and the all-evidence program, clingo computes four bits, and the verdicts go to the dossier. A contradicted verdict deletes edges and sends the search back to re-solve. Lean certifies one verdict as a stretch goal.">
+        <defs><marker id="m7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.4">
+          <rect x="16" y="40" width="134" height="64" rx="6"/>
+          <rect x="190" y="40" width="170" height="64" rx="6"/>
+          <rect x="400" y="40" width="140" height="64" rx="6"/>
+          <rect x="580" y="40" width="150" height="64" rx="6"/>
+          <rect x="770" y="40" width="214" height="84" rx="6"/>
+          <rect x="770" y="196" width="214" height="64" rx="6"/>
+          <rect x="560" y="176" width="160" height="44" rx="6" style="stroke: var(--self)"/>
+          <rect x="560" y="236" width="160" height="44" rx="6"/>
+          <rect x="380" y="196" width="140" height="64" rx="6"/>
+          <rect x="190" y="196" width="150" height="64" rx="6" style="stroke: var(--exo)" stroke-width="2"/>
+          <rect x="16" y="196" width="134" height="64" rx="6"/>
+          <rect x="380" y="296" width="140" height="44" rx="6" stroke-dasharray="5 4"/>
+        </g>
+        <g fill="currentColor" font-size="12" font-family="IBM Plex Sans, system-ui, sans-serif">
+          <text x="83" y="64" text-anchor="middle" font-weight="600">trees + odds</text><text x="83" y="84" text-anchor="middle" font-size="11" opacity="0.75">from Engine 3a</text>
+          <text x="275" y="62" text-anchor="middle" font-weight="600">hypotheses H</text><text x="275" y="80" text-anchor="middle" font-size="11" opacity="0.8">trigger · before · refuters</text><text x="275" y="96" text-anchor="middle" font-size="11" opacity="0.8">signature_ok (tier 0)</text>
+          <text x="470" y="62" text-anchor="middle" font-weight="600">SerpApi</text><text x="470" y="80" text-anchor="middle" font-size="11" opacity="0.8">1 confirm + 2 refute</text><text x="470" y="96" text-anchor="middle" font-size="11" opacity="0.8">≤ 15 / case, cached</text>
+          <text x="655" y="62" text-anchor="middle" font-weight="600">Engine 1</text><text x="655" y="80" text-anchor="middle" font-size="11" opacity="0.8">dedup · clocks</text><text x="655" y="96" text-anchor="middle" font-size="11" opacity="0.8">first_seen inherited</text>
+          <text x="877" y="62" text-anchor="middle" font-weight="600">claim cascade</text><text x="877" y="80" text-anchor="middle" font-size="11" opacity="0.8">1 GKG amounts · quotes · CAMEO</text><text x="877" y="96" text-anchor="middle" font-size="11" opacity="0.8">2 rules + NegEx scope cues</text><text x="877" y="112" text-anchor="middle" font-size="11" opacity="0.8">3 GLiNER → NLI (+ GLiREL)</text>
+          <text x="877" y="220" text-anchor="middle" font-weight="600">typed facts</text><text x="877" y="238" text-anchor="middle" font-size="11" opacity="0.8">reported · contrary</text><text x="877" y="254" text-anchor="middle" font-size="11" opacity="0.8">tier · independent · copy_of</text>
+          <text x="640" y="196" text-anchor="middle" font-weight="600" style="fill: var(--self)">P_pre</text><text x="640" y="212" text-anchor="middle" font-size="11" opacity="0.8">first_seen &lt; τ*</text>
+          <text x="640" y="256" text-anchor="middle" font-weight="600">P_all</text><text x="640" y="272" text-anchor="middle" font-size="11" opacity="0.8">up to report time</text>
+          <text x="450" y="220" text-anchor="middle" font-weight="600">clingo</text><text x="450" y="238" text-anchor="middle" font-size="11" opacity="0.8">brave + cautious</text><text x="450" y="254" text-anchor="middle" font-size="11" opacity="0.8">bIN cIN bOUT cOUT</text>
+          <text x="265" y="220" text-anchor="middle" font-weight="600" style="fill: var(--exo)">verdict</text><text x="265" y="238" text-anchor="middle" font-size="11" opacity="0.8">one of four, exactly</text><text x="265" y="254" text-anchor="middle" font-size="11" opacity="0.8">none → INCOHERENT</text>
+          <text x="83" y="220" text-anchor="middle" font-weight="600">dossier</text><text x="83" y="238" text-anchor="middle" font-size="11" opacity="0.8">before vs after τ*</text><text x="83" y="254" text-anchor="middle" font-size="11" opacity="0.8">spans · tiers · links</text>
+          <text x="450" y="314" text-anchor="middle" font-weight="600">Lean 4 (stretch)</text><text x="450" y="331" text-anchor="middle" font-size="11" opacity="0.8">completion + LRAT</text>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#m7a)">
+          <path d="M150,72 H188"/><path d="M360,72 H398"/><path d="M540,72 H578"/><path d="M730,72 H768"/>
+          <path d="M877,124 V194"/>
+          <path d="M770,220 H722"/><path d="M770,240 L722,256"/>
+          <path d="M560,198 L522,220"/><path d="M560,258 L522,238"/>
+          <path d="M380,228 H342"/><path d="M190,228 H152"/>
+          <path d="M450,260 V294" stroke-dasharray="4 3"/>
+        </g>
+        <g style="color: var(--warn)" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M265,196 V150 H83 V106" marker-end="url(#m7a)" stroke-dasharray="5 4"/>
+        </g>
+        <text x="92" y="142" font-size="11" font-family="IBM Plex Mono, monospace" style="fill: var(--warn)">CONTRADICTED → delete edges, re-solve</text>
+      </svg>
+    </div>
+    <figcaption><b>Text enters at one point and is checked twice before it can matter.</b> Every query result passes through Engine 1's clocks, so the admissibility rule is enforced by the same code everywhere. Every extracted tuple must cite a verbatim span of an archived page. Facts are split into two programs: \(P_{\text{pre}}\) answers "could this have moved the price?" and \(P_{\text{all}}\) answers "is it true?". Post-move evidence can change a truth verdict, never the account of what moved the price.</figcaption>
+  </figure>
+
+  <h3>Hypotheses and queries <span class="lab design">design · 6.1, 6.2</span></h3>
+  <div class="math">\[ H_S = \big\langle\ \texttt{trigger}(H, e),\ \ \texttt{before}(e, \text{move}) \Leftarrow \text{first_seen}(e) \lt \tau^*,\ \ \texttt{signature_ok}(H),\ \ \texttt{schema_refuter}(H, L)\ \big\rangle \]</div>
+  <div class="math">\[ \texttt{signature_ok}(H) \iff \text{burst on the entry narrative before } \tau^* \;\wedge\; \forall (j \to i) \in S:\ \sigma_{j \to i} \gt 0 \]</div>
+  <div class="col">
+    <p>The signature check is the strongest part of the design. Half of every hypothesis is verified from Engine 2's own measurements (tier 0), with no text and no model. Queries come from the hypothesis's central claim: <b>1 confirming and 2 disconfirming</b> (Heuer's rule: rank hypotheses by the evidence <i>against</i> them). That is at most 15 per case, all cached, so 250 free credits cover about 16 cases a month. \(P_{\text{pre}}\) candidates are date-bounded: <code>tbs=cdr:1,cd_min:&lt;τ*−14d&gt;,cd_max:&lt;τ*&gt;</code>.</p>
+  </div>
+
+  <h3>Claims: typed tuples over a closed vocabulary, no LLM <span class="lab design">design · 6.3, 6.12, 6.13′</span></h3>
+  <div class="math">\[ \text{claim} = (\text{subject},\ \text{predicate},\ \text{value},\ \{\text{scope}, \text{time}\},\ \text{polarity},\ \text{report_id},\ [\text{start}, \text{end})) \]</div>
+  <div class="col"><p>Predicates: <code>released</code>, <code>occurred</code>, <code>cost_of</code>, <code>trained_with</code>, <code>capability_parity</code>, <code>ranks_top</code>, <code>denies</code>, <code>alleges</code>, <code>invests</code>, <code>guides_capex</code>, <code>restricts_exports</code>, <code>retracts</code>.</p></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Stage</th><th>Source</th><th>How</th><th>Recorded as</th></tr></thead>
+    <tbody>
+      <tr><td>1 · structure</td><td>GKG amounts (72% of documents), quotations with their verb (20%), Events CAMEO rows</td><td>"5.6, million dollars, offset" → <code>cost_of</code> with the nearest entity in the same sentence; quote verb → <code>alleges</code>/<code>denies</code>; CAMEO → <code>occurred</code></td><td><code>extractor = gdelt</code></td></tr>
+      <tr><td>2 · rules</td><td>Title and lede patterns; NegEx-style scope cues</td><td><code>X (releases|launches|unveils) Y</code>; <code>Y (tops|hits No. 1 on) Z</code>; cues "excluding", "only", "not including", "final run" with a scope window (Chapman et al. 2001)</td><td><code>extractor = rule</code></td></tr>
+      <tr><td>3 · verifier</td><td>Only sentences a hypothesis needs where stages 1–2 found nothing</td><td>spaCy candidates and spans → GLiNER entity validity → NLI cross-encoder: does the premise entail the templated hypothesis? Accept when entailment ≥ θ, with GLiREL as an ensemble. θ and a temperature are fitted on stage-2 silver labels, with no hand labels</td><td><code>extractor = verifier</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="col">
+    <p><b>The verifier never generates.</b> It answers yes, no or contradiction about spans that deterministic code has already found, so a tuple can't contain knowledge the page doesn't. With pinned weights, CPU inference and fixed threads, it is deterministic even before archiving, and a small encoder carries far less memorized hindsight than a chat model. Every verdict carries a <b>verifier-dependent</b> flag (verdict flips when all <code>extractor = verifier</code> tuples are removed). The replay also runs in deterministic-only mode, stages 1–2, side by side.</p>
+    <p><b>The decisive claim needs no model.</b> The V3 technical report words its cost as "excluding the costs associated with prior research and ablation experiments". Subject V3, predicate <code>cost_of</code>, cue "excluding" gives <code>scope = final_run_only</code>, which is contrary to the all-in reading. So H3 can be CONTRADICTED by rules alone.</p>
+  </div>
+  <div class="math">\[ \texttt{contrary}(t_1, t_2) \iff \text{subj}_1 = \text{subj}_2 \wedge \text{pred}_1 = \text{pred}_2 \wedge (\text{value}, \text{scope}, \text{polarity}) \text{ incompatible} \]</div>
+  <div class="col"><p>Contradiction is computed by rules, never by a model.</p></div>
+  <div class="col"><p><b>Tiers</b> (frozen registry as of 2024-12-31): 0 = Yggdrasil's own measurements; 1 = primary (the actor, a filing, the paper, an official statement); 2 = wires and national outlets; 3 = local, aggregators, blogs, social, unknown. <code>independent(R1, R2)</code> holds iff the reports are in different copy groups (Engine 1) and have different owners. A copy is defeated outright, because copies add no independent support (Dong et al. 2009).</p></div>
+
+  <h3>The program <span class="lab measured">verified with clingo, 2026-10-06</span></h3>
+<pre class="code">ok(R)       :- reported(R, _, _, _), not defeated(R).                         % a report is believed unless defeated
+holds(L)    :- reported(R, _, L, _), ok(R).
+defeated(R) :- reported(R, S, L, _), contrary(L, L2), reported(R2, S2, L2, _), ok(R2),
+               independent(R, R2), tier(S, K), tier(S2, K2), K2 &lt;= K.          % equal or better tier defeats
+defeated(R) :- retracted(R).
+defeated(R) :- copy_of(R, _).
+refuted(H)  :- schema_refuter(H, L), holds(L).
+expl(H)     :- trigger(H, E), holds(occurred(E)), before(E, move), signature_ok(H), not refuted(H).
+
+ctl = clingo.Control(["0", "--enum-mode=brave"])     # union of all stable models
+ctl = clingo.Control(["0", "--enum-mode=cautious"])  # intersection of all stable models</pre>
+  <div class="math">\[ b_{\text{IN}} = \exists M:\ \texttt{expl}(H) \in M, \quad c_{\text{IN}} = \forall M:\ \texttt{expl}(H) \in M, \quad b_{\text{OUT}} = \exists M:\ \texttt{refuted}(H) \in M, \quad c_{\text{OUT}} = \forall M:\ \texttt{refuted}(H) \in M \]</div>
+  <div class="math">\[ \text{SUPPORTED} \iff c_{\text{IN}}, \qquad \text{CONTRADICTED} \iff c_{\text{OUT}} \]</div>
+  <div class="math">\[ \text{UNRESOLVED} \iff b_{\text{OUT}} \wedge \neg c_{\text{OUT}}, \qquad \text{CONSISTENT-BUT-UNPROVEN} \iff \neg b_{\text{OUT}} \wedge \neg c_{\text{IN}} \]</div>
+
+  <div class="split">
+    <figure>
+      <video class="video" controls playsinline preload="metadata" poster="media/Readings.jpg" src="media/Readings.mp4" aria-label="Animation: two stable readings of the evidence and the verified four-bit table"></video>
+      <figcaption><b>Every consistent reading of the evidence.</b> An equal-tier allegation of chip smuggling against an equal-tier denial splits the evidence into two stable models. Whatever holds in both is certain; whatever holds in only one is open.</figcaption>
+    </figure>
+    <div class="col" style="gap: 0.6rem">
+      <div class="tablewrap"><table>
+        <thead><tr><th>H</th><th class="num">bIN</th><th class="num">cIN</th><th class="num">bOUT</th><th class="num">cOUT</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>h1 R1 efficiency shock</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td>CONSISTENT-BUT-UNPROVEN</td></tr>
+          <tr><td>h3 "$5.6M all-in"</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td>CONTRADICTED</td></tr>
+          <tr><td>h4 chip smuggling</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td>UNRESOLVED</td></tr>
+          <tr><td>h6 attention cascade</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td>SUPPORTED</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size: 0.86rem; color: var(--ink-2)">The real run output on illustrative facts: 2 stable models. h1 has no signature fact, so nothing proves it. h3 is refuted by the tier-1 V3 report in every model. h4 is refuted only in the reading that accepts the denial. h6 is our own tier-0 measurement and holds in both.</p>
+    </div>
+  </div>
+
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Theorem 14.1, the four verdicts partition every hypothesis <span class="lab derived">derived</span></span>
+    <p><b>Lemma 14.2:</b> every rule with head <code>expl(H)</code> contains <code>not refuted(H)</code>. Every stable model is a model of the Clark completion, so <code>expl(H) ∈ M</code> forces some body true in M, hence <code>refuted(H) ∉ M</code>. No model contains both.</p>
+    <p><b>Exhaustive:</b> if \(b_{\text{OUT}}\), the verdict is CONTRADICTED when \(c_{\text{OUT}}\) and UNRESOLVED otherwise. If not \(b_{\text{OUT}}\), it is SUPPORTED when \(c_{\text{IN}}\) and CONSISTENT-BUT-UNPROVEN otherwise.
+    <b>Exclusive:</b> \(c_{\text{IN}}\) means every model has <code>expl</code>, so none has <code>refuted</code> (14.2). That gives ¬\(b_{\text{OUT}}\), which rules out UNRESOLVED and CONTRADICTED. \(c_{\text{OUT}}\) with a non-empty model set gives \(b_{\text{OUT}}\), and no model has <code>expl</code>, so ¬\(c_{\text{IN}}\). UNRESOLVED gives a model with <code>refuted</code>, hence without <code>expl</code>, so ¬\(c_{\text{IN}}\). CONSISTENT-BUT-UNPROVEN requires ¬\(b_{\text{OUT}}\), which implies ¬\(c_{\text{OUT}}\) when models exist. <span class="qed">QED</span></p>
+    <p><b>Deterministic:</b> brave and cautious consequences are the union and intersection over the set of stable models. That is a unique set, independent of the order in which the solver finds models. <b>Tight:</b> the positive dependency graph (holds → ok, refuted → holds, expl → holds) has no cycle, because ok depends on defeated only through negation. So Fages' theorem applies: stable models are exactly the models of the completion. <b>Complexity:</b> brave reasoning is NP-complete and cautious is coNP-complete for normal programs. The verdict is a fixed Boolean combination of at most five SAT calls, which puts it in \(\Theta_2^P\). Disjunctive rules would raise it to \(\Sigma_2^P/\Pi_2^P\), so the rule language forbids them.</p>
+  </div>
+
+  <div class="box warn">
+    <span class="tag">When there is no consistent reading at all</span>
+    <p>Odd attack cycles can leave no stable model. This is geometric frustration: an antiferromagnetic triangle has no ground state that satisfies every bond. Yggdrasil then emits <b>INCOHERENT-EVIDENCE</b>, with an UNSAT proof that no model exists, and falls back to the grounded labelling, the least fixpoint of the defense operator. It is unique, polynomial, and equal to the well-founded model. A true core atom gives SUPPORTED or CONTRADICTED. An undefined atom with arguments on both sides gives UNRESOLVED. Anything else is CONSISTENT-BUT-UNPROVEN. How often real evidence is incoherent is unknown, and the dossier counts it.</p>
+  </div>
+
+  <div class="box">
+    <span class="tag">Game theory · the verdict as a debate</span>
+    <p>Grounded acceptance has an exact game reading (Modgil &amp; Caminada 2009). A proponent claims an argument. An opponent attacks it, the proponent must counter-attack every attack, and the proponent may not repeat an argument. The argument is in the grounded extension iff the proponent has a winning strategy. Equal-tier mutual attacks are the two-player standoff where neither side can force a win, which is why they land in UNRESOLVED. The stable models are the two self-consistent "camps", much like the two pure equilibria of a coordination game (that last part is an analogy, not a theorem). Diagnosticity, the evidence items whose removal flips a verdict (n + 1 solver runs), is the debate's list of decisive moves, and it is Heuer's sensitivity analysis made mechanical.</p>
+  </div>
+
+  <h3>Lean: one certified verdict (stretch) <span class="lab design">design · 6.7</span></h3>
+<pre class="code">CNF( completion(P_pre) ∧ ¬refuted(h3) )  ──CaDiCaL──▶  UNSAT + LRAT proof
+Lean 4: bv_decide / LRAT checker verifies it  ──▶  theorem: every model of completion(P_pre) contains refuted(h3)
+Fages (tight program, cited not formalized)    ──▶  every stable model contains refuted(h3)  ⇒  h3 CONTRADICTED
+#print axioms incident_20250127_h3              -- lists Lean.ofReduceBool whenever native code was trusted</pre>
+  <div class="col"><p><b>What Lean proves:</b> given ground program P (with this hash), the verdict for H is V. <b>What it does not:</b> that the extraction was right, that the copy detection was right, that the tiers are right, or that the attention model proposed the right stories. Every published verdict states that boundary. LRAT checking is linear-time (Cruz-Filipe et al. 2017). A garbled certificate can only fail the check, never produce a false theorem.</p></div>
+
+  <h3>The dossier <span class="lab design">design · 6.8</span></h3>
+  <ul class="plain">
+    <li>The event, clusters and τ*; for the best explanation, each rival, and "we do not know": the tree, each edge's probability, odds against the best, the placebo p-value, and hub flags.</li>
+    <li>Per hypothesis, two verdicts: before the cutoff (\(P_{\text{pre}}\)) and at report time (\(P_{\text{all}}\)), shown separately.</li>
+    <li>Behind each verdict: source, tier, first-seen time, the quoted span, the link, the contradictions found, the diagnosticity list, and what would flip it.</li>
+    <li>The verifier-dependent flag, and the deterministic-only comparison.</li>
+    <li>No forecast and no advice, anywhere. Kept forever with every cited item.</li>
+  </ul>
+
+  <h3>Knobs and extreme cases</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Knob or case</th><th>Value or risk</th><th>Sensitivity or avoidance</th></tr></thead>
+    <tbody>
+      <tr><td>queries per case</td><td>≤ 15 (1 + 2 per hypothesis, ≤ 5 hypotheses)</td><td>Fewer: more CONSISTENT-BUT-UNPROVEN. 250 free credits ≈ 16 cases a month</td></tr>
+      <tr><td>θ (entailment)</td><td>fitted on silver labels</td><td>Higher: fewer verifier tuples, more verdicts decided by rules alone</td></tr>
+      <tr><td>tier registry</td><td>frozen 2024-12-31</td><td>Judgment calls, disclosed and logged as premises</td></tr>
+      <tr><td>Contradictory sources</td><td>Classical logic would prove anything</td><td>Defeasible acceptance; equal tiers defeat each other into two readings</td></tr>
+      <tr><td>No stable model</td><td>No verdict</td><td>INCOHERENT-EVIDENCE plus the grounded fallback</td></tr>
+      <tr><td>Everything comes out unproven</td><td>A useless dossier</td><td>The tier-0 signature gives every hypothesis a deterministic test</td></tr>
+      <tr><td>Syndicated echo chamber</td><td>One claim counted 271 times</td><td><code>copy_of</code> defeats every copy; independence requires different groups and owners</td></tr>
+      <tr><td>Retraction after the fact</td><td>A retracted report still believed</td><td><code>retracted(R)</code> defeats it in \(P_{\text{all}}\)</td></tr>
+      <tr><td>Post-move article</td><td>Hindsight in "what moved it"</td><td>\(P_{\text{all}}\) only</td></tr>
+      <tr><td>Model memorized the outcome</td><td>Hindsight via weights</td><td>Verifier only judges spans in front of it; the verifier-dependent flag; deterministic-only run</td></tr>
+      <tr><td>Verifier or model download unavailable</td><td>Stage 3 missing</td><td>Deterministic-only mode still runs end to end</td></tr>
+    </tbody>
+  </table></div>
+</section>

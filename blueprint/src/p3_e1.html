@@ -1,0 +1,141 @@
+
+<section id="e1">
+  <div class="eyebrow">§2 · Engine 1 · Observation · Session 1, frozen</div>
+  <h2>Turn the firehose into deduplicated, time-stamped objects</h2>
+
+  <div class="eli5">
+    <span class="tag">For a ten-year-old</span>
+    <p>Every fifteen minutes a truck dumps a mountain of newspapers at the library. Lots of them are photocopies of the same article that different towns printed. Engine 1 is the librarian. It stamps every paper with the time it arrived and throws out exact repeats. It staples the photocopies together and writes on the front "15 towns printed this".</p>
+    <p>It never staples together two <i>different</i> reporters who wrote about the same thing. Two reporters writing means more people care, and caring is exactly what the next engine wants to measure.</p>
+  </div>
+
+  <div class="col">
+    <p><b>Fixed by you:</b> replay of the DeepSeek / NVDA event plus a live run, English only, no RSS, no weighting, semantic dedup (including for the hackathon). Engine 1's only output is deduplicated objects for Engine 2. Duplicates are defined at three levels, and only the first two collapse. <span class="lab design">design · 1.x</span></p>
+  </div>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Level</th><th>Example</th><th>Collapse?</th><th>How</th></tr></thead>
+    <tbody>
+      <tr><td>L1 identical document</td><td>same canonical URL, same record id</td><td>yes</td><td>exact keys: <code>native_id → url_key → content_hash</code>, first match wins</td></tr>
+      <tr><td>L2 republished copy</td><td>one PA wire story on 15 Newsquest papers in a single batch <span class="lab measured">measured</span></td><td>yes</td><td>the four-step semantic cascade below</td></tr>
+      <tr><td>L3 same event, independent reporting</td><td>Reuters and Bloomberg each write their own story</td><td><b>never</b></td><td>Engine 2 clusters these into events and counts them as attention</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Exact API calls <span class="lab measured">fact</span></h3>
+<pre class="code">GET http://data.gdeltproject.org/gdeltv2/masterfilelist.txt      # replay: every file since 2015
+GET http://data.gdeltproject.org/gdeltv2/lastupdate.txt          # live: newest 3 files, poll every 15 min
+line format:  &lt;size_bytes&gt; &lt;md5&gt; &lt;url&gt;
+files per batch:  YYYYMMDDHHMMSS.export.CSV.zip    Events, 61 columns
+                  YYYYMMDDHHMMSS.mentions.CSV.zip  Mentions, 16 columns
+                  YYYYMMDDHHMMSS.gkg.csv.zip       GKG, 27 columns
+download: requests.get(url) → assert md5(body) == manifest md5 → blob_id = sha256(body)
+parse:    tab-separated, no quoting, utf8-lossy; rows with column count != 27 go to quarantine
+live gotcha (measured 2026-10-05): lastupdate.txt lists batches before the files exist
+          (17:00 and 17:30 returned 404 while 16:15 was served) → retry within a grace window,
+          then set missing_batch[t] = true (decision 4.8; Engine 2b masks the window)</pre>
+
+  <figure>
+    <div class="chart" id="ch-cols"><div class="legend"><span><i class="dot" style="background: var(--s1)"></i>kept</span><span><i class="dot" style="background: var(--neutral)"></i>dropped</span></div></div>
+    <details class="tv"><summary>Table view</summary><div id="tv-cols"></div></details>
+    <figcaption><b>One column is 70% of every GKG file, and it is the one we drop.</b> Bytes per document by column, measured on the 2025-01-27 12:00 batch (1,326 documents). GCAM is an emotion-dictionary dump that tone already summarizes. Enhanced themes repeat the themes with character offsets, which mean nothing without the body. The kept set is about 1.65 KB per document, 13% of raw, and it includes the only text present for every document: <code>PAGE_TITLE</code>, found in the Extras XML. Titles arrive HTML-escaped and are unescaped first.</figcaption>
+  </figure>
+
+  <h3>Normalization and identity <span class="lab design">design</span></h3>
+  <div class="math">\[ t(\text{batch}) = \left\lfloor \frac{\text{batch_ts} - t_0}{900\,\text{s}} \right\rfloor \qquad \text{url_key} = \operatorname{sha256}(\operatorname{canon}(\text{url})) \]</div>
+  <div class="math">\[ \text{observation_id} = \operatorname{sha256}(\texttt{"gdelt_gkg|"} \,\Vert\, \text{native_id} \,\Vert\, \texttt{"|"} \,\Vert\, \text{url_key} \,\Vert\, \texttt{"|"} \,\Vert\, \text{content_hash}) \]</div>
+  <div class="col">
+    <p><code>canon</code> is frozen in config. It lowercases the scheme and host, forces https, IDNA-encodes the host, strips <code>www.</code>, <code>m.</code> and <code>amp.</code>, drops default ports and fragments, collapses repeated slashes, strips a trailing <code>/</code> or <code>/amp</code>, removes tracker parameters (<code>utm_*</code>, <code>fbclid</code>, <code>gclid</code> plus a frozen list), sorts the remaining query keys, and uppercases percent-encodings. On the measured day it merged an extra 0.34% of documents that exact URLs missed <span class="lab measured">measured</span>. The id is content-derived, so replaying a batch twice is idempotent.</p>
+  </div>
+
+  <h3>The four-step semantic cascade, cheapest first <span class="lab design">design · frozen 2026-10-05</span></h3>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/DedupCascade.jpg" src="media/DedupCascade.mp4" aria-label="Animation: the four dedup steps, merging 15 wire copies while keeping 14 template-title filings apart"></video>
+    <figcaption><b>Fifteen wire copies collapse. Fourteen look-alike filings don't.</b> The PA story on 15 Newsquest papers had 9 different theme/person/org signatures, so metadata hashing alone can't see the copy, but the title and sharing image can. "Gearing announcement" appeared 14 times from one site, and those are 14 different company filings. The template guard sends them to step 2, where their different canonical URLs and opening paragraphs keep them apart.</figcaption>
+  </figure>
+
+  <div class="col">
+    <p><b>Candidates.</b> A pair (o, c) is considered only if c is earlier in the D4 order, within 72 hours, and either their normalized titles are equal or their title embeddings are close:</p>
+  </div>
+  <div class="math">\[ \operatorname{cand}(o, c) \iff t_c \le t_o \le t_c + 72\,\text{h} \;\wedge\; \big[\, \operatorname{norm}(\text{title}_o) = \operatorname{norm}(\text{title}_c) \;\vee\; \cos(e_o, e_c) \ge \theta_{\text{cand}} \,\big] \]</div>
+  <div class="col">
+    <p>Here \(e_o\) is a 384-dimensional title embedding from a pinned model (all-MiniLM-L6-v2 is the candidate under decision 6.13′), stored as int8 for 72 hours. Each candidate pair then runs through the four steps. The first step that decides, decides:</p>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Step</th><th>Cost</th><th>Merge rule</th><th>Intermediate terms</th></tr></thead>
+    <tbody>
+      <tr><td>1 · free GKG signals</td><td>no request</td><td>\(\operatorname{norm}(\text{title}_o) = \operatorname{norm}(\text{title}_c)\) and not template, and (same sharing image, or same author, or \(J(\text{names}_o, \text{names}_c) \ge j_0\))</td><td>\(J(A,B) = |A\cap B| / |A \cup B|\) over V2.1ALLNAMES; template(title) = the same title appears from one source with different URLs and disjoint names</td></tr>
+      <tr><td>2 · page head</td><td>first ~32 KB</td><td>\(\operatorname{canon}(\texttt{rel=canonical})\) or \(\operatorname{canon}(\texttt{og:url})\) equal, otherwise lede shingle \(J \ge j_{\text{lede}}\)</td><td>the publisher declaring "the original lives over there"; shingles = word n-grams of the first paragraph, n fixed at build</td></tr>
+      <tr><td>3 · full body</td><td>one page fetch</td><td>MinHash \(\hat J \ge 0.8\) or SimHash Hamming distance \(\le 3\)</td><td>\(\hat J = \tfrac1k \sum_{i=1}^{k} \mathbf 1[\min h_i(A) = \min h_i(B)]\), with \(\mathbb E[\hat J] = J\); a 64-bit SimHash of weighted shingles</td></tr>
+      <tr><td>4 · fallback A</td><td>none</td><td>the page won't load (paywall, bot wall, 404): decide by step 1's checks on title plus names, image, amounts</td><td>recorded as <code>method = A</code> in the merge evidence</td></tr>
+    </tbody>
+  </table></div>
+  <div class="col">
+    <p>Merges are applied with union-find in D4 order, so a copy group's root is always its earliest member. Engine 2 receives <b>one object per copy group</b>: the earliest member's record, the member list, the member count and the merge evidence. That count is data, not a weight. Engine 2 keeps it as reach \(m\) next to the unweighted mass \(y\).</p>
+    <p><b>Replay versus live.</b> Live mode fetches page heads and bodies at ingestion. The replay fetches them through the Wayback Machine. When neither works, step 4 decides. SerpApi is not a dedup engine: one search per repeated-title group would burn about 40 months of free credits in a day. Its only dedup role is as a referee, a one-time run of about 100 exact-title searches with and without <code>filter=0</code>. Google's hidden "very similar" results become labels for tuning \(\theta_{\text{cand}}\), \(j_0\) and \(j_{\text{lede}}\).</p>
+  </div>
+
+  <figure>
+    <div class="chart" id="ch-lsh"><div class="legend"><span><i style="background: var(--s1)"></i>LSH candidate probability, b = 14 bands × r = 9 rows</span><span><i style="background: var(--s2)"></i>accept probability P(Ĵ ≥ 0.8), k = 126 hashes</span></div></div>
+    <details class="tv"><summary>Table view</summary><div id="tv-lsh"></div></details>
+    <figcaption><b>Step 3 is a sharp switch around Jaccard 0.8.</b> Both curves are exact formulas, not fits. The blue S-curve \(1 - (1 - J^{r})^{b}\) is the chance that two bodies with true Jaccard \(J\) even become a candidate pair: 0.438 at 0.7, 0.867 at 0.8, 0.999 at 0.9. The orange curve is the chance that the 126-hash estimate then clears 0.8: about 1.1 × 10<sup>−6</sup> for a pair at true \(J = 0.6\), 0.0068 at 0.7, and 0.107 at 0.75. Two genuinely different articles almost never merge. The price is that a true copy sitting right at 0.8 is a coin flip, so step 2's canonical tag carries most real copies.</figcaption>
+  </figure>
+
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Lemma 4.1, the SimHash index has exact recall at distance 3 <span class="lab derived">derived</span></span>
+    <p>Split 64-bit fingerprints into four 16-bit blocks. If \(\operatorname{ham}(f_1, f_2) \le 3\), at most three blocks contain a differing bit, so at least one block is identical. Probing the four block tables therefore returns every pair within distance 3. Acceptance is decided by computing the exact Hamming distance, so the set of accepted pairs is a deterministic function of the fingerprints. This is the block-permutation idea of Manku, Jain and Das Sarma (2007), who used k = 3 on 64-bit fingerprints for 8 billion pages. <span class="qed">QED</span></p>
+  </div>
+  <div class="box proof">
+    <span class="tag"><b>Invariant</b> · L3 is never merged <span class="lab design">design</span></span>
+    <p>Every merge rule requires evidence of copying: equal canonical declarations, near-identical body text, or an identical title plus an identical image, byline or name set. Two reporters writing their own stories share none of these at the thresholds above. So independent coverage, which is the attention signal, survives Engine 1 by construction. The one exception is step 4 on two independently written articles with the same title, the same byline <i>and</i> overlapping names. That is rare, and it is logged as <code>method = A</code> so it can be audited.</p>
+  </div>
+
+  <h3>Storage (decision 2.7b)</h3>
+  <div class="split">
+    <figure>
+      <div class="chart" id="ch-gkgz"></div>
+      <details class="tv"><summary>Table view</summary><div id="tv-gkgz"></div></details>
+      <figcaption><b>GKG: 12,493 → 205 bytes per document.</b> Measured on 2,929 real documents. Pruning does most of the work. Vocabulary ids for themes and names plus zstd-19 finish it. <code>url_key</code> is dropped because it can be recomputed. Rule: never store anything derivable. Projection: about 26 MB a day live, about 550 MB for the three-week replay.</figcaption>
+    </figure>
+    <div class="col" style="gap: 0.6rem">
+      <ul class="plain">
+        <li><b>Raw zips</b> are deleted after extraction. The manifest line (url, md5, size) is kept, and since GDELT keeps every file online since 2015, a replay can re-fetch with an md5 check.</li>
+        <li><b>Embeddings</b> are the real space hog: 1,536 B as float32, more than seven times a whole document record. They are stored as int8 (384 B) for the 72-hour dedup window only, then deleted. The cached dedup decisions remain (D5).</li>
+        <li><b>Page heads and bodies</b> are kept for 7 days, then replaced by their MinHash and SimHash signatures (520 B).</li>
+        <li><b>Kept forever:</b> the document table, the manifests, and every item a dossier cites.</li>
+        <li><b>Query:</b> DuckDB views over day-partitioned Parquet, e.g. <code>SELECT min(first_seen) FROM obs_doc WHERE url_key = ?</code> for admissibility.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Knobs, sensitivity and bounds</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Knob</th><th>Value</th><th>Status</th><th>Too low</th><th>Too high</th></tr></thead>
+    <tbody>
+      <tr><td>window Δ</td><td>15 min</td><td>fixed by GDELT</td><td>–</td><td>–</td></tr>
+      <tr><td>dedup horizon</td><td>72 h</td><td>locked (2.7b)</td><td>a copy republished 4 days later becomes its own object and inflates y once</td><td>more pairs to check; int8 embeddings cost about 146 MB per 72 h</td></tr>
+      <tr><td>θ<sub>cand</sub></td><td>tuned on the SerpApi referee set</td><td>open (tuned)</td><td>more candidate pairs, so more fetch cost; the decision is still made by the checks</td><td>rewritten wire copies are never paired, so L2 recall drops</td></tr>
+      <tr><td>j<sub>0</sub> (names Jaccard)</td><td>tuned</td><td>open (tuned)</td><td>template titles start merging, the worst error (it destroys attention)</td><td>wire copies with trimmed name lists are missed in step 1 and fall through to steps 2–3, which only costs fetches</td></tr>
+      <tr><td>head size</td><td>~32 KB</td><td>locked</td><td>a canonical tag after the cut is missed, so the pair falls to step 3</td><td>approaches a full-page fetch</td></tr>
+      <tr><td>MinHash / SimHash</td><td>Ĵ ≥ 0.8 / ≤ 3 bits</td><td>locked</td><td>false merges grow fast below about 0.75 (see chart)</td><td>light rewrites stop merging</td></tr>
+      <tr><td>LSH bands</td><td>b = 14, r = 9</td><td>report default</td><td>–</td><td>–  (recall 0.867 at J = 0.8, 0.999 at 0.9)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Extreme cases and how each is avoided</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Case</th><th>What would go wrong</th><th>Avoidance</th></tr></thead>
+    <tbody>
+      <tr><td>One story on 271 sister sites</td><td>Attention inflated 271×</td><td>L2 collapses it into one object with member_count = 271. Engine 2 counts it once in y and keeps the 271 as reach m</td></tr>
+      <tr><td>Template titles, e.g. 14 different filings with the same title</td><td>Real, distinct items merged</td><td>Template guard skips step 1 and goes to step 2, where different canonical URLs and ledes keep them apart</td></tr>
+      <tr><td>Site-logo sharing image</td><td>Step 1's "same image" check fires on unrelated pages</td><td><span class="lab conj">proposed guard</span> ignore an image URL that appears under many different titles from one domain</td></tr>
+      <tr><td>Page won't load (paywall, 404, bot wall)</td><td>No body for steps 2–3</td><td>Fallback A on title plus checks, logged as <code>method = A</code></td></tr>
+      <tr><td>Batch listed but not yet served, or skipped entirely</td><td>Engine 2 reads a missing batch as attention collapsing</td><td>Grace-window retry, then <code>missing_batch[t]</code>; Engine 2b masks the window from the likelihood (4.8)</td></tr>
+      <tr><td>No publish timestamp (41% of documents)</td><td>The published clock is empty</td><td>Admissibility never uses it, only <code>first_seen</code></td></tr>
+      <tr><td>Tracker-laden URLs</td><td>The same page counted twice</td><td><code>canon</code> strips trackers (+0.34% merges measured)</td></tr>
+      <tr><td>Malformed rows</td><td>One bad line poisons a batch</td><td>Rows with a column count other than 27 go to quarantine</td></tr>
+      <tr><td>Non-English press</td><td>About 74% of documents in a measured batch are invisible</td><td>Disclosed limitation; such events fold into "we do not know" (§6)</td></tr>
+      <tr><td>SerpApi page from 2026 in a 2025 replay</td><td>Hindsight</td><td>Inherits <code>first_seen</code> only through a canonical-URL match to an earlier GDELT record; otherwise \(P_{\text{all}}\) only</td></tr>
+    </tbody>
+  </table></div>
+</section>

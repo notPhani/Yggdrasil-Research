@@ -1,0 +1,273 @@
+
+<script>
+(() => {
+const LSH = /*__LSH__*/;
+const TRIG = [
+  ["SMH", -9.8, -7.3, -4.9, -5.0, 4.5, -7.3, "fires", "C1 member (ETF)"],
+  ["XLK", -4.9, -4.5, -4.3, -4.5, 3.0, -6.8, "fires", "C1 member (ETF)"],
+  ["NVDA", -17.0, -12.5, -5.1, -6.3, 6.6, -8.6, "fires", "C1 chips"],
+  ["AVGO", -17.4, -12.8, -5.0, -8.0, 3.3, -10.3, "fires", "C1 chips"],
+  ["TSM", -13.3, -11.2, -5.0, -6.1, 4.7, -8.3, "fires", "C1 chips"],
+  ["VST", -28.3, -19.4, -7.8, -8.9, 4.1, -22.2, "fires", "C2 power"],
+  ["CEG", -20.8, -15.8, -5.9, -9.0, 3.2, -19.6, "fires", "C2 power"],
+  ["NRG", -13.2, -6.5, -5.5, -6.7, 2.3, -9.6, "fires", "C2 power"],
+  ["TLN", -21.6, -11.5, -7.4, -9.5, 3.3, -16.3, "fires", "C2 power"],
+  ["MSFT", -2.1, -4.5, -0.5, -0.6, 2.7, -9.1, "—", "secondary (opening shock)"],
+  ["ASML", -5.7, -8.1, -1.1, -1.7, 3.7, -6.5, "—", "secondary (US ADR; ASML.AS gap −7.7%)"],
+  ["MU", -11.7, -8.1, -3.0, -3.8, 3.0, -5.4, "—", "secondary"],
+  ["GOOGL", -4.2, -3.9, -1.7, -2.0, 1.4, -5.4, "—", "secondary"],
+  ["XLU", -2.3, -2.0, -2.1, -2.4, 2.1, -5.0, "—", "secondary (ETF)"],
+  ["AMD", -6.4, -4.1, -1.2, -1.7, 2.8, -3.6, "—", "–"],
+  ["META", 1.9, -3.2, 2.0, 3.3, 2.7, -4.0, "—", "–"],
+  ["AAPL", 3.2, 0.6, 3.7, 4.4, 3.3, 1.0, "—", "–"],
+  ["JNJ", 4.1, 1.1, 4.2, 5.2, 2.1, 3.2, "first leg only", "stopped by confirmation"],
+  ["XOM", 1.4, 0.3, 1.4, 1.5, 0.4, 0.5, "—", "–"]
+];
+const SAR2 = [["NVDA", -5.1, -2.2], ["AVGO", -5.0, -2.6], ["TSM", -5.0, -2.1], ["MU", -3.0, -0.2], ["AMD", -1.2, 1.5], ["ASML", -1.1, 2.8],
+  ["VST", -7.8, -7.5], ["CEG", -5.9, -5.5], ["NRG", -5.5, -5.1], ["TLN", -7.4, -7.1], ["MSFT", -0.5, 0.6], ["GOOGL", -1.7, -1.8], ["META", 2.0, 2.1], ["AAPL", 3.7, 4.5]];
+
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function css(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function makeTip(box) { let t = box.querySelector(".tip"); if (!t) { t = document.createElement("div"); t.className = "tip"; t.hidden = true; box.appendChild(t); } return t; }
+function fillTip(tip, head, rows) {
+  tip.replaceChildren();
+  const h = document.createElement("div"); h.className = "head"; h.textContent = head; tip.appendChild(h);
+  for (const r of rows) {
+    const row = document.createElement("div"); row.className = "row";
+    if (r.color) { const k = document.createElement("i"); k.className = "key"; k.style.background = r.color; row.appendChild(k); }
+    const b = document.createElement("b"); b.textContent = r.value; row.appendChild(b);
+    const s = document.createElement("span"); s.textContent = r.label; row.appendChild(s);
+    tip.appendChild(row);
+  }
+}
+function placeTip(tip, box, px, py) {
+  tip.hidden = false;
+  const cw = box.clientWidth, tw = tip.offsetWidth;
+  let x = px + 14; if (x + tw > cw - 4) x = px - tw - 14; if (x < 4) x = 4;
+  tip.style.left = x + "px"; tip.style.top = Math.max(4, py - 10) + "px";
+}
+const lin = (d0, d1, r0, r1) => v => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+const lg = (d0, d1, r0, r1) => { const a = Math.log10(d0), b = Math.log10(d1); return v => r0 + (Math.log10(v) - a) / (b - a) * (r1 - r0); };
+function table(id, head, rows, numCols) {
+  const c = document.getElementById(id); if (!c) return;
+  const t = document.createElement("table");
+  const tr = t.createTHead().insertRow();
+  head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (numCols.includes(i)) th.className = "num"; tr.appendChild(th); });
+  const tb = t.createTBody();
+  rows.forEach(r => { const row = tb.insertRow(); r.forEach((v, i) => { const td = row.insertCell(); td.textContent = v; if (numCols.includes(i)) td.className = "num"; }); });
+  c.replaceChildren(t);
+}
+const fmtN = (v, d = 0) => v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+
+/* ---------- line chart ---------- */
+function lineChart(box, o) {
+  box.querySelectorAll("svg").forEach(s => s.remove());
+  const W = Math.max(280, box.clientWidth - 16), H = (o.height || 240) + (o.yLabel ? 16 : 0);
+  const m = { l: 50, r: o.right || 14, t: o.yLabel ? 28 : 12, b: 38 };
+  const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": o.aria });
+  box.insertBefore(svg, box.querySelector(".tip"));
+  const X = (o.xLog ? lg : lin)(o.xDomain[0], o.xDomain[1], m.l, W - m.r);
+  const Y = lin(o.yDomain[0], o.yDomain[1], H - m.b, m.t);
+  const grid = css("--rule"), axis = css("--axis"), muted = css("--muted"), ink2 = css("--ink-2"), mono = css("--f-mono");
+  for (const v of o.yTicks) {
+    el("line", { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: grid, "stroke-width": 1 }, svg);
+    el("text", { x: m.l - 8, y: Y(v) + 4, "text-anchor": "end", fill: muted, "font-size": 11, "font-family": mono }, svg).textContent = o.yFmt(v);
+  }
+  el("line", { x1: m.l, x2: W - m.r, y1: H - m.b, y2: H - m.b, stroke: axis, "stroke-width": 1 }, svg);
+  for (const v of o.xTicks) el("text", { x: X(v), y: H - m.b + 17, "text-anchor": "middle", fill: muted, "font-size": 11, "font-family": mono }, svg).textContent = o.xFmt(v);
+  if (o.xLabel) el("text", { x: (m.l + W - m.r) / 2, y: H - 4, "text-anchor": "middle", fill: ink2, "font-size": 11.5 }, svg).textContent = o.xLabel;
+  if (o.yLabel) el("text", { x: 4, y: 13, fill: ink2, "font-size": 11.5 }, svg).textContent = o.yLabel;
+  if (o.annotate) o.annotate(svg, X, Y, m, W, H);
+  for (const s of o.series) {
+    const col = css(s.color);
+    const d = s.xs.map((x, i) => (i ? "L" : "M") + X(x).toFixed(1) + "," + Y(s.ys[i]).toFixed(1)).join(" ");
+    el("path", { d, fill: "none", stroke: col, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round", "stroke-dasharray": s.dash || "none" }, svg);
+  }
+  if (o.after) o.after(svg, X, Y, m, W, H);
+  const tip = makeTip(box);
+  const cross = el("line", { y1: m.t, y2: H - m.b, stroke: axis, "stroke-width": 1, visibility: "hidden" }, svg);
+  const hit = el("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent", tabindex: 0, "aria-label": o.aria + ". Arrow keys read values." }, svg);
+  const xs = o.series[0].xs; let cur = -1;
+  function show(i) {
+    cur = Math.max(0, Math.min(xs.length - 1, i));
+    const x = X(xs[cur]); cross.setAttribute("x1", x); cross.setAttribute("x2", x); cross.setAttribute("visibility", "visible");
+    fillTip(tip, o.tipHead(xs[cur]), o.series.map(s => ({ color: css(s.color), value: o.tipFmt(s.ys[cur]), label: s.name })));
+    placeTip(tip, box, x + 8, m.t + 8);
+  }
+  function nearest(px) { let b = 0, bd = Infinity; xs.forEach((v, i) => { const d = Math.abs(X(v) - px); if (d < bd) { bd = d; b = i; } }); return b; }
+  hit.addEventListener("pointermove", e => { const r = svg.getBoundingClientRect(); show(nearest(e.clientX - r.left)); });
+  hit.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
+  hit.addEventListener("focus", () => show(cur < 0 ? Math.floor(xs.length / 2) : cur));
+  hit.addEventListener("blur", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
+  hit.addEventListener("keydown", e => { if (e.key === "ArrowRight") { show(cur + (e.shiftKey ? 10 : 1)); e.preventDefault(); } if (e.key === "ArrowLeft") { show(cur - (e.shiftKey ? 10 : 1)); e.preventDefault(); } });
+}
+
+/* ---------- horizontal bars ---------- */
+function hbar(box, o) {
+  box.querySelectorAll("svg").forEach(s => s.remove());
+  const W = Math.max(280, box.clientWidth - 16), rowH = 26;
+  const narrow = W < 520;
+  const labelW = narrow ? (o.labelWNarrow || 120) : (o.labelW || 210);
+  const m = { l: labelW, r: 64, t: 6, b: o.axisLabel ? 34 : 18 };
+  const H = m.t + m.b + rowH * o.rows.length;
+  const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": o.aria });
+  box.insertBefore(svg, box.querySelector(".tip"));
+  const X = o.log ? lg(o.domain[0], o.domain[1], m.l, W - m.r) : lin(0, o.domain[1], m.l, W - m.r);
+  const muted = css("--muted"), ink = css("--ink"), ink2 = css("--ink-2"), grid = css("--rule"), mono = css("--f-mono"), surf = css("--surface");
+  for (const v of o.ticks) {
+    el("line", { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, stroke: grid, "stroke-width": 1 }, svg);
+    el("text", { x: X(v), y: H - m.b + 13, "text-anchor": "middle", fill: muted, "font-size": 10.5, "font-family": mono }, svg).textContent = o.tickFmt(v);
+  }
+  if (o.axisLabel) el("text", { x: (m.l + W - m.r) / 2, y: H - 4, "text-anchor": "middle", fill: ink2, "font-size": 11.5 }, svg).textContent = o.axisLabel;
+  const tip = makeTip(box);
+  const x0 = o.log ? X(o.domain[0]) : X(0);
+  o.rows.forEach((r, i) => {
+    const y = m.t + i * rowH;
+    const lab = el("text", { x: m.l - 8, y: y + rowH / 2 + 4, "text-anchor": "end", fill: ink2, "font-size": 11.5 }, svg);
+    lab.textContent = narrow && r.short ? r.short : r.label;
+    const w = Math.max(2, X(r.value) - x0);
+    const col = css(r.color);
+    const bar = el("rect", { x: x0, y: y + 5, width: w, height: rowH - 10, rx: 2, fill: col, stroke: surf, "stroke-width": 0.5, tabindex: 0, "aria-label": `${r.label}: ${o.valFmt(r.value)}` }, svg);
+    el("text", { x: x0 + w + 6, y: y + rowH / 2 + 4, fill: ink, "font-size": 11, "font-family": mono }, svg).textContent = o.valFmt(r.value);
+    const on = () => { bar.setAttribute("opacity", 0.8); fillTip(tip, r.label, [{ color: col, value: o.valFmt(r.value), label: r.note || "" }]); placeTip(tip, box, x0 + w, y + 4); };
+    const off = () => { bar.removeAttribute("opacity"); tip.hidden = true; };
+    bar.addEventListener("pointerenter", on); bar.addEventListener("pointerleave", off); bar.addEventListener("focus", on); bar.addEventListener("blur", off);
+  });
+}
+
+/* ---------- dumbbell for SAR ---------- */
+function dumbbell(box) {
+  box.querySelectorAll("svg").forEach(s => s.remove());
+  const W = Math.max(280, box.clientWidth - 16), rowH = 24, m = { l: 60, r: 18, t: 8, b: 34 };
+  const H = m.t + m.b + rowH * SAR2.length;
+  const svg = el("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "SAR on 27 January 2025 under the market-only and market-plus-sector models for 14 stocks" });
+  box.insertBefore(svg, box.querySelector(".tip"));
+  const X = lin(-9, 5, m.l, W - m.r);
+  const muted = css("--muted"), ink2 = css("--ink-2"), grid = css("--rule"), mono = css("--f-mono"), c1 = css("--s1"), c0 = css("--neutral"), bad = css("--bad"), surf = css("--surface");
+  for (const v of [-8, -6, -4, -2, 0, 2, 4]) {
+    el("line", { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, stroke: grid, "stroke-width": 1 }, svg);
+    el("text", { x: X(v), y: H - m.b + 14, "text-anchor": "middle", fill: muted, "font-size": 10.5, "font-family": mono }, svg).textContent = v;
+  }
+  for (const v of [-4, 4]) el("line", { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, stroke: bad, "stroke-width": 1.5, "stroke-dasharray": "4 3" }, svg);
+  el("text", { x: (m.l + W - m.r) / 2, y: H - 4, "text-anchor": "middle", fill: ink2, "font-size": 11.5 }, svg).textContent = "standardized abnormal return (SAR)";
+  const tip = makeTip(box);
+  SAR2.forEach((r, i) => {
+    const y = m.t + i * rowH + rowH / 2;
+    el("text", { x: m.l - 8, y: y + 4, "text-anchor": "end", fill: ink2, "font-size": 11.5 }, svg).textContent = r[0];
+    el("line", { x1: X(r[1]), x2: X(r[2]), y1: y, y2: y, stroke: muted, "stroke-width": 1.5 }, svg);
+    el("circle", { cx: X(r[2]), cy: y, r: 5, fill: c0, stroke: surf, "stroke-width": 1.5 }, svg);
+    el("circle", { cx: X(r[1]), cy: y, r: 5.5, fill: c1, stroke: surf, "stroke-width": 1.5 }, svg);
+    const hit = el("rect", { x: m.l, y: y - rowH / 2, width: W - m.l - m.r, height: rowH, fill: "transparent", tabindex: 0, "aria-label": `${r[0]}: market-only ${r[1]}, market plus sector ${r[2]}` }, svg);
+    const on = () => { fillTip(tip, r[0], [{ color: c1, value: r[1].toFixed(1), label: "market-only" }, { color: c0, value: r[2].toFixed(1), label: "market + sector" }]); placeTip(tip, box, Math.max(X(r[1]), X(r[2])), y - 8); };
+    const off = () => { tip.hidden = true; };
+    hit.addEventListener("pointerenter", on); hit.addEventListener("pointerleave", off); hit.addEventListener("focus", on); hit.addEventListener("blur", off);
+  });
+}
+
+/* ---------- data ---------- */
+const COLS = [
+  ["V2GCAM", 8571, 0, "GCAM", "emotion-dictionary dump"], ["V2ENHANCEDTHEMES", 1158, 0, "ENH. THEMES", "themes + offsets"],
+  ["other dropped columns", 600, 0, "other dropped", "approx.: enhanced locations/persons/orgs, counts, dates, images, video"],
+  ["V1THEMES", 541, 1, "THEMES", "93% filled"], ["V2.1ALLNAMES", 245, 1, "ALLNAMES", "94% filled"],
+  ["id · date · source · URL", 150, 1, "identity", "approx., 100% filled"], ["V1LOCATIONS (countries)", 149, 1, "LOCATIONS", "75% filled"],
+  ["V1PERSONS / V1ORGANIZATIONS", 95, 1, "PERSONS/ORGS", "approx., 68–73% filled"], ["V1.5TONE", 94, 1, "TONE", "100% filled"],
+  ["V2.1AMOUNTS", 93, 1, "AMOUNTS", "72% filled"], ["V2.1SHARINGIMAGE", 88, 1, "IMAGE", "82% filled"],
+  ["PAGE_TITLE (Extras XML)", 70, 1, "TITLE", "approx. chars, 100% filled"], ["V2.1QUOTATIONS", 34, 1, "QUOTATIONS", "20% filled"]];
+const GKGZ = [["raw GKG, all 27 columns", 12493, "raw"], ["pruned, default Parquet", 484, "pruned"], ["+ zstd + dictionary", 320, "+zstd"],
+  ["+ vocab ids, int16 tone", 258, "+vocab"], ["+ zstd-19", 239, "+zstd-19"], ["− url_key (derivable)", 205, "−url_key"]];
+const PRICEZ = [["raw Yahoo JSON", 66.6, "JSON"], ["CSV", 55.7, "CSV"], ["Parquet, float64", 27.6, "Parquet"], ["int cents + zstd (lossy)", 16.3, "cents*"], ["1e-4 $ + offsets + delta + zstd-19", 10.1, "1e-4 $"]];
+const STEPS = [[24.6, "1 core"], [50.1, "2 1/8"], [57.4, "3 E+M"], [82.9, "4 1/4"], [133.9, "5 1/2"], [235.9, "6 full"]];
+const TAUS = [[1, "1 h"], [6, "6 h"], [24, "1 d"], [168, "1 w"]];
+const range = (a, b, n) => Array.from({ length: n }, (_, i) => a + (b - a) * i / (n - 1));
+const logRange = (a, b, n) => range(Math.log10(a), Math.log10(b), n).map(v => 10 ** v);
+const sp = (x, s) => s * Math.log1p(Math.exp(x / s));
+const hrs = h => h < 1 ? Math.round(h * 60) + " min" : h < 24 ? (+h.toFixed(h < 10 ? 2 : 1)) + " h" : (+(h / 24).toFixed(1)) + " d";
+
+function trigRows() {
+  const tb = document.getElementById("trig-rows"); if (!tb) return;
+  tb.replaceChildren();
+  for (const r of TRIG) {
+    const tr = tb.insertRow();
+    r.forEach((v, i) => {
+      const td = tr.insertCell();
+      td.textContent = typeof v === "number" ? (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1) : v;
+      if (i >= 1 && i <= 6) td.className = "num";
+      if (i === 7 && v === "fires") td.style.color = css("--self");
+    });
+  }
+}
+
+function drawAll() {
+  const g = id => document.getElementById(id);
+  if (g("ch-cols")) {
+    hbar(g("ch-cols"), { rows: COLS.map(r => ({ label: r[0], short: r[3], value: r[1], color: r[2] ? "--s1" : "--neutral", note: (r[2] ? "kept · " : "dropped · ") + r[4] })),
+      domain: [0, 9000], ticks: [0, 2000, 4000, 6000, 8000], tickFmt: v => fmtN(v), valFmt: v => fmtN(v) + " B", axisLabel: "bytes per document", aria: "Bytes per GKG document by column, kept versus dropped", labelW: 200 });
+  }
+  if (g("ch-gkgz")) hbar(g("ch-gkgz"), { rows: GKGZ.map((r, i) => ({ label: r[0], short: r[2], value: r[1], color: i === GKGZ.length - 1 ? "--s1" : "--neutral" })),
+    log: true, domain: [100, 20000], ticks: [100, 1000, 10000], tickFmt: v => fmtN(v), valFmt: v => fmtN(v) + " B", axisLabel: "bytes per document (log scale)", aria: "GKG bytes per document after each compression step", labelW: 170, labelWNarrow: 80 });
+  if (g("ch-pricez")) hbar(g("ch-pricez"), { rows: PRICEZ.map((r, i) => ({ label: r[0], short: r[2], value: r[1], color: i === 4 ? "--s1" : i === 3 ? "--s2" : "--neutral", note: i === 3 ? "lossy: Yahoo prints sub-penny prices" : "lossless" })),
+    domain: [0, 70], ticks: [0, 20, 40, 60], tickFmt: v => v, valFmt: v => v.toFixed(1) + " B", axisLabel: "bytes per 5-minute bar", aria: "Bytes per price bar for five encodings", labelW: 190, labelWNarrow: 70 });
+  if (g("ch-sar")) dumbbell(g("ch-sar"));
+  if (g("ch-lsh")) lineChart(g("ch-lsh"), { aria: "Candidate and accept probabilities versus true Jaccard similarity", height: 220,
+    xDomain: [0, 1], yDomain: [0, 1], xTicks: [0, 0.2, 0.4, 0.6, 0.8, 1], yTicks: [0, 0.25, 0.5, 0.75, 1], xFmt: v => v.toFixed(1), yFmt: v => v.toFixed(2),
+    xLabel: "true Jaccard similarity J of two bodies", tipHead: v => "J = " + v.toFixed(2), tipFmt: v => v < 0.001 ? v.toExponential(1) : v.toFixed(3),
+    series: [{ name: "LSH candidate", color: "--s1", xs: LSH.J, ys: LSH.lsh }, { name: "accept Ĵ ≥ 0.8", color: "--s2", xs: LSH.J, ys: LSH.acc }],
+    annotate: (svg, X, Y, m, W, H) => { el("line", { x1: X(0.8), x2: X(0.8), y1: m.t, y2: H - m.b, stroke: css("--bad"), "stroke-dasharray": "4 3" }, svg); el("text", { x: X(0.8) - 6, y: m.t + 12, "text-anchor": "end", fill: css("--ink-2"), "font-size": 11 }, svg).textContent = "threshold 0.8"; } });
+  if (g("ch-dl")) { const hs = range(0, 7, 71);
+    lineChart(g("ch-dl"), { aria: "Gigabytes downloaded versus hours at two throughputs, with step boundaries", height: 260, right: 64,
+      xDomain: [0, 7], yDomain: [0, 250], xTicks: [0, 1, 2, 3, 4, 5, 6, 7], yTicks: [0, 50, 100, 150, 200, 250], xFmt: v => v + " h", yFmt: v => v + " GB",
+      xLabel: "hours of downloading", tipHead: v => v.toFixed(1) + " h", tipFmt: v => v.toFixed(1) + " GB",
+      series: [{ name: "10 MB/s", color: "--s1", xs: hs, ys: hs.map(h => Math.min(250, 36 * h)) }, { name: "2.2 MB/s", color: "--s2", xs: hs, ys: hs.map(h => 7.92 * h) }],
+      annotate: (svg, X, Y, m, W, H) => {
+        let lastY = Infinity; for (const [gb, lab] of STEPS) { if (gb > 250) continue; el("line", { x1: m.l, x2: W - m.r, y1: Y(gb), y2: Y(gb), stroke: css("--axis"), "stroke-dasharray": "3 4" }, svg); let ly = Y(gb) + 4; if (lastY - ly < 12) ly = lastY - 12; lastY = ly; el("text", { x: W - m.r + 6, y: ly, fill: css("--ink-2"), "font-size": 10.5, "font-family": css("--f-mono") }, svg).textContent = lab; }
+        el("line", { x1: X(4), x2: X(4), y1: m.t, y2: H - m.b, stroke: css("--bad"), "stroke-width": 1.5 }, svg);
+        el("text", { x: X(4) + 6, y: m.t + 12, fill: css("--bad"), "font-size": 11 }, svg).textContent = "4-hour budget";
+      } }); }
+  if (g("ch-trace")) { const L = logRange(0.25, 336, 120);
+    lineChart(g("ch-trace"), { aria: "Share of a pulse's influence delivered within L hours for four timescales", height: 220, xLog: true,
+      xDomain: [0.25, 336], yDomain: [0, 1], xTicks: [0.25, 1, 6, 24, 168], yTicks: [0, 0.5, 1], xFmt: v => ({ 0.25: "15m", 1: "1h", 6: "6h", 24: "1d", 168: "1w" })[v], yFmt: v => Math.round(v * 100) + "%",
+      xLabel: "lag L (log scale)", tipHead: v => "L = " + hrs(v), tipFmt: v => (v * 100).toFixed(1) + "%",
+      series: TAUS.map((t, i) => ({ name: "τ = " + t[1], color: ["--s1", "--s2", "--s3", "--s4"][i], xs: L, ys: L.map(l => 1 - Math.exp(-l / t[0])) })) }); }
+  if (g("ch-softplus")) { const xs = range(-4, 4, 81);
+    lineChart(g("ch-softplus"), { aria: "Scaled softplus for two scales against the ReLU", height: 220,
+      xDomain: [-4, 4], yDomain: [0, 4.5], xTicks: [-4, -2, 0, 2, 4], yTicks: [0, 1, 2, 3, 4], xFmt: v => v, yFmt: v => v, xLabel: "drive η",
+      tipHead: v => "η = " + v.toFixed(1), tipFmt: v => v.toFixed(3),
+      series: [{ name: "max(η, 0)", color: "--neutral", xs, ys: xs.map(x => Math.max(0, x)) }, { name: "s = 1", color: "--s1", xs, ys: xs.map(x => sp(x, 1)) }, { name: "s = 0.25", color: "--s2", xs, ys: xs.map(x => sp(x, 0.25)) }] }); }
+  if (g("ch-comp")) { const xs = range(0, 10, 101);
+    lineChart(g("ch-comp"), { aria: "Total attention versus total drive for five values of omega", height: 220,
+      xDomain: [0, 10], yDomain: [0, 10], xTicks: [0, 2, 4, 6, 8, 10], yTicks: [0, 2, 4, 6, 8, 10], xFmt: v => v + "B", yFmt: v => v + "B", xLabel: "total drive S_raw",
+      tipHead: v => "S_raw = " + v.toFixed(1) + " B", tipFmt: v => v.toFixed(2) + " B",
+      series: [[0, "--neutral"], [0.25, "--s1"], [0.5, "--s3"], [0.75, "--s4"], [1, "--s2"]].map(([w, c]) => ({ name: "ω = " + w, color: c, xs, ys: xs.map(x => x * Math.pow(1 / (1 + x), w)) })),
+      annotate: (svg, X, Y, m, W, H) => { el("line", { x1: m.l, x2: W - m.r, y1: Y(1), y2: Y(1), stroke: css("--bad"), "stroke-dasharray": "4 3" }, svg); } }); }
+  if (g("ch-bin")) { const T = logRange(0.25, 168, 100);
+    lineChart(g("ch-bin"), { aria: "Same-bin offspring share and coefficient bias factor versus kernel timescale", height: 220, xLog: true,
+      xDomain: [0.25, 168], yDomain: [0, 1], xTicks: [0.25, 1, 6, 24, 168], yTicks: [0, 0.25, 0.5, 0.75, 1], xFmt: v => ({ 0.25: "15m", 1: "1h", 6: "6h", 24: "1d", 168: "1w" })[v], yFmt: v => v.toFixed(2),
+      xLabel: "kernel timescale τ (log scale), bin Δ = 15 min", tipHead: v => "τ = " + hrs(v), tipFmt: v => v.toFixed(3),
+      series: [{ name: "same-bin share", color: "--s2", xs: T, ys: T.map(t => { const x = 0.25 / t; return 1 - (1 - Math.exp(-x)) / x; }) },
+               { name: "bias factor", color: "--s1", xs: T, ys: T.map(t => { const x = 0.25 / t; return (1 - Math.exp(-x)) / x; }) }],
+      after: (svg, X, Y) => { for (const [t] of TAUS) { const x = 0.25 / t, f = (1 - Math.exp(-x)) / x; el("circle", { cx: X(t), cy: Y(f), r: 4, fill: css("--s1"), stroke: css("--surface"), "stroke-width": 2 }, svg); el("circle", { cx: X(t), cy: Y(1 - f), r: 4, fill: css("--s2"), stroke: css("--surface"), "stroke-width": 2 }, svg); } } }); }
+  trigRows();
+}
+
+function tables() {
+  table("tv-cols", ["Column", "Bytes/doc", "Kept", "Note"], COLS.map(r => [r[0], fmtN(r[1]), r[2] ? "yes" : "no", r[4]]), [1]);
+  table("tv-gkgz", ["Encoding", "Bytes/doc"], GKGZ.map(r => [r[0], fmtN(r[1])]), [1]);
+  table("tv-pricez", ["Encoding", "Bytes/bar"], PRICEZ.map(r => [r[0], r[1].toFixed(1)]), [1]);
+  table("tv-sar", ["Symbol", "SAR market-only", "SAR market + sector"], SAR2.map(r => [r[0], r[1].toFixed(1), r[2].toFixed(1)]), [1, 2]);
+  table("tv-lsh", ["J", "LSH candidate", "P(Ĵ ≥ 0.8)"], [0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map(j => { const i = Math.round(j * 100); return [j.toFixed(2), LSH.lsh[i].toFixed(3), LSH.acc[i] < 0.001 ? LSH.acc[i].toExponential(1) : LSH.acc[i].toFixed(3)]; }), [1, 2]);
+  table("tv-dl", ["Step", "Cumulative GB", "Hours at 10 MB/s", "Hours at 2.2 MB/s"], STEPS.map(([gb, l]) => [l, gb.toFixed(1), (gb / 36).toFixed(2), (gb / 7.92).toFixed(1)]), [1, 2, 3]);
+  table("tv-trace", ["Lag", "τ = 1 h", "6 h", "1 d", "1 w"], [0.25, 1, 6, 24, 168, 336].map(l => [hrs(l), ...TAUS.map(t => (100 * (1 - Math.exp(-l / t[0]))).toFixed(1) + "%")]), [1, 2, 3, 4]);
+  table("tv-softplus", ["η", "max(η,0)", "s = 1", "s = 0.25"], [-4, -2, -1, 0, 1, 2, 4].map(x => [x, Math.max(0, x).toFixed(3), sp(x, 1).toFixed(3), sp(x, 0.25).toFixed(3)]), [0, 1, 2, 3]);
+  table("tv-comp", ["S_raw / B", "ω = 0", "0.25", "0.5", "0.75", "1"], [0.5, 1, 2, 5, 10].map(x => [x, ...[0, 0.25, 0.5, 0.75, 1].map(w => (x * Math.pow(1 / (1 + x), w)).toFixed(2))]), [0, 1, 2, 3, 4, 5]);
+  table("tv-bin", ["τ", "a", "same-bin share", "bias factor (1 − a)/x", "worst case 1 − a"], TAUS.map(([t, l]) => { const x = 0.25 / t, a = Math.exp(-x); return [l, a.toFixed(5), (1 - (1 - a) / x).toFixed(4), ((1 - a) / x).toFixed(4), (1 - a).toFixed(4)]; }), [1, 2, 3, 4]);
+}
+
+function boot() { tables(); drawAll(); }
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(drawAll, 150); });
+const mq = window.matchMedia("(prefers-color-scheme: light)");
+if (mq.addEventListener) mq.addEventListener("change", drawAll);
+new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>

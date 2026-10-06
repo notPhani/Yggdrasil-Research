@@ -1,0 +1,191 @@
+
+<section id="e2b">
+  <div class="eyebrow">§5 · Engine 2b · Attention and edges · Session 4, locked</div>
+  <h2>A discrete nonlinear Hawkes model with divisive competition</h2>
+
+  <div class="eli5">
+    <span class="tag">For a ten-year-old</span>
+    <p>Every story is a bell. When news hits it, it rings, and the ringing fades away. There is a fast hum that's gone in an hour and a slow hum that lasts a week. A ringing bell can make the bells next to it ring too: that's one story spilling into another.</p>
+    <p>But the room only holds so much air. When everything rings at once, every bell gets a bit quieter, by the same fraction, so nobody gets silenced outright.</p>
+    <p>If a bell suddenly rings far louder than the bells around it could explain, something new came in from outside. We call that a burst, and we say it came through BOT, the door to the outside world.</p>
+  </div>
+
+  <div class="split">
+    <figure>
+      <video class="video" controls playsinline preload="metadata" poster="media/HawkesBumps.jpg" src="media/HawkesBumps.mp4" aria-label="Animation: events arrive and each adds a fading bump to the rate"></video>
+      <figcaption><b>Self-exciting attention.</b> Each event adds a bump that decays. The rate at any moment is the baseline (outside news) plus every bump still fading. The area of one bump, n, is the average number of follow-on events.</figcaption>
+    </figure>
+    <figure>
+      <video class="video" controls playsinline preload="metadata" poster="media/BranchingTree.jpg" src="media/BranchingTree.mp4" aria-label="Animation: the same process as a family tree, subcritical then supercritical"></video>
+      <figcaption><b>The same process as a family tree.</b> Immigrants arrive from outside, and every event has on average n children. Below n = 1 every cascade dies out, with mean size 1/(1 − n), and a share 1 − n of all events is new information. Above 1 it runs away, like a reactor past critical mass.</figcaption>
+    </figure>
+  </div>
+
+  <h3>The model, every term named <span class="lab design">design · 4.1</span></h3>
+  <div class="math">\[ z_{j,m}(t) = a_m\, z_{j,m}(t-1) + (1 - a_m)\, y_j(t-1), \qquad a_m = e^{-\Delta/\tau_m} \]</div>
+  <div class="math">\[ \tau = (1\,\text{h},\ 6\,\text{h},\ 1\,\text{d},\ 1\,\text{w}) \;\Rightarrow\; a = (0.7788,\ 0.9592,\ 0.98964,\ 0.998513) \]</div>
+  <div class="math">\[ \operatorname{base}_i(t) = b_{0,i} + c_i(h_t) + \sum_{e} d_{i,e} D_e(t) + \beta_i \log \Phi_{p(i)}(t-1), \qquad c_i(h) = \sum_{q \in Q} \Big[ c^a_{iq} \cos\tfrac{2\pi q h}{168} + c^b_{iq} \sin\tfrac{2\pi q h}{168} \Big] \]</div>
+  <div class="math">\[ \operatorname{exc}_{ij}(t) = e^{g(h_t)} \sum_{m=1}^{4} A_{ijm}\, z_{j,m}(t), \qquad \eta_i(t) = \operatorname{base}_i(t) + \sum_{j \in K(i)} \operatorname{exc}_{ij}(t) \]</div>
+  <div class="math">\[ \lambda^{\text{raw}}_i = s \log\!\big(1 + e^{\eta_i / s}\big), \quad S^{\text{raw}} = \sum_i \lambda^{\text{raw}}_i, \quad B_t = e^{\beta_B} \hat V_t, \quad \lambda_i = \lambda^{\text{raw}}_i \Big( \frac{B_t}{B_t + S^{\text{raw}}_t} \Big)^{\omega}, \quad 0 \le \omega \le 1 \]</div>
+  <div class="math">\[ \log \hat V_t = \log \bar V(h_t) + \ell_{t-1}, \quad \ell_t = (1 - \kappa_L)\ell_{t-1} + \kappa_L\big(\log V_t - \log \bar V(h_t)\big), \qquad y_i(t) \mid \mathcal F_{t-1} \sim \operatorname{NB2}\big(\lambda_i,\ \operatorname{Var} = \lambda_i (1 + \lambda_i / r)\big) \]</div>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Intermediate term</th><th>What it is</th><th>Physical picture</th></tr></thead>
+    <tbody>
+      <tr><td>\(z_{j,m}\)</td><td>Narrative j's recent attention, remembered at timescale m. The weights \((1-a)a^{k-1}\) sum to 1, so the traces have unit mass and \(A\) reads as "extra units on i per unit on j"</td><td>Four RC circuits charged by news, each leaking at its own rate</td></tr>
+      <tr><td>\(h_t\), \(c_i(h)\)</td><td>Hour of week (0–167), with Fourier harmonics Q = {1, 2, 7, 14, 21}: weekly, half-weekly, daily, 12-hourly, 8-hourly</td><td>The daily and weekly tide of the news cycle</td></tr>
+      <tr><td>\(D_e(t)\)</td><td>Scheduled-release dummies over [−1 h, +6 h] (CPI, FOMC, earnings, product events)</td><td>Known forcing terms</td></tr>
+      <tr><td>\(\beta_i \log \Phi_{p(i)}\)</td><td>The slow phenomenon level beneath narrative i (deferred in the cut)</td><td>Born–Oppenheimer: fast narratives ride a slow field</td></tr>
+      <tr><td>\(e^{g(h)}\)</td><td>Global excitability by hour (reactions spread more by day than overnight)</td><td>Temperature: the same coupling, more agitation</td></tr>
+      <tr><td>\(A_{ijm}\)</td><td>Signed coupling from j to i at timescale m, on candidates \(K(i)\) = 20 nearest by content + same phenomenon + self</td><td>Coupling between oscillators; negative means suppression</td></tr>
+      <tr><td>\(\eta_i\)</td><td>Drive: everything that pushes attention toward i</td><td>Net force</td></tr>
+      <tr><td>\(\lambda^{\text{raw}}\)</td><td>Softplus keeps the rate positive and becomes linear once the drive is large</td><td>A diode with a soft knee</td></tr>
+      <tr><td>\(\hat V_t, B_t\)</td><td>Predicted supply (hour-of-week mean × a slow level, \(\kappa_L = 1 - e^{-\Delta/1\text{w}} \approx 0.00149\)) and capacity. <i>Predicted</i>, never concurrent: concurrent supply would make conservation true by Lemma 5.1</td><td>The size of the room</td></tr>
+      <tr><td>\((B/(B+S^{\text{raw}}))^{\omega}\)</td><td>Divisive competition. \(\omega\) is the semi-conservation exponent, measured rather than assumed</td><td>Automatic gain control; saturable gain \(g_0/(1 + I/I_{\text{sat}})\)</td></tr>
+      <tr><td>\(r\)</td><td>NB2 size: burstiness beyond Poisson</td><td>Photon bunching (super-Poissonian light)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="split">
+    <figure>
+      <div class="chart" id="ch-trace"><div class="legend"><span><i style="background: var(--s1)"></i>τ = 1 h</span><span><i style="background: var(--s2)"></i>6 h</span><span><i style="background: var(--s3)"></i>1 d</span><span><i style="background: var(--s4)"></i>1 w</span></div></div>
+      <details class="tv"><summary>Table view</summary><div id="tv-trace"></div></details>
+      <figcaption><b>Four RC circuits.</b> The share of one pulse's total influence delivered within L hours is \(1 - e^{-L/\tau}\). Half-lives are 0.69 h, 4.2 h, 16.6 h and 4.9 days. Four log-spaced exponentials span an hour to a week. Experiment F3 tests adding 2.5 h and 30 d.</figcaption>
+    </figure>
+    <figure>
+      <div class="chart" id="ch-softplus"><div class="legend"><span><i style="background: var(--s1)"></i>s · softplus(η/s), s = 1</span><span><i style="background: var(--s2)"></i>s = 0.25</span><span><i style="background: var(--neutral)"></i>max(η, 0)</span></div></div>
+      <details class="tv"><summary>Table view</summary><div id="tv-softplus"></div></details>
+      <figcaption><b>Softplus is ReLU with a rounded knee.</b> The gap is largest at η = 0, where it equals \(s\ln 2\). The rate is always strictly positive, so the log in the likelihood never sees zero, and inhibition (negative drive) is allowed.</figcaption>
+    </figure>
+  </div>
+
+  <h3>Simplifications: the model reduces to familiar ones at its edges</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Limit</th><th>What the model becomes</th></tr></thead>
+    <tbody>
+      <tr><td>\(\omega = 0\), \(\eta \gg s\)</td><td>Linear multivariate discrete Hawkes: \(\lambda_i \approx \operatorname{base}_i + e^{g}\sum_{j,m} A_{ijm} z_{j,m}\). Expected direct offspring of one unit on j landing on i is \(e^{g}\sum_m A_{ijm}\), the branching matrix</td></tr>
+      <tr><td>one narrative, one timescale, constant gain</td><td>Classic discrete Hawkes, branching ratio \(n = e^{g} A\). Mean cascade size \(1/(1-n)\); share of new information \(1 - n\)</td></tr>
+      <tr><td>\(s \to 0\)</td><td>ReLU link \(\max(\eta, 0)\): exact zero below threshold, attribution shares exact</td></tr>
+      <tr><td>\(\omega = 1\)</td><td>\(\lambda_i = \lambda^{\text{raw}}_i B/(B + S^{\text{raw}})\), the steady state of Grossberg's shunting on-center off-surround network (Lemma 6.4). Total attention is hard-capped below \(B\)</td></tr>
+      <tr><td>\(r \to \infty\)</td><td>Poisson counts</td></tr>
+      <tr><td>exponential drive, \(\omega = 1\), large \(S^{\text{raw}}\)</td><td>Shares become a softmax: the rational-inattention logit \(P(i) \propto P_0(i)\, e^{v_i/\lambda}\) (Matějka &amp; McKay 2015), one step of replicator dynamics</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Competition divides, it never subtracts</h3>
+  <div class="split">
+    <figure>
+      <video class="video" controls playsinline preload="metadata" poster="media/Competition.jpg" src="media/Competition.mp4" aria-label="Animation: subtractive versus divisive competition, then splitting a narrative"></video>
+      <figcaption><b>The split test.</b> Subtracting the same amount from every narrative tilts shares toward the biggest one and wipes out the smallest. Dividing keeps the ratios. Split the AI narrative in two and the subtractive model changes AI's total (4.2 to 3.4) purely because of how you clustered. The divisive model gives the same 3.0.</figcaption>
+    </figure>
+    <figure>
+      <div class="chart" id="ch-comp"><div class="legend"><span><i style="background: var(--neutral)"></i>ω = 0</span><span><i style="background: var(--s1)"></i>0.25</span><span><i style="background: var(--s3)"></i>0.5</span><span><i style="background: var(--s4)"></i>0.75</span><span><i style="background: var(--s2)"></i>1</span><span><i style="background: var(--bad)"></i>capacity B</span></div></div>
+      <details class="tv"><summary>Table view</summary><div id="tv-comp"></div></details>
+      <figcaption><b>ω is a capacity dial.</b> Total predicted attention \(S\) against total drive \(S^{\text{raw}}\), both in units of capacity B. At ω = 0 nothing caps the total. At ω = 1 it saturates below B. Every curve is increasing, so more drive never lowers the total (Prop 6.2c). ω is profiled on {0, .25, .5, .75, 1} and keeps the best held-out score: that is experiment F1.</figcaption>
+    </figure>
+  </div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Proposition 6.2, divisive competition <span class="lab derived">derived</span></span>
+    <p>Write \(c = (B/(B + S^{\text{raw}}))^{\omega}\), so \(\lambda_i = c\,\lambda^{\text{raw}}_i\) and \(S = c\,S^{\text{raw}}\).
+    <b>(a) Ratios:</b> \(\lambda_i/\lambda_k = \lambda^{\text{raw}}_i/\lambda^{\text{raw}}_k\), because c cancels.
+    <b>(b) Capacity:</b> \(c \le 1\) gives \(S \le S^{\text{raw}}\). Writing \(S = (S^{\text{raw}})^{1-\omega} B^{\omega} (S^{\text{raw}}/(B+S^{\text{raw}}))^{\omega}\) gives \(S \le B^{\omega} (S^{\text{raw}})^{1-\omega}\), and at \(\omega = 1\), \(S = B S^{\text{raw}}/(B + S^{\text{raw}}) \lt B\).
+    <b>(c) Monotone:</b> \(dS/dS^{\text{raw}} = c\,(1 - \omega S^{\text{raw}}/(B + S^{\text{raw}})) \gt 0\).
+    <b>(d) Split-consistent:</b> if a parent's raw rate is replaced by children with \(\lambda^{\text{raw}}_a + \lambda^{\text{raw}}_b = \lambda^{\text{raw}}_p\), then \(S^{\text{raw}}\) and c are unchanged, so \(\lambda_a + \lambda_b = \lambda_p\) and every other narrative is untouched.
+    <b>(e)</b> With softplus and non-negative drives, splitting the drive changes the raw total by at most \(2 s \ln 2\). <span class="qed">QED</span></p>
+    <p><b>The subtractive alternative fails (d).</b> With \(\lambda_i = (D_i - \kappa S)_+\), splitting p into active children gives \(\lambda_a + \lambda_b = \lambda_p - \kappa S\). Predicted total attention then depends on how finely you clustered, which rules subtraction out of a multi-resolution system (Prop 6.3).</p>
+  </div>
+
+  <h3>Stability: the attention can't explode <span class="lab derived">derived · Lemma 6.5</span></h3>
+  <div class="col"><p><b>Assumptions:</b> \(y \ge 0\) with conditional mean \(\lambda\); initial traces \(z_0 \ge 0\); \(\operatorname{base}_i \le \beta^{\max}_i\); \(e^{g(h)} \le G_{\max}\); \(B_t \le B_{\max}\). Let \(A^+ = \max(A, 0)\) entrywise and \(P^+_{ij} = \sum_m A^+_{ijm}\).</p></div>
+  <div class="math">\[ \text{(a)}\ \ \omega = 0:\ \ \rho(G_{\max} P^{+}) \lt 1 \;\Rightarrow\; \sup_t \mathbb E[y_i(t)] \lt \infty \ \ \forall i \qquad\qquad \text{(b)}\ \ 0 \lt \omega \le 1:\ \ \sup_t \mathbb E\Big[\sum_i y_i(t)\Big] \lt \infty \ \text{for every real } A \]</div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Lemma 6.5</span>
+    <p><b>Shared step.</b> Softplus satisfies \(f(x) = (x)_+ + e(x)\) with \(0 \lt e(x) \le s\ln 2\) (Lemma 6.1). Inhibitory terms only lower η, and \(z \ge 0\), so \((\eta_i)_+ \le (\beta^{\max}_i)_+ + G_{\max}\sum_{j,m} A^+_{ijm} z_{j,m}\). Unrolling the trace gives \(z_{j,m}(t) = \sum_{k=1}^{t} (1-a_m)a_m^{k-1} y_j(t-k) + a_m^t z_{0,j}\), a convex combination of past counts and the initial value. Hence \(\mathbb E[z_{j,m}(t)] \le U_j(t-1) := \max(z_{0,j}, \max_{r \lt t}\mathbb E[y_j(r)])\).</p>
+    <p><b>(a)</b> Let \(c_i = s\ln2 + (\beta^{\max}_i)_+\) and \(K = G_{\max}P^+ \ge 0\) with \(\rho(K) \lt 1\). The tower property gives \(\mathbb E[y_i(t)] \le c_i + \sum_j K_{ij} U_j(t-1)\), so componentwise \(U(t) \le \max(U(t-1),\ c + K U(t-1))\). Choose \(\kappa \ge \max U(0)\) and \(w = (I - K)^{-1}(c + \kappa\mathbf 1)\). The Neumann series converges and \((I-K)^{-1} \ge I\), so \(w \ge U(0)\) and \(c + Kw = w - \kappa\mathbf 1 \le w\). By induction, \(U(t-1) \le w\) implies \(c + KU(t-1) \le c + Kw \le w\), so \(U(t) \le w\) for all t.</p>
+    <p><b>(b)</b> By Prop 6.2(b), \(S_t \le B_{\max}^{\omega}(S^{\text{raw}}_t)^{1-\omega}\), and the shared step bounds \(S^{\text{raw}}\) by an affine function of the summed traces, \(C_0 + c_1 \sum_{j,m} z_{j,m}\). Since \(x \mapsto x^{1-\omega}\) is concave, Jensen gives \(\mathbb E[\sum_i y_i(t)] \le h(W(t-1))\), where \(h(u) = B_{\max}^{\omega}(C_0 + c_1 M u)^{1-\omega}\) and W is the running maximum of past means. \(h\) is nondecreasing and \(h(u)/u \to 0\), so some \(\bar W\) satisfies \(h(\bar W) \le \bar W\), and induction keeps \(W(t) \le \bar W\). At \(\omega = 1\), \(S_t \lt B_t\) on every path. <span class="qed">QED</span></p>
+    <p><b>What it buys:</b> negative couplings, which carry real suppression between stories, never need a stability penalty. And any \(\omega \gt 0\) makes feedback sublinear, which is the formal content of "semi-conservation prevents explosion". It bounds means only. A unique stationary ergodic regime for \(\omega \gt 0\) is <span class="lab conj">conjecture 6.A</span>, so fitted models are simulated and checked for persistent saturation. While \(\hat\omega \lt 0.05\), the fit enforces \(\max_i \sum_j G_{\max}P^+_{ij} \le 0.95\), which bounds \(\rho\) because \(\rho(K) \le\) the max row sum for \(K \ge 0\). This is the reactor analogy made exact: \(\rho\) is the effective multiplication factor \(k_{\text{eff}}\), and the fit is never allowed to go critical.</p>
+  </div>
+
+  <h3>The 15-minute grid hides fast reactions, by a known factor <span class="lab derived">derived · Lemma 6.6</span></h3>
+  <figure>
+    <div class="chart" id="ch-bin"><div class="legend"><span><i style="background: var(--s2)"></i>same-bin share of offspring, frac₀</span><span><i style="background: var(--s1)"></i>bias factor (1 − a)/x on the fitted coefficient</span></div></div>
+    <details class="tv"><summary>Table view</summary><div id="tv-bin"></div></details>
+    <figcaption><b>Only the 1-hour kernel is noticeably biased.</b> With x = Δ/τ and a uniform parent position inside its bin, a share \(\text{frac}_0 = 1 - (1 - e^{-x})/x\) of direct offspring lands in the parent's own bin, where a lag-≥1 model can't see it: 11.5% at τ = 1 h, 2.0% at 6 h, 0.5% at 1 d. The fitted coefficient estimates \(A_{\text{cont}}(1-a)/x\), so the correction is \(\hat A_{\text{cont}} = \hat A_{\text{disc}}\, x/(1 - a)\), i.e. divide the 1-hour coefficient by 0.885. F3 checks this by simulation.</figcaption>
+  </figure>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Lemma 6.6</span>
+    <p>A parent at position \(u\Delta\), \(u \sim U[0,1)\), puts an offspring in bin \(k \ge 1\) with probability \(\int_{(k-u)\Delta}^{(k+1-u)\Delta} \tau^{-1}e^{-l/\tau}dl = e^{-(k-u)x}(1-a)\). Averaging over u gives \((1-a)a^k(e^x - 1)/x = \frac{(1-a)^2}{a x}a^k\), using \(e^x - 1 = (1-a)/a\). Summing over \(k \ge 1\) gives \((1-a)/x\), and \(\text{frac}_0\) is the complement. Matching \(A_{\text{disc}}(1-a)a^{k-1}\) to \(A_{\text{cont}}\,\text{frac}_k\) for all \(k \ge 1\) forces \(A_{\text{disc}} = A_{\text{cont}}(1-a)/x\). <span class="qed">QED</span> The 22.1% figure from the research notes is the worst case, a parent at the start of its bin, not the typical case.</p>
+  </div>
+
+  <h3 id="nb2">Fitting: quasi-Poisson point estimates <span class="lab design">design · 4.2′, locked 2026-10-06</span></h3>
+  <div class="math">\[ \min_{\theta}\ \frac{1}{\hat\phi}\sum_{(i,t)\,\notin\,\text{missing}} \big(\lambda_{it} - y_{it}\log\lambda_{it}\big) \;+\; \lambda_g \sum_{i}\sum_{j \in K(i)} w_{ij} \lVert A_{ij\cdot} \rVert_2 \;+\; \lambda_1 \lVert A \rVert_1 \;+\; \varepsilon \lVert \theta \rVert_2^2 \quad \text{s.t.}\ \ \max_i \sum_j G_{\max} P^+_{ij} \le 0.95 \]</div>
+  <div class="col"><p>The group lasso zeros whole pairs: a zero group means no edge (a Granger non-edge). The \(\ell_1\) term zeros single timescales, and \(\varepsilon = 10^{-6}\) is there for uniqueness, not shrinkage. Solved by FISTA with warm starts and a fixed iteration count. ω is profiled on its five-point grid. The full refit runs daily; every 15 minutes only the state (z, λ, residuals) updates. Windows flagged missing by Engine 1 are masked out (4.8). Size: about 300 × 20 × 4 = 24k coupling weights against about 600k narrative-windows in the replay.</p></div>
+  <div class="box">
+    <span class="tag">Why 4.2 was replaced by 4.2′ · the NB2 loss is not convex <span class="lab derived">counterexample</span></span>
+    <p>The original decision 4.2 fitted the NB2 negative log-likelihood: \(\ell(y; \mu) = -y\log\mu + (y + r)\log(\mu + r) + \text{const}\). Its curvature in μ is \(y/\mu^2 - (y+r)/(\mu+r)^2\). At \(y = 0\) that is \(-r/(\mu + r)^2 \lt 0\): <b>concave</b>. Once \(\eta \gg s\), \(\mu \approx c\,\eta\), so the loss is approximately \(r\log(r + c\eta)\), which is concave in the drive. Zero-count windows are the majority here (a mean of about 5 per narrative-window, mostly zeros), so this isn't an edge case. The proofs below (Lemma 6.7, Lemma 8.1) hold for the <b>quasi-Poisson</b> loss \(\ell = \mu - y\log\mu\) and do not transfer to NB2.</p>
+    <p><b>Locked fix (4.2′):</b> point estimates are fitted with quasi-Poisson and a Pearson dispersion \(\hat\phi = \frac{1}{n - p}\sum (y - \lambda)^2/\lambda\). NB2, with r estimated by moments, is kept only for the PIT residuals, the intervals and the held-out NB2 log score. That is the research report's original split. \(\hat\phi\) scales the objective but does not move its minimizer, so the fit is unique (Lemma 8.1) and independent of the solver path. Quasi-Poisson needs only the mean and a variance function, so fractional soft-membership counts are admissible, and Poisson QMLE is consistent for count autoregressions even when the true law isn't Poisson (Ahmad &amp; Francq 2016).</p>
+  </div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Lemma 6.7, convexity of the quasi-Poisson loss in the drive <span class="lab derived">derived</span></span>
+    <p>For \(y \ge 0\) and \(c \gt 0\), \(l(x) = c f(x) - y\log(c f(x))\) with \(f = s\,\text{softplus}(\cdot/s)\) is strictly convex. \(cf\) is strictly convex, since \(f'' = \sigma(1-\sigma)/s \gt 0\). \(-y\log f\) is convex because f is log-concave: \((\log f)'' \le 0\) reduces to \(\log(1 + e^u) \le e^u\), which is \(\log(1+v) \le v\). Composition with the affine map \(\theta \mapsto \eta\) preserves convexity. Hence each row's objective is convex in its parameters, with the competition factor and gain held fixed. <span class="qed">QED</span> <b>Lemma 8.1</b> then gives a unique minimizer: a convex loss, plus norms, plus a strictly convex ridge, over a convex feasible set (sums and maxima of positive parts are convex). <b>Lemma 8.2:</b> the outer loop (refreeze c, re-solve, backtrack, grid-search ω) never increases the true objective, so its values converge. That is convergence of values, not global optimality, because the joint problem is nonconvex in ω.</p>
+  </div>
+
+  <h3 id="alpha">Outputs for Engine 3: surprises and edge shares</h3>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/AttributionFlow.jpg" src="media/AttributionFlow.mp4" aria-label="Animation: a shock enters the AI narrative through BOT and spills into GPU"></video>
+    <figcaption><b>Where GPU's attention came from (toy numbers).</b> R1's release enters the AI narrative through BOT as a large surprise. One window later AI's memory trace has risen and its share of GPU's attention grows. Those shares, averaged over the horizon, are the edge probabilities the search uses.</figcaption>
+  </figure>
+  <div class="math">\[ u_{it} = F_{\text{NB}}(y - 1) + U\,\big[F_{\text{NB}}(y) - F_{\text{NB}}(y - 1)\big], \quad U \sim \text{Philox (D2)}, \qquad \Phi^{-1}(u_{it}) \approx \mathcal N(0,1) \text{ under a correct model} \]</div>
+  <div class="col"><p>Randomized PIT residuals (Dunn &amp; Smyth 1996) feed a Bayesian online change-point detector per narrative (Adams &amp; MacKay 2007): \(P(r_t = 0) \propto \sum_r P(r_{t-1} = r)\,\pi(u_t \mid r)\,H\) and \(P(r_t = r + 1) \propto P(r_{t-1} = r)\,\pi(u_t \mid r)(1 - H)\). A burst is \(P(r_t \le 2) \gt 0.5\) with a positive mean residual over the new run. Detecting on <i>residuals</i> rather than raw counts is the point: raw-count detectors also flag endogenous cascades that the model already explains, and forensics needs exactly that separation.</p></div>
+  <div class="math">\[ \text{den} = (\operatorname{base}_i)_+ + \sum_{j} (\operatorname{exc}_{ij})_+, \quad \alpha^{\text{mod}}_{i \leftarrow j} = \frac{(\operatorname{exc}_{ij})_+}{\text{den}}, \quad \alpha^{\text{mod}}_{i \leftarrow \text{BOT}} = \frac{(\operatorname{base}_i)_+}{\text{den}} \]</div>
+  <div class="math">\[ \text{mass}_{i \leftarrow j} = \min(y_i, \lambda_i)\,\alpha^{\text{mod}}_{i\leftarrow j}, \qquad \text{mass}_{i \leftarrow \text{BOT}} = \min(y_i, \lambda_i)\,\alpha^{\text{mod}}_{i\leftarrow \text{BOT}} + (y_i - \lambda_i)_+, \qquad \alpha_{i \leftarrow x} = \text{mass}_{i \leftarrow x} / y_i \]</div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Lemma 7.1 (proper) and 7.2(b) (competition-neutral) <span class="lab derived">derived</span></span>
+    <p><b>Proper:</b> the model shares sum to 1, so total mass is \(\min(y, \lambda) + (y - \lambda)_+ = y\), and every term is non-negative. So \(\alpha_{i\leftarrow\cdot}\) is a probability vector over parents plus BOT. <b>Neutral:</b> competition multiplies every component of \(\lambda_i\) by the same \(c \gt 0\), and the shares are computed before c is applied, so they are independent of ω. Subtraction would add a negative component with no parent interpretation and break the simplex. <span class="qed">QED</span> Mass the model did not predict goes to BOT, never to an invented parent. That is Gauss's law on a graph: whatever the internal flows don't account for is a source. In the linear regime the shares are exact parent probabilities (stochastic declustering; Zhuang, Ogata &amp; Vere-Jones 2002). Outside it they are an approximation <span class="lab conj">conjecture</span>.</p>
+  </div>
+
+  <h3>Evaluation and what ships</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Experiment</th><th>Question</th><th>Decision rule</th><th>In the cut</th></tr></thead>
+    <tbody>
+      <tr><td>Baselines</td><td>Does any of this beat simple models?</td><td>Held-out deviance against constant Poisson, hour-of-week Poisson, and a univariate Hawkes per narrative</td><td>yes</td></tr>
+      <tr><td>F1 semi-conservation</td><td>Is attention competed for?</td><td>Accept only if the ω interval excludes 0 (SC1), the supply level mean-reverts (SC2), and unrelated shocks crowd out proportionally rather than absolutely (SC3)</td><td>ω profile on the replay</td></tr>
+      <tr><td>F3 timescales and binning</td><td>Right τ set? Does 0.885 hold?</td><td>Simulate 1 h / 6 h kernels, bin at 15 min, refit; add a component only if held-out deviance improves beyond its bootstrap interval</td><td>yes</td></tr>
+      <tr><td>F4 edges as influence</td><td>Is an edge more than timing?</td><td>Bootstrap stability ≥ 0.8, a ±7-day placebo shift kills it, and it survives a common-shock factor</td><td>placebo only</td></tr>
+      <tr><td>F2 competition form</td><td>Divisive vs subtractive vs share models</td><td>Held-out score plus the granularity test</td><td>deferred</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Knobs, sensitivity and bounds</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Knob</th><th>Value</th><th>Status</th><th>Sensitivity and bounds</th></tr></thead>
+    <tbody>
+      <tr><td>τ set</td><td>1 h, 6 h, 1 d, 1 w</td><td>locked; F3 tests 2.5 h, 30 d</td><td>Too few timescales forces a slow tail onto fast kernels and fakes criticality</td></tr>
+      <tr><td>s</td><td>1 unit, then fitted</td><td>fitted</td><td>Rate error \(\le s\ln 2\) per narrative in quiet windows. Smaller s approaches ReLU, so negative-drive narratives lose their gradient</td></tr>
+      <tr><td>ω</td><td>grid {0, .25, .5, .75, 1}</td><td>profiled</td><td>0: needs the ρ cap; 1: hard cap S &lt; B. The fitted value <i>is</i> the semi-conservation measurement</td></tr>
+      <tr><td>β<sub>B</sub></td><td>real</td><td>fitted</td><td>Sets B relative to predicted supply. Large β<sub>B</sub> makes competition vanish whatever ω is</td></tr>
+      <tr><td>κ<sub>L</sub></td><td>0.00149</td><td>fixed</td><td>One-week supply smoothing. Faster tracking turns ingestion drift into "capacity"</td></tr>
+      <tr><td>φ</td><td>Pearson</td><td>fitted</td><td>Scales the quasi-likelihood. It does not change the point estimates, only their standard errors</td></tr>
+      <tr><td>r</td><td>by moments</td><td>fitted</td><td>NB2 size, used only for PIT and intervals (4.2′). Small r means heavy bursts and wide PIT bins. r → ∞ is Poisson</td></tr>
+      <tr><td>K(i)</td><td>20 + phenomenon + self</td><td>locked</td><td>Parameters scale linearly with it. Too few candidates and true spillovers go to BOT, inflating surprises</td></tr>
+      <tr><td>λ<sub>g</sub>, λ<sub>1</sub></td><td>validation</td><td>tuned</td><td>Larger means fewer edges, so more mass attributed to BOT</td></tr>
+      <tr><td>ρ cap</td><td>0.95</td><td>locked</td><td>Active only while \(\hat\omega \lt 0.05\). Mean cascade size at the cap is 1/(1 − 0.95) = 20</td></tr>
+      <tr><td>BOCPD</td><td>hazard 1/L, P(r ≤ 2) &gt; 0.5</td><td>report default</td><td>Higher hazard means more, shorter runs: more bursts, more false roots for the search</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Extreme cases</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Case</th><th>What would go wrong</th><th>Avoidance</th></tr></thead>
+    <tbody>
+      <tr><td>Supercritical fit</td><td>Simulated attention explodes</td><td>ω &gt; 0 bounds the total for any A (6.5b); otherwise the 0.95 cap (6.5a)</td></tr>
+      <tr><td>Rigid baseline</td><td>Regime shifts read as excitation, with branching ratios pushed toward 1 (Filimonov–Sornette)</td><td>Hour-of-week, scheduled releases, phenomenon baseline. ρ is reported only from fits that include them</td></tr>
+      <tr><td>Fixed screen capacity</td><td>Competition-induced criticality (Gleeson et al. 2014)</td><td>Model the budget explicitly via ω</td></tr>
+      <tr><td>Missing batch</td><td>Fake attention collapse</td><td>Masked out of the likelihood</td></tr>
+      <tr><td>Mostly-zero counts</td><td>45% relative noise at a mean of 5</td><td>NB2 for residuals; F3 tests 1-hour aggregation; event-level membership</td></tr>
+      <tr><td>Narrative splits mid-series</td><td>A broken series</td><td>Traces split by q (5.2), parameters split consistently (8.3), refit next day</td></tr>
+      <tr><td>Inhibition</td><td>Negative rate</td><td>Softplus keeps λ &gt; 0; inhibition never threatens stability (6.5a)</td></tr>
+      <tr><td>Edges read as causes</td><td>Timing sold as influence</td><td>An edge counts as influence only after F4; every dossier states "edges are timing"</td></tr>
+    </tbody>
+  </table></div>
+</section>

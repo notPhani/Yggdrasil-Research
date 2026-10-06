@@ -1,0 +1,222 @@
+
+<div class="box warn" style="margin-top: 1.6rem">
+  <span class="tag">Found while writing this doc · read these first</span>
+  <ul class="plain">
+    <li><b>Fixed and locked: the Engine 2b objective (decision 4.2′, locked 2026-10-06).</b> The original 4.2 fitted the negative-binomial (NB2) likelihood, which is not convex. Counterexample: in a window with zero articles the NB2 loss is \(r\log(r+\lambda)\), which is concave in \(\lambda\), and since \(\lambda \approx \eta\) once \(\eta \gg s\), it is concave in the drive too. The uniqueness proofs (Lemmas 6.7, 8.1) only cover the quasi-Poisson loss. <b>Now locked:</b> point estimates come from quasi-Poisson with a Pearson dispersion. NB2 is used only for the PIT residuals, intervals, \(r\) and the held-out log score. The fit is unique again. <a href="#nb2">Details in §5.</a></li>
+    <li><b>Two versions of the edge-share formula.</b> The Session 4 sheet wrote \(\alpha = \sigma(\eta/s)\,\mathrm{exc}/\lambda_{\text{raw}}\), and the report uses positive-part shares that send the surprise to BOT. They agree in the linear regime when every component is positive. Only the positive-part version is provably a probability vector (Lemma 7.1), so this doc uses it. <a href="#alpha">§5</a></li>
+    <li><b>20 placebos give only a coarse false-explanation rate.</b> With 40 placebo terminals, the standard error of a 5% rate is about 3.4 points, and the smallest possible p-value is 1/21. The 60 placebos planned after the hackathon bring those to 2.8 points and 1/61. <a href="#e3a">§6</a></li>
+    <li><b>The build schedule has slipped.</b> Decision 7.1 put the repo skeleton and Engine 1 on Tuesday 6 October. That evening went to this document, so no code exists yet. <a href="#build">§12</a></li>
+  </ul>
+</div>
+
+<section id="machine">
+  <div class="eyebrow">§1 · the whole machine</div>
+  <h2>Four units, four contracts, one clock</h2>
+
+  <div class="eli5">
+    <span class="tag">For a ten-year-old</span>
+    <p>Picture a detective who reads every newspaper in the world, every fifteen minutes, long before anything goes wrong. The detective keeps a giant map of stories: which ones people are talking about, and which stories make other stories louder.</p>
+    <p>One day a toy company's price suddenly crashes. The detective may use only the newspapers they had already read <i>before</i> the crash, because peeking at tomorrow's paper is cheating. Using the map, the detective finds the shortest chains of stories that could explain the crash. Then the detective goes looking for clues that would prove each chain <i>wrong</i>. At the end they say which chains survived and which didn't, or they honestly say "I don't know".</p>
+  </div>
+
+  <div class="col">
+    <p>Yggdrasil is one deterministic program that steps through time in 15-minute windows. Each step reads one GDELT batch, updates the world model, and checks the market. When the market does something abnormal, it opens a case and searches the frozen world model as it stood at the moment the move began. The world model is built without regard to any stock. Explanations are reads from that state, not fresh investigations. <span class="lab design">design</span></p>
+  </div>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 1100 630" role="img" aria-label="System diagram. GDELT batches enter Engine 1, which feeds broad observation records to Engine 2a and its ledger to Engine 2b. Engine 2a passes attention series one way to Engine 2b, which emits the frozen snapshot to Engine 3a. Yahoo prices feed the stock observer, which sends a case and the cutoff to Engine 3a. Engine 3a sends explanation trees up to Engine 3b, which writes the dossier. Engine 3b requests fetches from Engine 1 over a loop across the top, and the results re-enter through Engine 1's dedup and clocks. Targeted fetches are blocked from entering Engine 2.">
+        <defs>
+          <marker id="m1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+        </defs>
+        <g transform="translate(0,30)">
+        <g fill="none" stroke="currentColor" stroke-width="1.4">
+          <rect x="16" y="60" width="150" height="70" rx="6"/>
+          <rect x="16" y="230" width="150" height="62" rx="6"/>
+          <rect x="16" y="470" width="150" height="62" rx="6"/>
+          <rect x="200" y="40" width="180" height="300" rx="8"/>
+          <rect x="460" y="40" width="220" height="120" rx="8"/>
+          <rect x="460" y="210" width="220" height="130" rx="8"/>
+          <rect x="460" y="450" width="220" height="92" rx="8"/>
+          <rect x="760" y="140" width="180" height="160" rx="8"/>
+          <rect x="760" y="400" width="180" height="140" rx="8"/>
+          <rect x="972" y="180" width="112" height="80" rx="6"/>
+        </g>
+        <g fill="currentColor" font-size="12" font-family="IBM Plex Sans, system-ui, sans-serif">
+          <text x="91" y="84" text-anchor="middle" font-weight="600">GDELT v2</text>
+          <text x="91" y="102" text-anchor="middle" opacity="0.75">GKG · Events · Mentions</text>
+          <text x="91" y="118" text-anchor="middle" opacity="0.75">one batch / 15 min</text>
+          <text x="91" y="254" text-anchor="middle" font-weight="600">SerpApi</text>
+          <text x="91" y="272" text-anchor="middle" opacity="0.75">≤ 15 queries / case</text>
+          <text x="91" y="494" text-anchor="middle" font-weight="600">Yahoo chart API</text>
+          <text x="91" y="512" text-anchor="middle" opacity="0.75">daily · 5-min live</text>
+
+          <text x="290" y="64" text-anchor="middle" font-weight="600">Engine 1 · Observation</text>
+          <text x="214" y="92">manifest + md5 check</text>
+          <text x="214" y="114">parse pruned GKG columns</text>
+          <text x="214" y="136">L1 exact-key dedup</text>
+          <text x="214" y="158">L2 semantic dedup, 4 steps</text>
+          <text x="214" y="180">clocks · first_seen</text>
+          <text x="214" y="202">ledger · missing-batch flag</text>
+          <text x="214" y="224">Parquet + DuckDB archive</text>
+          <text x="214" y="246">fetch service (C4)</text>
+          <text x="214" y="316" opacity="0.7">never interprets meaning</text>
+
+          <text x="570" y="64" text-anchor="middle" font-weight="600">Engine 2a · Grouping</text>
+          <text x="474" y="90">objects → events (72 h)</text>
+          <text x="474" y="110">events → narratives (14 d)</text>
+          <text x="474" y="130">narratives → phenomena</text>
+          <text x="474" y="150" opacity="0.7">content only, never prices</text>
+
+          <text x="570" y="234" text-anchor="middle" font-weight="600">Engine 2b · Attention</text>
+          <text x="474" y="260">traces z, drive η, rate λ</text>
+          <text x="474" y="280">divisive competition ω</text>
+          <text x="474" y="300">PIT → BOCPD bursts</text>
+          <text x="474" y="320">edge shares α, BOT remainder</text>
+
+          <text x="570" y="474" text-anchor="middle" font-weight="600">Stock observer</text>
+          <text x="474" y="498">market-only SAR gate</text>
+          <text x="474" y="518">residual-correlation clusters</text>
+          <text x="474" y="536" opacity="0.7">never reads news</text>
+
+          <text x="850" y="164" text-anchor="middle" font-weight="600">Engine 3b · Verdicts</text>
+          <text x="774" y="190">hypotheses + signature</text>
+          <text x="774" y="210">claim cascade, no LLM</text>
+          <text x="774" y="230">clingo: 4 bits</text>
+          <text x="774" y="250">P_pre vs P_all</text>
+          <text x="774" y="270">Lean (stretch)</text>
+
+          <text x="850" y="424" text-anchor="middle" font-weight="600">Engine 3a · Search</text>
+          <text x="774" y="450">graph at τ*</text>
+          <text x="774" y="470">exact DPBF (k = 2)</text>
+          <text x="774" y="490">rivals within ln 20</text>
+          <text x="774" y="510">abstention always</text>
+          <text x="774" y="530">placebo p-value</text>
+
+          <text x="1028" y="214" text-anchor="middle" font-weight="600">Dossier</text>
+          <text x="1028" y="234" text-anchor="middle" opacity="0.75">no forecast</text>
+          <text x="1028" y="250" text-anchor="middle" opacity="0.75">no advice</text>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#m1a)">
+          <path d="M166,95 H198"/>
+          <path d="M200,255 H168"/>
+          <path d="M166,272 H198"/>
+          <path d="M380,100 H458"/>
+          <path d="M380,300 H458"/>
+          <path d="M570,160 V208"/>
+          <path d="M166,500 H458"/>
+          <path d="M680,500 H758"/>
+          <path d="M680,300 H720 V440 H758"/>
+          <path d="M850,400 V302"/>
+          <path d="M940,220 H970"/>
+          <path d="M900,300 V398" stroke-dasharray="4 3"/>
+        </g>
+        <g fill="none" stroke-width="1.4" style="color: var(--warn)" stroke="currentColor">
+          <path d="M800,140 V0 H300 V38" marker-end="url(#m1a)" stroke-dasharray="5 4"/>
+          <path d="M340,40 V24 H880 V138" marker-end="url(#m1a)"/>
+        </g>
+        <g font-size="11" fill="currentColor" font-family="IBM Plex Mono, monospace">
+          <text x="419" y="92" text-anchor="middle">C1</text>
+          <text x="419" y="116" text-anchor="middle" opacity="0.75">broad</text>
+          <text x="419" y="292" text-anchor="middle">ledger</text>
+          <text x="578" y="190">y, m, Φ  (one way)</text>
+          <text x="312" y="492" text-anchor="middle">OHLCV, archived</text>
+          <text x="719" y="492" text-anchor="middle">C3 case</text><text x="719" y="518" text-anchor="middle">τ*</text>
+          <text x="714" y="372" text-anchor="end">C2 S_τ*</text>
+          <text x="842" y="356" text-anchor="end">trees, odds</text>
+          <text x="912" y="372" font-size="10" opacity="0.75">contradicted</text>
+          <text x="912" y="386" font-size="10" opacity="0.75">→ re-solve</text>
+        </g>
+        <g font-size="11" font-family="IBM Plex Mono, monospace" style="color: var(--warn)" fill="currentColor">
+          <text x="560" y="-6" text-anchor="middle">C4 fetch request (3b asks, Engine 1 fetches)</text>
+          <text x="610" y="17" text-anchor="middle">C4 results + C1 records, first_seen inherited</text>
+        </g>
+        <g style="color: var(--bad)" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="430" y1="122" x2="430" y2="140"/>
+          <path d="M412,122 L428,131 L412,140 Z" fill="currentColor"/>
+        </g>
+        <text x="419" y="158" text-anchor="middle" font-size="10.5" font-family="IBM Plex Mono, monospace" style="fill: var(--bad)">targeted</text>
+        <text x="419" y="171" text-anchor="middle" font-size="10.5" font-family="IBM Plex Mono, monospace" style="fill: var(--bad)">blocked</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>The system as locked in Session 0, with the later amendments.</b> Solid arrows carry data forward in time. The orange loop across the top is the only backward path: Engine 3b asks Engine 1 to fetch pages, and the results come back through Engine 1's dedup and clocks, so they obey the same no-hindsight rule as everything else. The red diode on C1 is the one-way valve: pages fetched on Engine 3's behalf (origin = targeted) are archived and citable, but they never enter Engine 2's counts or fits. The dashed arrow from 3b down to 3a is the only feedback inside Engine 3: a CONTRADICTED claim deletes its edges and the search reruns exactly.</figcaption>
+  </figure>
+
+  <h3>The four contracts <span class="lab design">design · Session 0</span></h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Contract</th><th>From → to</th><th>Fields</th><th>Rule it enforces</th></tr></thead>
+    <tbody>
+      <tr><td>C1 ObservationRecord</td><td>E1 → E2, E3</td><td><code>observation_id</code> (sha256), <code>source_type</code>, <code>source_name</code>, <code>origin</code> broad|targeted, <code>url_key</code>, <code>native_id</code>, <code>content_hash</code>, <code>copy_group</code> + member list + count + merge evidence, four clocks + <code>first_seen</code>, <code>window</code>, entities, themes, tone, quotations, amounts, <code>raw_ref</code></td><td>One object per copy group; no weighting in Engine 1</td></tr>
+      <tr><td>C2 StateSnapshot S<sub>t</sub></td><td>E2 → E3</td><td><code>snapshot_id = sha256(cfg_hash, t, parent, inputs_hash)</code>; narratives + lineage, \(y, m, V, z, \lambda\), residuals, bursts, \(\alpha\), θ version, membership index</td><td>Immutable; E3 reads the last snapshot that closes at or before τ*</td></tr>
+      <tr><td>C3 Case</td><td>observer → E3</td><td><code>case_id</code>, day, instruments (R, AR, SAR, Mz, Mv, Mg), clusters, <code>tau_star</code>, cutoff rule, price source</td><td>The observer never reads news</td></tr>
+      <tr><td>C4 Fetch</td><td>E3 ⇄ E1</td><td>request: case, query, engine, date bounds, budget slot · response: observation ids after dedup and clocks</td><td>Results always re-enter through Engine 1</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Each unit has one job and one deliberate blind spot</h3>
+  <div class="grid3">
+    <div class="card"><b>Engine 1 · Observation</b><span>Owns the archive, copy groups, clocks and the fetch service. Never interprets meaning: no relevance filter, no narratives, no stock filter, so "bridge" stories survive.</span></div>
+    <div class="card"><b>Engine 2 · Narratives and attention</b><span>Owns events, narratives, phenomena, memberships, attention state and edge shares. Never sees prices and never searches the web. The narrative graph can't be shaped by the move it will later explain.</span></div>
+    <div class="card"><b>Stock observer</b><span>Owns prices, abnormal-return statistics, clusters and τ*. Never reads news.</span></div>
+    <div class="card"><b>Engine 3 · Explanation</b><span>Owns the explanation graphs, search, queries, claims, programs, verdicts and dossiers. Never writes to Engine 2's state.</span></div>
+    <div class="card"><b>2a → 2b, one way</b><span>Grouping decides by content alone. Attention is computed afterwards. Grouping never reads attention (decision 3.9′: the Dirichlet–Hawkes coupling was rejected as scope encroachment).</span></div>
+    <div class="card"><b>The one-way valve</b><span>Targeted pages are evidence, never attention. Without the valve, the search would choose what to fetch, the fetched pages would count as attention, and the model would get stronger on the very hypothesis it was asked to test.</span></div>
+  </div>
+
+  <h3>One clock decides what counts as evidence</h3>
+  <div class="col">
+    <p>Every record carries four clocks that are never collapsed into one. <code>event_time</code> is when the thing happened. <code>published_time</code> is the outlet's timestamp, present for about 59% of GKG documents via <code>PAGE_PRECISEPUBTIMESTAMP</code> <span class="lab measured">measured</span>. <code>observed_time</code> is the batch time. <code>ingested_time</code> is <code>observed_time + 15 min</code> in a replay, which removes the wall clock. Admissibility uses a fifth, derived clock:</p>
+  </div>
+  <div class="math">\[ \text{first_seen}(o) = \min_{o' \equiv o} \text{ingested_time}(o'), \qquad \text{admissible}(o, \tau^*) \iff \text{first_seen}(o) \lt \tau^* \]</div>
+  <div class="col">
+    <p>Here \(o' \equiv o\) runs over every record with the same exact key (native id, canonical URL or content hash). A SerpApi page fetched in October 2026 has <code>first_seen</code> = October 2026, which would make it useless in a replay. Decision 0.6 fixes this: if its canonical URL matches a GDELT record, it inherits that record's <code>first_seen</code>. Otherwise it goes only into \(P_{\text{all}}\), the program that judges truth, and never into \(P_{\text{pre}}\), the program that judges what moved the price.</p>
+  </div>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 1100 250" role="img" aria-label="Timeline from 20 to 28 January 2025. Everything first seen before the cutoff at 08:00 UTC on 27 January, the Amsterdam open, is admissible for the pre-move program. A SerpApi page fetched in October 2026 whose canonical URL matches a GDELT record first seen on 21 January inherits 21 January and is admissible.">
+        <defs><marker id="m1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <rect x="60" y="70" width="934" height="56" style="fill: var(--self)" opacity="0.12"/>
+        <rect x="994" y="70" width="86" height="56" style="fill: var(--bad)" opacity="0.10"/>
+        <line x1="60" y1="126" x2="1080" y2="126" stroke="currentColor" stroke-width="1.4"/>
+        <g font-size="11" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity="0.8">
+          <text x="60" y="146" text-anchor="middle">Jan 20</text><text x="187" y="146" text-anchor="middle">21</text><text x="315" y="146" text-anchor="middle">22</text><text x="442" y="146" text-anchor="middle">23</text><text x="570" y="146" text-anchor="middle">24</text><text x="697" y="146" text-anchor="middle">25</text><text x="825" y="146" text-anchor="middle">26</text><text x="952" y="146" text-anchor="middle">27</text><text x="1080" y="146" text-anchor="middle">28</text>
+        </g>
+        <g stroke="currentColor" stroke-width="1"><line x1="187" y1="122" x2="187" y2="130"/><line x1="315" y1="122" x2="315" y2="130"/><line x1="442" y1="122" x2="442" y2="130"/><line x1="570" y1="122" x2="570" y2="130"/><line x1="697" y1="122" x2="697" y2="130"/><line x1="825" y1="122" x2="825" y2="130"/><line x1="952" y1="122" x2="952" y2="130"/></g>
+        <line x1="994" y1="40" x2="994" y2="170" style="stroke: var(--bad)" stroke-width="2"/>
+        <text x="994" y="32" text-anchor="middle" font-size="12" font-weight="600" style="fill: var(--bad)">τ* = Jan 27 08:00 UTC</text>
+        <text x="994" y="186" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.8">Amsterdam open (ASML gap)</text>
+        <line x1="1030" y1="116" x2="1030" y2="126" stroke="currentColor"/><text x="1030" y="110" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">US open 14:30</text>
+        <circle cx="60" cy="98" r="5" style="fill: var(--exo)"/><text x="70" y="94" font-size="12" fill="currentColor">R1 released (Jan 20)</text>
+        <circle cx="825" cy="98" r="5" style="fill: var(--exo)"/><text x="815" y="94" font-size="12" fill="currentColor" text-anchor="end">weekend coverage, "Sputnik moment" post (Jan 26)</text>
+        <text x="300" y="117" font-size="12" font-weight="600" style="fill: var(--self)">P_pre: first_seen &lt; τ*  (could have moved the price)</text>
+        <text x="1037" y="88" text-anchor="middle" font-size="12" font-weight="600" style="fill: var(--bad)">P_all only</text>
+        <g style="color: var(--flow)">
+          <path d="M1080,220 H187 V132" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#m1b)"/>
+          <circle cx="187" cy="126" r="5" fill="currentColor"/>
+          <text x="640" y="212" text-anchor="middle" font-size="12" fill="currentColor">SerpApi page fetched Oct 2026 → canonical URL matches a GDELT record first seen Jan 21 → inherits Jan 21</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>The cutoff is a light cone.</b> Only records inside the past light cone of the first abnormal print can be causes. The replay cutoff is 08:00 UTC on 27 January, the Amsterdam open where ASML gapped −7.7%, so the whole weekend is admissible and nothing from Monday after 08:00 is. The admissible set \(\{o : \text{first_seen}(o) \lt \tau\}\) only grows as τ grows, so choosing the earlier time when unsure can only remove evidence. It can never add hindsight.</figcaption>
+  </figure>
+
+  <h3>Determinism: the replay is a pure function of (archive, config) <span class="lab derived">derived · Theorem 3.1</span></h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Rule</th><th>Statement</th><th>What it removes</th></tr></thead>
+    <tbody>
+      <tr><td>D1</td><td>No wall clock in replay: <code>ingested = observed + 15 min</code></td><td>dependence on when you run it</td></tr>
+      <tr><td>D2</td><td>Every random draw from <code>Philox(key = h(cfg_hash, record ids), counter = draw index)</code></td><td>process RNG state</td></tr>
+      <tr><td>D3</td><td>Fixed reduction order, pinned thread counts, pinned package versions</td><td>floating-point summation order</td></tr>
+      <tr><td>D4</td><td>Every tie broken by <code>key(x) = (observed_time, source_rank, url_key, record_id)</code></td><td>hash-map iteration order</td></tr>
+      <tr><td>D5</td><td>Nondeterministic calls (SerpApi, model inference) are archived on first call and replayed afterwards</td><td>external services changing; also saves credits</td></tr>
+      <tr><td>D6</td><td>Every artifact stamped with <code>cfg_hash</code> and the code commit</td><td>silent config drift</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Theorem 3.1, end-to-end replay determinism</span>
+    <p>Let \(x_0, x_1, \dots\) be the archived inputs (raw blobs plus archived model and API outputs) sorted by the D4 key, and let every stage be a state map \(s_{n+1} = \Phi(s_n, x_n, \text{cfg})\). Then \(s_0 = \text{init}(\text{cfg})\) depends only on the config. If \(s_n\) is a function of \((x_{\lt n}, \text{cfg})\), so is \(s_{n+1}\), provided \(\Phi\) reads nothing but its arguments. D1 removes the clock, D2 the RNG state, D3 the reduction order, D4 container iteration order, and D5 the outside world. By induction every state is a function of the inputs and the config, and every output is a projection of a state. <span class="qed">QED</span></p>
+    <p>Rounding scores before threshold tests does not provide this guarantee, because a value can straddle a grid line. The guarantee comes from D3. <b>Acceptance test:</b> replay the same window range twice, and every snapshot hash and verdict must match bit for bit. Test T1 in §4 extends this to stopping and resuming from a snapshot.</p>
+  </div>
+</section>

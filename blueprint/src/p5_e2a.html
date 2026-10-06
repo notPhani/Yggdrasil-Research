@@ -1,0 +1,169 @@
+
+<section id="e2a">
+  <div class="eyebrow">§4 · Engine 2a · Grouping · Session 3, locked (3.4′, 3.9′, 3.10, 3.12, 3.13)</div>
+  <h2>Events, narratives, phenomena: one rule at three timescales</h2>
+
+  <div class="eli5">
+    <span class="tag">For a ten-year-old</span>
+    <p>Now we sort the stapled bundles. Small piles are single happenings: "Nvidia fell 14% before the bell". Boxes hold ongoing stories: "cheap Chinese AI". Big shelves hold whole eras: "the AI boom".</p>
+    <p>Every box keeps its name forever. If a box gets lumpy, it splits into two boxes and they share its memory fairly. If a box gathers dust for a week, it goes to sleep, and it needs a really good match to wake up again. The sorter only looks at what an article <i>says</i>, never at how popular it is. Popularity is the next engine's job.</p>
+  </div>
+
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/ThreeLevels.jpg" src="media/ThreeLevels.mp4" aria-label="Animation: objects group into event clusters, event clusters into persistent narratives that can split, and narratives into a phenomenon"></video>
+    <figcaption><b>One assignment rule, applied three times with slower memory each time.</b> Objects join event clusters (72-hour freshness), event clusters join narratives (14-day freshness, persistent ids, explicit splits), and narratives form phenomena (daily communities, persistent). This is a coarse-graining in the renormalization-group sense: the same rule, rescaled. The arrow runs one way. Grouping decides by content, and attention is computed afterwards.</figcaption>
+  </figure>
+
+  <h3>Features <span class="lab design">design · 3.2</span></h3>
+  <div class="math">\[ e_o = \text{title embedding (384-d, int8, reused from dedup)}, \qquad \text{ents}(o) = \operatorname{clean}(\text{persons} \cup \text{orgs} \cup \text{allnames}) \]</div>
+  <div class="math">\[ \operatorname{idf}(x) = \log \frac{N_{\text{docs}}}{\operatorname{df}(x)} \ \ \text{(trailing 7 days)} \]</div>
+  <div class="math">\[ J_{\text{idf}}(A, B) = \frac{\sum_{x \in A \cap B} \operatorname{idf}(x)}{\sum_{x \in A \cup B} \operatorname{idf}(x)} \qquad \text{(weighted Jaccard; definition written for this doc)} \]</div>
+  <div class="col"><p>Themes enter only at the narrative level, and only those with document frequency below 20%. The measured top themes are generic tags: <code>TAX_FNCACT</code> 77%, <code>EPU_POLICY</code> 39%, <code>CRISISLEX_CRISISLEXREC</code> 33% <span class="lab measured">measured</span>. <code>clean</code> lowercases, applies an alias map and drops known misfiles. "los angeles" was tagged as a <i>person</i> in 26 documents of one batch.</p></div>
+
+  <h3>Layer 1: event clusters (one specific happening)</h3>
+  <div class="math">\[ \operatorname{score}(o, c) = \big( w_{\text{txt}} \cos(e_o, \mu_c) + w_{\text{ent}} J_{\text{idf}}(\text{ents}_o, \text{ents}_c) \big) \cdot k_{\text{event}}(t_o - t_c), \qquad k_\ell(\Delta) = e^{-\Delta^2 / 2\sigma_\ell^2},\ \sigma_{\text{event}} = 72\,\text{h} \]</div>
+  <div class="math">\[ \operatorname{assign}(o) = \begin{cases} \arg\max_c \operatorname{score}(o, c) & \text{if } \max_c \operatorname{score}(o,c) \ge \tau_{\text{event}} \\ \text{new cluster} & \text{otherwise} \end{cases} \]</div>
+  <div class="col"><p>Candidates are clusters seen in the last 7 days that share a rare entity or an embedding LSH bucket with o. \(\mu_c\) is the running mean of member embeddings, and \(t_c\) the mean member time. Objects are processed one at a time in D4 order, so the result is deterministic. One measured batch clustered alone gave 61–67% singletons: events don't repeat within 15 minutes, they build up over hours and days <span class="lab measured">measured</span>.</p></div>
+
+  <h3>Layer 2: persistent narratives, assignment from content only <span class="lab design">design · 3.9′</span></h3>
+  <div class="math">\[ \operatorname{gain}_t(c, n) = \underbrace{\log f(x_c \mid n) - \log f_0(x_c)}_{\text{learned likelihood ratio (3.4′)}} \; - \underbrace{\frac{(t_c - t_n)^2}{2\sigma_{\text{narr}}^2}}_{\log k_{\text{narr}},\ \sigma_{\text{narr}} = 14\,\text{d}} \]</div>
+  <div class="math">\[ c \to \begin{cases} \arg\max_{n\ \text{alive}} \operatorname{gain} & \text{if } \ge \tau_{\text{alive}} \\ \arg\max_{n\ \text{dormant}} \operatorname{gain} & \text{if } \ge \tau_{\text{dormant}} \gt \tau_{\text{alive}} \\ \text{emerge new } n,\ \text{id} = \operatorname{sha256}(\text{first event ids}, t) & \text{otherwise} \end{cases} \qquad \mu_n \leftarrow \frac{(1-\eta)\mu_n + \eta\,\mu_c}{\lVert\cdot\rVert} \]</div>
+  <div class="col"><p>\(t_n\) is when narrative n last changed. That is Engine 2a's own state, not attention. The centroid drifts slowly (small η) while the id never changes. Waking a dormant narrative takes stronger evidence than joining a live one. That is hysteresis, the same reason a thermostat has a dead band.</p></div>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 300" role="img" aria-label="Narrative lifecycle. A new event cluster that matches nothing emerges as a new alive narrative. Alive narratives absorb matching events, go dormant after seven days without mass, and wake only on a gain above the stricter dormant threshold. Every six hours a split test and a merge test run, and each must agree three times in a row. Every transition is written as an immutable lineage edge.">
+        <defs><marker id="m4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.4">
+          <circle cx="70" cy="110" r="26"/>
+          <rect x="300" y="80" width="170" height="60" rx="8" style="stroke: var(--flow)" stroke-width="2"/>
+          <rect x="720" y="80" width="170" height="60" rx="8"/>
+          <rect x="190" y="210" width="200" height="56" rx="8"/>
+          <rect x="420" y="210" width="200" height="56" rx="8"/>
+        </g>
+        <g fill="currentColor" font-size="13" font-family="IBM Plex Sans, system-ui, sans-serif" text-anchor="middle">
+          <text x="70" y="114" font-weight="600">emerge</text>
+          <text x="385" y="108" font-weight="600" style="fill: var(--flow)">ALIVE</text>
+          <text x="385" y="127" font-size="11" opacity="0.8">id fixed, centroid drifts</text>
+          <text x="805" y="108" font-weight="600">DORMANT</text>
+          <text x="805" y="127" font-size="11" opacity="0.8">kept forever, never deleted</text>
+          <text x="290" y="234" font-weight="600">SPLIT N → c₁, c₂</text>
+          <text x="290" y="253" font-size="11" opacity="0.8">z[c] = q[c] · z[N]  (Lemma 5.2)</text>
+          <text x="520" y="234" font-weight="600">MERGE N₁, N₂ → C</text>
+          <text x="520" y="253" font-size="11" opacity="0.8">z[C] = z[N₁] + z[N₂]</text>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#m4a)">
+          <path d="M96,110 H298"/>
+          <path d="M470,98 H718"/>
+          <path d="M720,124 H472"/>
+          <path d="M340,140 L300,208"/>
+          <path d="M260,210 C220,170 260,150 310,140"/>
+          <path d="M440,140 L500,208"/>
+          <path d="M560,210 C600,170 520,150 450,140"/>
+          <path d="M360,80 C340,30 430,30 410,78"/>
+        </g>
+        <g fill="currentColor" font-size="11" font-family="IBM Plex Mono, monospace">
+          <text x="197" y="100" text-anchor="middle">all gains below</text>
+          <text x="197" y="126" text-anchor="middle">thresholds</text>
+          <text x="594" y="90" text-anchor="middle">no mass for 7 days</text>
+          <text x="594" y="140" text-anchor="middle">gain ≥ τ_dormant (&gt; τ_alive)</text>
+          <text x="385" y="28" text-anchor="middle">gain ≥ τ_alive: absorb event</text>
+          <text x="16" y="190">3 agreeing 6-h checks:</text>
+          <text x="16" y="205">two separated groups</text>
+          <text x="640" y="190">3 agreeing 6-h checks:</text>
+          <text x="640" y="205">centroids within τ_merge</text>
+        </g>
+        <text x="990" y="292" text-anchor="end" font-size="11" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity="0.75">every transition → immutable lineage edge (t, kind, parents, children, shares q)</text>
+      </svg>
+    </div>
+    <figcaption><b>A narrative's identity changes only through logged, rare, confirmed events.</b> Session 4 fits a time series per narrative, so ids that churn would break every series. Splits and merges must agree at three consecutive 6-hour checks, which means at least 12 hours of agreement before any structure changes. Memory moves with the lineage and is never created or destroyed.</figcaption>
+  </figure>
+
+  <h3>Learned calibration: the softmax is a mixture posterior <span class="lab design">design · 3.4′</span></h3>
+  <div class="math">\[ f(x \mid n) = C_d(\kappa)\, e^{\kappa\, \mu_n^{\top} x}, \quad C_d(\kappa) = \frac{\kappa^{d/2 - 1}}{(2\pi)^{d/2} I_{d/2-1}(\kappa)}, \qquad f_0(x) = \frac{1}{A_d},\ A_d = \frac{2\pi^{d/2}}{\Gamma(d/2)} \]</div>
+  <div class="math">\[ \log \frac{p(n \mid x)}{p(0 \mid x)} = \kappa \cos(x, \mu_n) + \log \pi_n + \log C_d(\kappa) + w_{\text{ent}} J_{\text{idf}} + w_{\text{th}} J_{\text{th}} - \log \pi_0 + \log A_d^{-1} \]</div>
+  <div class="col"><p>Title embeddings live on the unit sphere. Each narrative is a von Mises–Fisher bump around its centroid, and "none" is a flat background over the whole sphere. The temperature of the softmax is therefore \(T = 1/\kappa\), and the "none" threshold is fixed by \(\pi_0\) and \(\kappa\). Both are fitted by EM on the data itself, with no hand labels:</p></div>
+  <div class="math">\[ \text{E: } r_{cn} = \frac{\pi_n f(x_c \mid n)\, e^{w \cdot J}}{\sum_{n'} \pi_{n'} f(x_c \mid n')\, e^{w \cdot J}} \qquad \text{M: } \mu_n = \frac{\sum_c r_{cn} x_c}{\lVert \sum_c r_{cn} x_c \rVert},\ \ \bar r = \frac{\sum_n \lVert \sum_c r_{cn} x_c \rVert}{\sum_{n,c} r_{cn}},\ \ \hat\kappa = \frac{\bar r (d - \bar r^2)}{1 - \bar r^2},\ \ \pi_n = \overline{r_{\cdot n}} \]</div>
+  <div class="col"><p>Given the responsibilities, the entity and theme weights solve a convex weighted logistic regression. The refit runs daily on the trailing 7 days with a fixed initialization and iteration count, versioned as <code>theta_version</code>. \(\hat\kappa\) is Banerjee et al.'s approximation, and \(\log C_d\) needs a log-Bessel routine at d = 384. Calibration is checked against where each cluster has settled 72 hours later, as a reliability curve. That check is a <b>diagnostic only</b>, never a training signal, because training on its own settled output would teach the model to agree with itself.</p></div>
+  <div class="box warn">
+    <span class="tag">Sensitivity worth knowing · κ is large in 384 dimensions <span class="lab derived">derived arithmetic</span></span>
+    <p>\(\hat\kappa\) is about \(d \bar r / (1 - \bar r^2)\). For mean resultant lengths \(\bar r\) = 0.3, 0.5, 0.8 it gives κ ≈ 127, 256, 852. A cosine gap of only 0.01 between two narratives is then worth 1.3–8.5 nats, i.e. odds of 3.6:1 to 5,000:1. In practice, soft membership will be close to hard except at near-ties. Three things follow. The top-3 slots matter mainly at boundaries. The "none" component, not the softmax spread, carries most of the uncertainty. And the entity and theme terms are what decide close calls. The real \(\bar r\) is unmeasured until the first run.</p>
+  </div>
+
+  <h3>Soft membership and the series Engine 2b consumes <span class="lab design">design · 3.3</span></h3>
+  <div class="math">\[ p_{c,n} = r_{cn}\ \text{for}\ n \in \text{top}_3(c) \cup \{0\}, \quad p_{o,n} = p_{c(o),n}, \quad \tilde p = \tfrac{1}{255}\operatorname{round}_{\text{LR}}(255\,p) \]</div>
+  <div class="math">\[ y_{n,t} = \sum_{o \in t} \tilde p_{o,n}, \qquad m_{n,t} = \sum_{o \in t} \text{member_count}(o)\, \tilde p_{o,n} \]</div>
+  <div class="col"><p>Memberships are decided once per event cluster. Five DeepSeek documents in one batch share a single decision instead of making five noisy ones. They are stored as uint8 and quantized <i>before</i> aggregation, so replay and live give identical \(y\). \(y\) is the unweighted attention mass. \(m\) is reach, which uses Engine 1's member counts as data. <span class="lab conj">proposed detail</span> \(\operatorname{round}_{\text{LR}}\) is largest-remainder rounding, which makes the four uint8 values sum to exactly 255. Independent rounding can sum to 254 or 256 and would break Lemma 5.1 by up to 1/255 per object.</p></div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Lemma 5.1, the reservoir identity <span class="lab derived">derived</span></span>
+    <p>For every window, \(\sum_{n \ge 1} y_{n,t} + y_{0,t} = V_t\), the number of objects. Each object's memberships over its top 3 plus "none" sum to 1 (to 255/255 exactly under largest-remainder rounding), and every other narrative gets 0. Summing over objects gives \(\sum_o 1 = V_t\). <span class="qed">QED</span> <b>Consequence:</b> total attention is conserved trivially by construction, so "semi-conservation" can't be tested on the total. It must be tested as competition for <i>predicted</i> supply, which is \(\omega\) in Engine 2b.</p>
+  </div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Lemma 5.2, memory is conserved under splits and merges <span class="lab derived">derived</span></span>
+    <p>Split \(N \to c_1..c_K\) with overlap shares \(q_c = |\text{obs}(c) \cap \text{obs}(N)| / \sum_{c'} |\text{obs}(c') \cap \text{obs}(N)|\), and set \(z_{c,m} = q_c z_{N,m}\). Then \(\sum_c z_{c,m} = z_{N,m} \sum_c q_c = z_{N,m}\) for every timescale m. A merge sets \(z_{C,m} = \sum_l z_{N_l,m}\), which is conserved by definition. <span class="qed">QED</span> Lemma 8.3 extends this to the parameters: at the split instant, every outside narrative's drive is unchanged and the children's drives sum to the parent's.</p>
+  </div>
+
+  <h3>Layer 3: phenomena (the slow field) <span class="lab design">design · 3.10 with 3.9′</span></h3>
+  <div class="math">\[ W_{ij} = a \cos(\mu_i, \mu_j) + b\, J_{\text{idf}}(E_i, E_j) + d\, \operatorname{comem}(i, j), \qquad \text{phenomena} = \operatorname{Leiden}(W),\ \text{fixed seed, daily} \]</div>
+  <div class="math">\[ \Phi_p(t) = \sum_{i \in p} y_i(t), \qquad z^{\Phi}_{p,m}(t) = \sum_{i \in p} z_{i,m}(t) \ \text{(exact, because the trace recursion is linear)} \]</div>
+  <div class="col">
+    <p>There are no Engine 2b inputs in \(W\). The mutual-excitation term was removed when you ruled the attention coupling out of scope. A phenomenon's identity changes only after 7 consecutive daily checks agree. That is far stiffer than the narrative layer's three checks every six hours. Two different kernels are involved here and they shouldn't be confused. Phenomena have <b>no freshness kernel</b> for assignment (they are persistent). Their attention \(\Phi\) is remembered with a <b>30-day memory kernel</b>. Phenomena are labels in Engine 3, not search nodes, because as nodes they would double-count their members' attention.</p>
+    <p><b>Why they exist:</b> they form a slow baseline under the narratives, \(\beta_i \log \Phi_{p(i)}(t-1)\) in Engine 2b's drive. Without it, a months-long boom gets read as narratives exciting each other. That is the Filimonov–Sornette spurious-criticality trap at a slow timescale. The physics is a Born–Oppenheimer separation: phenomena are the slow nuclei, and narratives are fast electrons that settle into whatever state the phenomenon is in. <i>Cut note:</i> the slow-baseline coupling is deferred for the hackathon, because three weeks of history can't show a multi-year phenomenon. Phenomena ship as dossier labels.</p>
+  </div>
+
+  <h3>Cold start without hindsight, and three tests <span class="lab design">design · 3.7, 3.12</span></h3>
+  <div class="col"><p>The algorithm runs blind over a 3-week pre-period (16 Dec 2024 → 6 Jan 2025 for the replay). There are no theme seeds and no hand-named anchors, because naming "AI models" or "data-center power" while knowing what happened on 27 January is hindsight in the initialization.</p></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Test</th><th>Construction</th><th>Pass condition</th><th>What it proves</th></tr></thead>
+    <tbody>
+      <tr><td>T1 exact resume (hard gate)</td><td>A = one run \(t_0 \to t_n\). C = run \(t_0 \to t_k\), snapshot, restart, run \(t_k \to t_n\)</td><td>every output at \(t_n\) bit-identical</td><td>snapshots are complete state (Theorem 3.1 across a restart)</td></tr>
+      <tr><td>T2 forgetting the start</td><td>A = blind start at \(t_0\), B = blind start at \(t_0 + \Delta\). Match narratives by Hungarian assignment on 7-day object-overlap Jaccard</td><td>\(D_{\text{member}} = 1 - \text{ARI} \le 0.1\) and \(D_{\text{attn}} = \text{JS}(a_A, a_B) \le 0.05\) after burn-in (thresholds set on the first run)</td><td>\(T_{\text{burn}} = \min\{t : D(t') \le \varepsilon\ \forall t' \ge t\}\). The 3-week warmup is justified only if \(T_{\text{burn}} \le\) 3 weeks</td></tr>
+      <tr><td>T3 prior versus blind</td><td>B′ = start at \(t_0 + \Delta\) with priors from A's snapshot, against blind B</td><td>B′ converges faster</td><td>whether priors help at all (deferred in the cut)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="col"><p>T2 is filter stability (a good filter forgets its initial guess when the system mixes; van Handel 2009) plus the multiple-chain idea behind Gelman–Rubin, applied to a graph. It turns the warmup length from an assumption into a measurement.</p></div>
+
+  <h3>History for phenomena: the anytime download <span class="lab conj">proposed</span></h3>
+  <figure>
+    <div class="chart" id="ch-dl"><div class="legend"><span><i style="background: var(--s1)"></i>8 connections, planning at 10 MB/s</span><span><i style="background: var(--s2)"></i>1 connection, 2.2 MB/s</span></div></div>
+    <details class="tv"><summary>Table view</summary><div id="tv-dl"></div></details>
+    <figcaption><b>Four hours buys all of 2024 at half resolution, if parallel downloads hold.</b> The horizontal lines mark where each step of the anytime order completes: (1) full-resolution replay core, 24.6 GB; (2) a 1/8 PPS pass over the 2024 GKG history, +25.5; (3) all 2024 Events and Mentions, +7.3; (4) the pass up to 1/4, +25.5; (5) up to 1/2, +51; (6) full, +102 GB. Throughputs were measured from this machine: 2.2 MB/s on one stream and 12.7 MB/s in a short 8-stream test, planned at 10 to allow for throttling. On one stream, 4 hours ends inside step 2, and the ordering still keeps that partial pass a valid sample.</figcaption>
+  </figure>
+  <div class="math">\[ \pi_b(\ell) = \min\!\Big(1,\ n_\ell\, \frac{\text{size}_b}{\sum_{b' \in \text{day}} \text{size}_{b'}}\Big), \qquad u_b = \operatorname{hash}(\text{batch_ts}) \in [0,1), \qquad b \in s_\ell \iff u_b \lt \pi_b(\ell) \]</div>
+  <div class="math">\[ \hat\Phi_p(d) = \sum_{b \in s_\ell} \frac{y_{p,b}}{\pi_b(\ell)}, \qquad \mathbb E\big[\hat\Phi_p(d)\big] = \sum_b \Pr(b \in s_\ell)\,\frac{y_{p,b}}{\pi_b(\ell)} = \sum_b y_{p,b} = \Phi_p(d) \]</div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · why stopping anywhere is safe <span class="lab proven">Horvitz–Thompson, permanent random numbers</span></span>
+    <p>GDELT files are all-or-nothing per 15-minute batch, so "weight by popularity" means sampling batches with probability proportional to file size. That is PPS sampling, and the manifest gives the sizes for free. <b>Unbiased:</b> the display line above is the one-line Horvitz–Thompson argument, using \(\Pr(b \in s_\ell) = \pi_b(\ell)\) when \(u_b\) is uniform. <b>Nested:</b> if \(\pi_b(\ell) \le \pi_b(\ell+1)\), then \(u_b \lt \pi_b(\ell)\) implies \(u_b \lt \pi_b(\ell + 1)\), so \(s_\ell \subseteq s_{\ell+1}\) and each pass only adds batches. <b>Anytime:</b> within pass ℓ, batches download in increasing \(u_b\). Stopping when the next \(u_b\) reaches \(u^*\) leaves exactly the batches with \(u_b \lt \pi'_b = \max\big(\pi_b(\ell-1), \min(\pi_b(\ell), u^*)\big)\). That is again a Poisson sample with known inclusion probabilities, so the Horvitz–Thompson weights \(1/\pi'_b\) stay exact. National statistics offices use the same trick (Brewer; Ohlsson) to coordinate surveys. <span class="qed">QED</span></p>
+  </div>
+
+  <h3>Knobs, sensitivity and bounds</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Knob</th><th>Value</th><th>Sensitivity</th></tr></thead>
+    <tbody>
+      <tr><td>σ<sub>event</sub></td><td>72 h (locked)</td><td>The kernel weight is 0.946 at 24 h, 0.607 at 72 h, 0.135 at 144 h. Shorter: a slow-building event fragments into several clusters. Longer: unrelated events with shared entities fuse</td></tr>
+      <tr><td>σ<sub>narr</sub></td><td>14 d (locked)</td><td>0.882 at 7 d, 0.607 at 14 d, 0.135 at 28 d. Shorter: recurring stories spawn new ids instead of continuing. Longer: stale narratives keep absorbing new events</td></tr>
+      <tr><td>τ<sub>event</sub>, τ<sub>alive</sub>, τ<sub>dormant</sub></td><td>tuned on the pre-period</td><td>These set the number of active narratives (target 100–300). \(\tau_{\text{dormant}} - \tau_{\text{alive}}\) is the dead band: 0 means flapping between states, large means old stories never return</td></tr>
+      <tr><td>split/merge cadence</td><td>6 h × 3 checks</td><td>If each check had an independent false-positive rate q, a spurious split would need probability \(q^3\) (q = 0.1 gives 0.001). Consecutive checks share data, so treat that as optimistic. T2's churn metric is the real measurement</td></tr>
+      <tr><td>dormancy</td><td>7 days without mass</td><td>Shorter: weekend lulls put weekday stories to sleep</td></tr>
+      <tr><td>phenomenon hysteresis</td><td>7 daily checks, 30-day memory</td><td>At least a week to restructure. Needs history longer than the replay to mean much</td></tr>
+      <tr><td>κ, π, w<sub>ent</sub>, w<sub>th</sub></td><td>fitted by EM daily</td><td>κ sets how hard the memberships are (see the box above). EM never decreases the likelihood when M-steps are exact (Dempster–Laird–Rubin). Banerjee's κ is an approximation, so monotone ascent is checked numerically at each refit</td></tr>
+      <tr><td>membership slots</td><td>top 3 + none, uint8</td><td>Resolution 1/255 ≈ 0.004 per object</td></tr>
+      <tr><td>theme df cutoff</td><td>20%</td><td>Higher lets generic tags glue unrelated stories</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Extreme cases</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Case</th><th>What would go wrong</th><th>Avoidance</th></tr></thead>
+    <tbody>
+      <tr><td>Hot narrative swallows neighbors</td><td>Rich-get-richer, and a 2a ⇄ 2b loop</td><td>Content-only assignment (3.9′). The dependency runs one way</td></tr>
+      <tr><td>Recluster-and-match every 6 h</td><td>Id churn breaks every Hawkes series</td><td>Persistent online centroids; structure changes only through logged lineage events</td></tr>
+      <tr><td>Story quiet for 3 weeks, then back</td><td>A new id, so its history is lost</td><td>Dormant ids are kept forever and wake on gain ≥ τ<sub>dormant</sub></td></tr>
+      <tr><td>All members identical (\(\bar r \to 1\))</td><td>\(\hat\kappa \to \infty\) and the posteriors saturate</td><td><span class="lab conj">proposed</span> clip \(\bar r \le 1 - \epsilon\) in the M-step</td></tr>
+      <tr><td>Component dies (π<sub>n</sub> → 0)</td><td>Division by near-zero, ghost narratives</td><td>Dormancy; the narrative leaves the active mixture but keeps its id</td></tr>
+      <tr><td>Generic GKG themes</td><td>Everything glued together</td><td>df &lt; 20% filter, IDF weighting</td></tr>
+      <tr><td>Hand-named seeds in a replay</td><td>Hindsight in the initialization</td><td>Blind cold start; T2 measures burn-in</td></tr>
+      <tr><td>Rounding breaks exact totals</td><td>Lemma 5.1 off by up to 1/255 per object</td><td>Largest-remainder rounding (proposed detail)</td></tr>
+    </tbody>
+  </table></div>
+</section>

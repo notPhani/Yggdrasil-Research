@@ -1,0 +1,172 @@
+
+<section id="knobs">
+  <div class="eyebrow">§8 · every knob in one place</div>
+  <h2>Parameters, status and what moves when you turn them</h2>
+  <div class="col"><p>Status: <b>fixed</b> by data or decision; <b>fitted</b> by likelihood; <b>tuned</b> against a referee or validation set; <b>calibrated</b> by placebos; <b>open</b> means not yet set. Engine sections carry the full sensitivity notes.</p></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Knob</th><th>Unit</th><th>Value</th><th>Status</th><th>Bound or failure if mis-set</th></tr></thead>
+    <tbody>
+      <tr><td>Δ window</td><td>all</td><td>15 min</td><td>fixed</td><td>set by GDELT</td></tr>
+      <tr><td>dedup horizon</td><td>E1</td><td>72 h</td><td>fixed</td><td>late copies count again</td></tr>
+      <tr><td>θ<sub>cand</sub>, j<sub>0</sub>, j<sub>lede</sub></td><td>E1</td><td>–</td><td>tuned (SerpApi filter=0 referee, ~100 titles)</td><td>low j<sub>0</sub> merges template titles</td></tr>
+      <tr><td>MinHash / SimHash</td><td>E1</td><td>Ĵ ≥ 0.8 / ≤ 3</td><td>fixed</td><td>P(merge) at true J = 0.7 is 0.0068</td></tr>
+      <tr><td>SAR / M<sub>z</sub> gate</td><td>observer</td><td>4 / 5</td><td>fixed; acceptance on 2024</td><td>fat tails: 135–233 alarms a year from the SAR leg alone</td></tr>
+      <tr><td>M<sub>v</sub> / M<sub>g</sub> confirm</td><td>observer</td><td>3.5 / 5</td><td>fixed</td><td>lower re-admits rotations (JNJ)</td></tr>
+      <tr><td>ρ<sub>0</sub></td><td>observer</td><td>0.4</td><td>fixed</td><td>stable over 0.3–0.5 (measured)</td></tr>
+      <tr><td>σ<sub>event</sub> / σ<sub>narr</sub></td><td>2a</td><td>72 h / 14 d</td><td>fixed</td><td>fragmentation vs fusion</td></tr>
+      <tr><td>τ<sub>event</sub>, τ<sub>alive</sub> &lt; τ<sub>dormant</sub></td><td>2a</td><td>–</td><td>tuned on the pre-period</td><td>100–300 alive narratives; the dead band prevents flapping</td></tr>
+      <tr><td>split/merge checks</td><td>2a</td><td>6 h × 3</td><td>fixed</td><td>≥ 12 h before any restructure</td></tr>
+      <tr><td>κ, π, w<sub>ent</sub>, w<sub>th</sub></td><td>2a</td><td>–</td><td>fitted (vMF EM, daily)</td><td>κ ≈ 130–850 means near-hard memberships</td></tr>
+      <tr><td>phenomenon checks / memory</td><td>2a</td><td>7 daily / 30 d</td><td>fixed</td><td>needs long history</td></tr>
+      <tr><td>τ set</td><td>2b</td><td>1 h, 6 h, 1 d, 1 w</td><td>fixed; F3 tests more</td><td>1-hour coefficient bias 0.885</td></tr>
+      <tr><td>s</td><td>2b</td><td>1, then fitted</td><td>fitted</td><td>rate error ≤ s ln 2</td></tr>
+      <tr><td>ω</td><td>2b</td><td>{0, .25, .5, .75, 1}</td><td>profiled</td><td>ω &gt; 0 bounds the total for any A</td></tr>
+      <tr><td>ρ cap</td><td>2b</td><td>0.95</td><td>fixed</td><td>active while \(\hat\omega \lt 0.05\); mean cascade ≤ 20</td></tr>
+      <tr><td>λ<sub>g</sub>, λ<sub>1</sub></td><td>2b</td><td>–</td><td>tuned</td><td>more sparsity means more BOT mass</td></tr>
+      <tr><td>K(i)</td><td>2b</td><td>20 + phenomenon + self</td><td>fixed</td><td>24k couplings vs ~600k observations</td></tr>
+      <tr><td>τ<sub>H</sub> / horizon</td><td>3a</td><td>3 d / 14 d</td><td>fixed</td><td>last 4 days carry 74% of the weight</td></tr>
+      <tr><td>p<sub>floor</sub></td><td>3a</td><td>0.01</td><td>fixed</td><td>max edge cost 4.91 nats</td></tr>
+      <tr><td>p<sub>0</sub></td><td>3a</td><td>0.05</td><td>calibrated (FER ≤ 5%)</td><td>abstention costs 3.30 nats per cluster</td></tr>
+      <tr><td>λ<sub>node</sub></td><td>3a</td><td>0.3 nats</td><td>calibrated</td><td>×0.74 odds per extra node</td></tr>
+      <tr><td>γ</td><td>3a</td><td>–</td><td>calibrated</td><td>large values overfit spikes</td></tr>
+      <tr><td>rival window</td><td>3a</td><td>ln 20</td><td>fixed</td><td>1:20 odds</td></tr>
+      <tr><td>K placebos</td><td>3a</td><td>20 (cut) → 60</td><td>fixed</td><td>min p = 1/(K + 1)</td></tr>
+      <tr><td>queries</td><td>3b</td><td>1 + 2 per H, ≤ 15</td><td>fixed</td><td>~16 cases a month on the free tier</td></tr>
+      <tr><td>θ entailment</td><td>3b</td><td>–</td><td>fitted (silver labels)</td><td>higher means fewer verifier tuples</td></tr>
+      <tr><td>tier registry</td><td>3b</td><td>as of 2024-12-31</td><td>fixed</td><td>judgment calls, disclosed</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="extremes">
+  <div class="eyebrow">§9 · extreme cases across the whole machine</div>
+  <h2>What breaks first, and what stops it</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Extreme</th><th>Where it bites</th><th>Avoidance</th><th>Guarantee</th></tr></thead>
+    <tbody>
+      <tr><td>Hindsight in any form</td><td>everywhere</td><td>first_seen &lt; τ*, earlier-τ rule, universe and lexicon frozen at 2024-12-31, blind cold start, P_pre / P_all split</td><td>monotone admissibility (proved)</td></tr>
+      <tr><td>Self-confirming feedback</td><td>E3 → E1 → E2</td><td>One-way valve; 2a never reads 2b</td><td>by construction</td></tr>
+      <tr><td>Syndication flood</td><td>E1, 3b</td><td>L2 collapse; <code>copy_of</code> defeated</td><td>L3 never merged (invariant)</td></tr>
+      <tr><td>Missing or late GDELT batches</td><td>E1, 2b</td><td>Grace retry, missing flag, likelihood mask</td><td>no fake attention drop</td></tr>
+      <tr><td>Sector channel absorbs the shock</td><td>observer</td><td>Market-only detection</td><td>measured fix (NVDA SAR −2.2 → −5.1)</td></tr>
+      <tr><td>Market-wide crash</td><td>observer</td><td><b>Not covered</b>: relative-move design</td><td>open limitation</td></tr>
+      <tr><td>Narrative id churn</td><td>2a, 2b</td><td>Persistent ids, hysteresis, lineage</td><td>memory conserved (Lemma 5.2)</td></tr>
+      <tr><td>Explosive attention</td><td>2b</td><td>ω &gt; 0 or ρ ≤ 0.95</td><td>bounded means (Lemma 6.5)</td></tr>
+      <tr><td>Spurious criticality</td><td>2b</td><td>Flexible baselines, explicit competition</td><td>empirical (Filimonov–Sornette)</td></tr>
+      <tr><td>Non-unique fit</td><td>2b</td><td>Quasi-Poisson point estimates, NB2 only for PIT and intervals (4.2′, locked)</td><td>unique minimizer (Lemma 8.1)</td></tr>
+      <tr><td>Hub wins every case</td><td>3a</td><td>Lift, surprise tilt, placebo FER ≤ 5%</td><td>valid empirical p (rank argument)</td></tr>
+      <tr><td>No story reaches a cluster</td><td>3a</td><td>Abstention edge always present</td><td>always feasible</td></tr>
+      <tr><td>Many clusters on one day</td><td>3a</td><td>Split the case; push and Levin later</td><td>exact up to k ≈ 8</td></tr>
+      <tr><td>Contradictory witnesses</td><td>3b</td><td>Defeasible acceptance, tiers, independence</td><td>four-way partition (Theorem 14.1)</td></tr>
+      <tr><td>Incoherent evidence</td><td>3b</td><td>INCOHERENT plus grounded fallback</td><td>unique, polynomial</td></tr>
+      <tr><td>Model hallucination or leakage</td><td>3b</td><td>No generator; span-grounded verifier; deterministic-only run</td><td>span check is exact</td></tr>
+      <tr><td>Cause outside the observed world</td><td>3a, 3b</td><td>Folds into "we do not know"</td><td>honest by design</td></tr>
+      <tr><td>Different answer on rerun</td><td>everywhere</td><td>D1–D6, integer costs, archived calls</td><td>Theorem 3.1, test T1</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="analogies">
+  <div class="eyebrow">§10 · physics, game theory, economics</div>
+  <h2>The same mathematics, wearing other clothes</h2>
+  <div class="col"><p>Each row says how far the link goes. <b>Exact</b> means the same equation or theorem. <b>Limit</b> means it holds in a stated limit. <b>Analogy</b> means it helps intuition but proves nothing here.</p></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Idea</th><th>Field</th><th>Correspondence</th><th>Where</th><th>Strength</th></tr></thead>
+    <tbody>
+      <tr><td>RC low-pass filter</td><td>circuits</td><td>\(z \leftarrow a z + (1-a)y\) is a first-order discrete low-pass with time constant τ</td><td>2b traces</td><td>exact</td></tr>
+      <tr><td>Chain reaction, \(k_{\text{eff}}\)</td><td>nuclear physics</td><td>\(\rho(G P^+)\) is the multiplication factor; below 1 every cascade dies out, with mean size \(1/(1-n)\)</td><td>2b stability</td><td>exact (linear regime)</td></tr>
+      <tr><td>SIR and HawkesN</td><td>epidemiology</td><td>A finite-pool Hawkes intensity is the SIR infection rate (Rizoiu et al. 2018), which is the subtractive form we rejected</td><td>2b, Prop 6.3</td><td>exact</td></tr>
+      <tr><td>Shunting inhibition, AGC, saturable gain</td><td>neuroscience, radio, lasers</td><td>ω = 1 is Grossberg's steady state \(x_i = B I_i/(A + I_{\text{tot}})\); gain \(g_0/(1 + I/I_{\text{sat}})\)</td><td>2b competition</td><td>exact at ω = 1</td></tr>
+      <tr><td>Rational inattention</td><td>economics</td><td>Divisive normalization with exponential drive tends to the logit \(P(i) \propto P_0(i)e^{v_i/\lambda}\) (Matějka &amp; McKay)</td><td>2b</td><td>limit</td></tr>
+      <tr><td>"A wealth of information creates a poverty of attention"</td><td>economics (Simon 1971)</td><td>Attention is the scarce resource; B is its budget, ω how hard it binds</td><td>2b</td><td>framing</td></tr>
+      <tr><td>Photon bunching</td><td>quantum optics</td><td>NB2 = gamma-mixed Poisson; Fano factor \(1 + \lambda/r \gt 1\), i.e. super-Poissonian counts</td><td>2b noise</td><td>exact identity</td></tr>
+      <tr><td>Born–Oppenheimer</td><td>molecular physics</td><td>Slow phenomena as a frozen background for fast narratives</td><td>2a → 2b</td><td>analogy</td></tr>
+      <tr><td>Renormalization, lumpability</td><td>statistical mechanics, Markov chains</td><td>One rule at three scales; traces aggregate exactly; coarse nodes are closed iff the lumpability condition holds</td><td>2a</td><td>exact lemma + analogy</td></tr>
+      <tr><td>Gauss's law</td><td>electrostatics</td><td>Flow that internal edges don't account for is a source: surprise mass goes to BOT</td><td>2b α</td><td>analogy, exact bookkeeping</td></tr>
+      <tr><td>Detector live time</td><td>experimental physics</td><td>A dead detector is "no data", not "zero rate": missing batches are masked</td><td>E1, 2b</td><td>analogy</td></tr>
+      <tr><td>Light cone</td><td>relativity</td><td>Only events in the past light cone of τ* can be causes</td><td>admissibility</td><td>analogy for an exact rule</td></tr>
+      <tr><td>Diode in a feedback loop</td><td>electronics</td><td>Without the valve, a loop with gain above 1 confirms itself (runaway feedback, Ensign et al. 2018)</td><td>Session 0</td><td>analogy</td></tr>
+      <tr><td>Self-confirming equilibrium</td><td>game theory</td><td>Beliefs tested only on the outcomes they themselves generate can be wrong forever (Fudenberg &amp; Levine 1993). The valve keeps the tested data independent of the hypothesis</td><td>Session 0</td><td>analogy</td></tr>
+      <tr><td>Boltzmann weights, ground state</td><td>statistical mechanics</td><td>Cost = energy; best tree = ground state; rivals = excitations; odds = \(e^{-\Delta E}\) at T = 1</td><td>3a</td><td>exact under conjecture 11.A</td></tr>
+      <tr><td>Branched transport</td><td>geometry, hydrology</td><td>Gilbert–Steiner: paying for shared edges once makes flows merge into trunks</td><td>3a</td><td>same problem family</td></tr>
+      <tr><td>Minimum description length</td><td>information theory</td><td>λ<sub>node</sub> per node; shared structure described once</td><td>3a</td><td>analogy</td></tr>
+      <tr><td>Neyman–Pearson</td><td>decision theory</td><td>Fix the false-explanation rate, maximize detection</td><td>3a placebos</td><td>exact framing</td></tr>
+      <tr><td>Availability heuristic, hubness</td><td>psychology, ML</td><td>Prominent ≠ probable; one point is everyone's neighbor</td><td>3a hub bias</td><td>analogy</td></tr>
+      <tr><td>Geometric frustration</td><td>condensed matter</td><td>Odd attack cycle ↔ antiferromagnetic triangle: no state satisfies every bond</td><td>3b INCOHERENT</td><td>analogy</td></tr>
+      <tr><td>Dialogue games</td><td>game theory, argumentation</td><td>In grounded acceptance, the proponent has a winning strategy</td><td>3b</td><td>exact theorem</td></tr>
+      <tr><td>Coordination equilibria</td><td>game theory</td><td>Two stable models of a mutual attack ↔ two pure equilibria</td><td>3b UNRESOLVED</td><td>analogy</td></tr>
+      <tr><td>Analysis of competing hypotheses</td><td>intelligence analysis</td><td>Seek disconfirmation (1 confirm + 2 refute); diagnosticity list</td><td>3b</td><td>method</td></tr>
+      <tr><td>Filter stability, Gelman–Rubin</td><td>probability, MCMC</td><td>Two runs from different starts must forget their initial conditions</td><td>2a test T2</td><td>analogy (no theorem for our graph)</td></tr>
+      <tr><td>Permanent random numbers</td><td>survey statistics</td><td>Nested PPS passes, Horvitz–Thompson weights</td><td>download plan</td><td>exact</td></tr>
+      <tr><td>Thermostat dead band</td><td>control</td><td>τ<sub>dormant</sub> &gt; τ<sub>alive</sub>; three agreeing checks</td><td>2a</td><td>analogy</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="tui">
+  <div class="eyebrow">§11 · terminal screens · design mockups, illustrative numbers</div>
+  <h2>What you will see in the terminal</h2>
+  <div class="col"><p>These are design proposals for the CLI <span class="lab conj">proposed</span>. Where a value is a real measurement it is reused (prices, SAR, τ*, clusters). Search costs repeat the toy numbers from §6. Every other number is illustrative.</p></div>
+
+  <h3><code>ygg replay</code> · stepping through January</h3>
+<pre class="tui"><span class="d">$</span> ygg replay --from 2024-12-16 --to 2025-01-31 --data-dir ~/gdelt
+<span class="b">Yggdrasil 0.1.0</span>   cfg <span class="y">3f9a…c21</span>   commit a1b2c3d   mode replay (no wall clock)
+──────────────────────────────────────────────────────────────────────────────────────
+window <span class="y">4,000</span> / 4,512   2025-01-26 16:00Z   <span class="b">████████████████████████████</span><span class="d">░░░░</span>  89%
+<span class="b">engine 1 </span> batch 20250126160000   1,412 rows → 1,203 objects   L1 31   L2 178
+           L2 by step: s1 112 · s2 49 · s3 11 · A 6     missing 0   late 1 (retried)   quarantine 0
+<span class="b">engine 2a</span> narratives 214 alive · 61 dormant   lineage today: emerge 3 · split 1 · merge 0
+<span class="b">engine 2b</span> refit 2025-01-26 00:00Z   ω 0.50   ρ(G·P⁺) 0.71   held-out dev vs HoW-Poisson −8.4%
+           bursts  <span class="o">▲ N-0412 "DeepSeek app"   u +4.1   BOT share 0.82</span>
+                   <span class="o">▲ N-0098 "AI models"      u +2.7   BOT share 0.44</span>
+<span class="b">observer </span> no case since 2025-01-24 close
+snapshots  4,000 written   last <span class="y">7c1e…09a</span>   double-replay check: <span class="d">pending second pass</span></pre>
+
+  <h3><code>ygg case 2025-01-27</code> · the dossier view</h3>
+<pre class="tui"><span class="b">CASE 2025-01-27</span>   τ* = <span class="r">08:00Z</span> (ASML.AS open, |Mg| ≥ 5)   snapshot S_τ* <span class="y">7c1e…09a</span>
+clusters  <span class="b">C1 chips</span>  NVDA −17.0% SAR −5.1 · AVGO −17.4% −5.0 · TSM −13.3% −5.0   (+ SMH, XLK)
+          <span class="o">C2 power</span>  VST −28.3% −7.8 · CEG −20.8% −5.9 · NRG −13.2% −5.5 · TLN −21.6% −7.4
+          secondary  MSFT Mg −9.1 · ASML −6.5 · MU −5.4 · GOOGL −5.4          cross-cluster ρ 0.02–0.21
+──────────────────────────────────────────────────────────────────────────────────────
+EXPLANATIONS                                              cost   odds     placebo p   hub
+<span class="y">* S*</span>  BOT ─> R1 release ─> AI models ─┬─> chip demand ─> C1     <span class="y">5.80</span>   1        <span class="g">1/21</span>
+                                       └─> DC power ───> C2
+  S_r  BOT ─> politics ─┬─> C1                                  7.30   4.5 : 1  8/21       <span class="o">h = 0.70 low diagnosticity</span>
+                        └─> C2
+  S_0  we do not know (C1, C2)                                  6.59   2.2 : 1
+──────────────────────────────────────────────────────────────────────────────────────
+VERDICTS              P_pre (could it move the price)   P_all (is it true)
+ h1 R1 efficiency     CONSISTENT-BUT-UNPROVEN           CONSISTENT-BUT-UNPROVEN
+ h3 "$5.6M all-in"    <span class="r">CONTRADICTED</span>  [rule]            <span class="r">CONTRADICTED</span>   Lean: proved (axioms: ofReduceBool)
+ h4 chip smuggling    <span class="o">UNRESOLVED</span>    2 readings         <span class="o">UNRESOLVED</span>
+ h6 attention cascade <span class="g">SUPPORTED</span>     [tier 0]           <span class="g">SUPPORTED</span>
+evidence h3  tier 1  arxiv.org  first_seen 2024-12-27  "…excluding the costs associated with prior research…"
+deterministic-only run: <span class="g">identical verdicts</span>     verifier-dependent: none     SerpApi 9 / 15 (cached)
+<span class="d">[t]ree  [r]ivals  [e]vidence  [d]iagnosticity  [p]lacebos  [x]port md  [q]uit</span></pre>
+
+  <h3><code>ygg watch</code> · live narrative monitor</h3>
+<pre class="tui">ygg watch   <span class="g">live</span>   2026-10-06 16:15Z   next batch 16:30Z   cfg <span class="y">3f9a…c21</span>
+NARRATIVE                y, last 24 h (15-min)      λ pred    y   PIT u   BOT share  flag
+N-0412 AI models         <span class="b">▁▁▂▂▃▃▂▂▃▅▆█▇▆▅▅▄▄▃▃▃▂▂▂</span>      6.1    9   +1.4     0.31
+N-0377 Fed and rates     <span class="b">▂▂▂▂▂▃▃▂▂▂▂▃▅▃▂▂▂▂▂▂▂▂▂▂</span>      2.4    2   −0.2     0.12
+N-0519 chip exports      <span class="o">▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▅██▇▆▅▄▄</span>      3.0   11   +3.9     0.78      <span class="o">▲ burst · new info</span>
+N-0233 grid and power    <span class="b">▁▂▂▁▁▂▂▃▂▂▁▁▂▂▃▃▂▂▂▂▁▁▂▂</span>      1.7    1   −0.4     0.09
+supply V 1,288 objects   V pred 1,340   B 1,190   ω 0.50   <span class="r">17:00Z listed, 404 → retry in grace window</span>
+observer: no instrument above gate   <span class="d">(SAR leg 0 · confirm leg 2)</span></pre>
+
+  <h3><code>ygg fetch</code> · the anytime download</h3>
+<pre class="tui">ygg fetch --plan anytime --budget 4h --connections 8
+step 1  replay core 2024-12-16 … 2025-01-31   full        24.6 GB  <span class="g">████████████████</span> done   0:41
+step 2  2024 GKG history, PPS level 1/8                   25.5 GB  <span class="b">███████████</span><span class="d">░░░░░</span>  71%   u* = 0.088
+step 3  2024 Events + Mentions                             7.3 GB  <span class="d">queued</span>
+step 4  history up to 1/4                                +25.5 GB  <span class="d">queued</span>
+step 5  history up to 1/2                                +51.0 GB  <span class="d">queued</span>
+step 6  history full                                    +102.0 GB  <span class="d">queued</span>
+10.3 MB/s on 8 connections   elapsed 1:12   md5 ok 4,113 / 4,113   any stop = valid sample (HT weights 1/π′ in manifest)</pre>
+
+  <h3><code>ygg verify</code> · determinism gate</h3>
+<pre class="tui">ygg verify --double-replay --resume-at 2025-01-13
+pass A   4,512 snapshots   merkle root <span class="y">9e41…7aa0</span>   verdicts <span class="y">c03b…51e2</span>
+pass B   4,512 snapshots   merkle root <span class="y">9e41…7aa0</span>   verdicts <span class="y">c03b…51e2</span>   <span class="g">identical</span>
+T1 resume from S(2025-01-13): 4,512 / 4,512 snapshot hashes equal   <span class="g">PASS</span></pre>
+</section>

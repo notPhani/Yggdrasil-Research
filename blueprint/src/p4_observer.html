@@ -1,0 +1,118 @@
+
+<section id="observer">
+  <div class="eyebrow">§3 · Stock observer · Session 2, locked (2.3′ amended)</div>
+  <h2>Decide that something abnormal happened, and pin the moment it started</h2>
+
+  <div class="eli5">
+    <span class="tag">For a ten-year-old</span>
+    <p>This is a smoke alarm for stocks. It goes off only when two things are both true. First, a stock moved far more than the whole market did that day. Second, something confirms it: lots of extra trading, or a big jump the moment trading opened. One clue alone isn't enough.</p>
+    <p>The alarm never reads the news, so it can't be fooled by headlines. When it rings, it writes down the very first moment the smoke appeared. The detective may only use clues from before that moment.</p>
+  </div>
+
+  <h3>Calls and formulas</h3>
+<pre class="code">GET https://query1.finance.yahoo.com/v8/finance/chart/{SYM}?period1={unix}&amp;period2={unix}&amp;interval=1d        # replay
+GET https://query1.finance.yahoo.com/v8/finance/chart/{SYM}?range=1d&amp;interval=5m&amp;includePrePost=true        # live
+→ chart.result[0].timestamp[], indicators.quote[0].{open,high,low,close,volume}; every response archived (D5)
+fallback: SerpApi engine=google_finance (costs credits) · Stooq is blocked by a JS challenge · Yahoo intraday only covers 60 days
+universe: Nasdaq-100 + S&amp;P 500 utilities + SOX + ASML.AS, ASM.AS, BESI.AS + SPY, QQQ, SMH, XLU, XLK — frozen as of 2024-12-31</pre>
+
+  <div class="math">\[ R_t = \frac{P_t}{P_{t-1}} - 1, \qquad g_t = \frac{O_t}{C_{t-1}} - 1, \qquad d_t = \frac{C_t}{O_t} - 1, \qquad (1 + R_t) = (1 + g_t)(1 + d_t) \]</div>
+  <div class="col"><p>Check on NVDA: \(g = 124.80 / 142.62 - 1 = -12.5\%\) was visible at the first print, the session added \(d = -5.1\%\), and the day closed at \(R = -17.0\%\). Volume was 818.8M against a Jan 21–24 mean of 206.5M, 3.97× <span class="lab measured">measured</span>.</p></div>
+
+  <div class="math">\[ R_{i,k} = \alpha_i + \beta_i R_{m,k} + \varepsilon_{i,k}, \quad k \in [t-260,\ t-11] \qquad AR_{i,t} = R_{i,t} - (\hat\alpha_i + \hat\beta_i R_{m,t}) \]</div>
+  <div class="math">\[ \hat\sigma^2_{AR,t} = s_\varepsilon^2 \left( 1 + \frac1M + \frac{(R_{m,t} - \bar R_m)^2}{\sum_k (R_{m,k} - \bar R_m)^2} \right), \qquad SAR = \frac{AR_{i,t}}{\hat\sigma_{AR,t}} \]</div>
+  <div class="math">\[ M_z = 0.6745\,\frac{AR_t - \operatorname{med}(\hat\varepsilon)}{\operatorname{MAD}(\hat\varepsilon)}, \quad M_v = 0.6745\,\frac{\log V_t - \operatorname{med}_{60}(\log V)}{\operatorname{MAD}_{60}(\log V)}, \quad M_g = 0.6745\,\frac{g_t - \operatorname{med}(g)}{\operatorname{MAD}(g)} \]</div>
+  <div class="math">\[ \text{fire}(i, t) \iff \big(|SAR| \ge 4 \;\vee\; |M_z| \ge 5\big) \;\wedge\; \big(M_v \ge 3.5 \;\vee\; |M_g| \ge 5\big) \]</div>
+  <div class="col">
+    <p><b>Intermediate terms.</b> \(R_m\) is SPY's return. \(M = 250\) is the length of the estimation window. The bracket is the prediction-error variance: the residual variance, plus the uncertainty in the intercept, plus the leverage of today's market move. 0.6745 is the normal quartile that makes median/MAD z-scores comparable with ordinary z-scores (Iglewicz and Hoaglin). \(M_z\), \(M_v\) and \(M_g\) are robust versions that a fat-tailed history can't inflate.</p>
+    <p><b>Why market-only (2.3′).</b> The original lock subtracted the sector ETF too. On 27 January SMH crashed together with its own largest members, so the sector term absorbed the shock and NVDA's SAR came out at −2.2. A detector must never subtract the channel the event travels through. Sector is now only a label: <code>sector_wide(x) ⇔ x's sector ETF also fired</code>.</p>
+  </div>
+
+  <figure>
+    <div class="chart" id="ch-sar"><div class="legend"><span><i class="dot" style="background: var(--s1)"></i>market-only (locked 2.3′)</span><span><i class="dot" style="background: var(--neutral)"></i>market + sector ETF (the original 2.3)</span><span><i style="background: var(--bad)"></i>|SAR| = 4</span></div></div>
+    <details class="tv"><summary>Table view</summary><div id="tv-sar"></div></details>
+    <figcaption><b>The sector model hides exactly the stocks that matter.</b> SAR on 27 January 2025, recomputed for this page from the archived Yahoo dailies (OLS on t−260..t−11 with full prediction-error leverage; within 0.1 of the session sheet). With the sector term, NVDA, AVGO and TSM sit near −2 and stay silent, while the power names fire because utilities barely moved. With market only, all nine true movers clear −4.</figcaption>
+  </figure>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Symbol</th><th class="num">R %</th><th class="num">gap %</th><th class="num">SAR</th><th class="num">M<sub>z</sub></th><th class="num">M<sub>v</sub></th><th class="num">M<sub>g</sub></th><th>Gate</th><th>Role</th></tr></thead>
+    <tbody id="trig-rows"></tbody>
+  </table></div>
+  <div class="col"><p class="eyebrow" style="text-transform:none; letter-spacing:0">All numbers <span class="lab measured">measured</span> from archived Yahoo dailies, 27 January 2025. JNJ is the instructive miss: SAR 4.2 and M<sub>z</sub> 5.2 pass the first leg, but volume and gap are ordinary, so the confirmation leg stops it. That is a rotation into defensives, not an event.</p></div>
+
+  <h3>Clusters: one case per day, one terminal per cluster <span class="lab design">design · 2.6</span></h3>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/TriggerClusters.jpg" src="media/TriggerClusters.mp4" aria-label="Animation: SAR dots move from the sector model to the market-only model, then fired stocks form two residual-correlation clusters"></video>
+    <figcaption><b>Chips and power crashed together, but market history says they never move together.</b> Fired instruments are linked when their market-model residuals over the prior 250 days correlate at ρ ≥ 0.4 with the same sign. That gives {SMH, XLK, NVDA, AVGO, TSM} (within-cluster 0.30–0.79) and {VST, CEG, NRG, TLN} (0.41–0.73), identical for ρ<sub>0</sub> = 0.3, 0.4 and 0.5. Cross-cluster correlation is 0.02–0.21. Something new linked them that morning, and finding it is Engine 3's job.</figcaption>
+  </figure>
+  <div class="math">\[ i \sim j \iff \operatorname{corr}(\hat\varepsilon_i, \hat\varepsilon_j) \ge \rho_0 \;\wedge\; \operatorname{sign}(AR_i) = \operatorname{sign}(AR_j), \qquad \text{clusters} = \text{connected components of } \sim \text{ on fired instruments} \]</div>
+  <div class="col">
+    <p>ETFs are members but never terminals. Opening shocks are secondary members: <span class="lab design">formalized for this doc</span> \(\text{secondary}(x) \iff |M_g| \ge 5 \wedge \neg\text{fire}(x)\). That catches MSFT (gap −4.5%, \(M_g = -9.1\)), ASML, MU and GOOGL, which are listed as evidence but are not search terminals. One terminal per cluster turns 9 terminals into \(k = 2\), so the search's \(3^k\) factor drops from 19,683 to 9. It also makes the search answer the right question: does one shared root explain both clusters more cheaply than two separate stories?</p>
+    <p>Cross-sectional statistics get the Kolari–Pynnönen correction for same-day clustering:</p>
+  </div>
+  <div class="math">\[ z_{\text{adj}} = z \sqrt{\frac{1 - \bar r}{1 + (N - 1)\,\bar r}}, \qquad \bar r = \text{mean pairwise residual correlation} \]</div>
+  <div class="box proof">
+    <span class="tag"><b>Why the correction</b> · equicorrelated standardized returns <span class="lab proven">proven · Kolari &amp; Pynnönen 2010</span></span>
+    <p>If \(N\) standardized abnormal returns each have variance \(\sigma^2\) and pairwise correlation \(\bar r\), their mean has variance \(\sigma^2 (1 + (N-1)\bar r)/N\), not \(\sigma^2/N\). The usual cross-sectional variance estimator has expectation \(\sigma^2 (1 - \bar r)\). The ratio of the true variance to the naive one is \((1 + (N-1)\bar r)/(1 - \bar r)\), and \(z_{\text{adj}}\) divides by its square root. With \(N = 9\) and \(\bar r = 0.3\) the factor is \(\sqrt{0.7/3.4} \approx 0.45\): an unadjusted test would overstate significance more than twofold.</p>
+  </div>
+
+  <h3>The cutoff τ* <span class="lab design">design · 2.5</span></h3>
+  <div class="math">\[ \tau^*(\text{case}) = \min_{x \in \text{case}} \text{first_abnormal}(x) \]</div>
+  <div class="col">
+    <p><b>Replay (daily bars):</b> if \(|M_g| \ge 5\), the move was already in the first print, so first_abnormal is the start of the venue's session (Euronext 08:00 UTC, US pre-market 09:00 UTC). Otherwise it is the regular open (US 14:30 UTC). <b>Live (5-minute bars, deferred in the cut):</b> the earliest Lee–Mykland jump,</p>
+  </div>
+  <div class="math">\[ \mathcal L_t = \frac{r_t}{\hat\sigma_t}, \quad \hat\sigma_t^2 = \frac{1}{K-2}\sum_{j=t-K+2}^{t-1} |r_j|\,|r_{j-1}|, \quad \text{jump} \iff \frac{|\mathcal L_t| - C_n}{S_n} \gt \beta^* = -\log(-\log 0.99) = 4.6001 \]</div>
+  <div class="col"><p>With \(K = 270\), \(c = \sqrt{2/\pi}\), \(C_n = \frac{(2\log n)^{1/2}}{c} - \frac{\log\pi + \log\log n}{2c(2\log n)^{1/2}}\) and \(S_n = \frac{1}{c(2\log n)^{1/2}}\). The bipower variance in the denominator is robust to the jump itself. <b>When unsure, choose the earlier time.</b></p></div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · the earlier-time rule can never admit hindsight <span class="lab derived">derived</span></span>
+    <p>Let \(A(\tau) = \{o : \text{first_seen}(o) \lt \tau\}\). If \(\tau_1 \le \tau_2\), then \(\text{first_seen}(o) \lt \tau_1\) implies \(\text{first_seen}(o) \lt \tau_2\), so \(A(\tau_1) \subseteq A(\tau_2)\). If the true cutoff is \(\tau_{\text{true}}\) and the rule picks \(\hat\tau \le \tau_{\text{true}}\), every admitted record really was seen before the move. The cost of being early is lost evidence, never hindsight. <span class="qed">QED</span> For 27 January: \(\tau^* =\) 08:00 UTC, when ASML.AS opened −7.7%.</p>
+  </div>
+
+  <h3>Storage (2.7a)</h3>
+  <div class="split">
+    <figure>
+      <div class="chart" id="ch-pricez"></div>
+      <details class="tv"><summary>Table view</summary><div id="tv-pricez"></div></details>
+      <figcaption><b>10.1 bytes per 5-minute bar, lossless.</b> Measured on 15,584 real bars (20 symbols, 5 days, including pre- and post-market). Integer cents look tempting, but they are lossy: Yahoo prints sub-penny prices like 337.0885.</figcaption>
+    </figure>
+    <div class="col" style="gap: 0.6rem">
+      <div class="math">\[ \tilde p = \operatorname{round}(10^4 p), \qquad \Delta c_t = \tilde c_t - \tilde c_{t-1} \]</div>
+      <div class="math">\[ (\tilde o, \tilde h, \tilde l) \mapsto (\tilde o - \tilde c,\ \tilde h - \tilde c,\ \tilde l - \tilde c) \]</div>
+      <ul class="plain">
+        <li>Timestamps sit on a fixed 5-minute grid, so their delta encoding costs about 0.17 B per bar.</li>
+        <li>Prices are stored <b>unadjusted</b>, with a corporate-actions table (<code>events=div,splits</code>). Yahoo recomputes adjusted closes retroactively after every dividend, which would quietly change a replay.</li>
+        <li>Trigger statistics are recomputed from bars on demand, never stored.</li>
+        <li>Scale: 150 symbols × 156 bars × 252 days ≈ 60 MB a year. Retention is optional.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Knobs, sensitivity and bounds</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Knob</th><th>Value</th><th>Sensitivity</th></tr></thead>
+    <tbody>
+      <tr><td>|SAR| threshold</td><td>4</td><td>Under a Gaussian null, \(P(|Z| \ge 4) = 6.3 \times 10^{-5}\), about 2.4 false alarms a year across 150 names. Returns are fat-tailed: under a unit-variance Student-t with 3–5 degrees of freedom the same leg alone gives 135–233 a year <span class="lab derived">derived arithmetic</span>. That is why the confirmation leg exists, and why acceptance is measured on all of 2024 rather than assumed.</td></tr>
+      <tr><td>|M<sub>z</sub>| threshold</td><td>5</td><td>A robust fallback for when one outlier in the estimation window inflates \(s_\varepsilon\)</td></tr>
+      <tr><td>M<sub>v</sub>, |M<sub>g</sub>|</td><td>3.5, 5</td><td>Confirmation. Lowering them re-admits rotations like JNJ</td></tr>
+      <tr><td>estimation window</td><td>t−260 .. t−11</td><td>The 10-day gap keeps pre-event drift out of β. A shorter window makes β noisier</td></tr>
+      <tr><td>ρ<sub>0</sub></td><td>0.4</td><td>Clusters identical across 0.3–0.5 <span class="lab measured">measured</span>. Below about 0.2 chips and power would merge on noise. Above about 0.8 the chips cluster fragments</td></tr>
+      <tr><td>Lee–Mykland</td><td>K = 270, β* = 4.6001</td><td>1% level per test. Live only, deferred in the cut</td></tr>
+      <tr><td>universe date</td><td>2024-12-31</td><td>Any later date leaks knowledge of the event into the universe</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Extreme cases</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Case</th><th>What would go wrong</th><th>Avoidance</th></tr></thead>
+    <tbody>
+      <tr><td>The sector ETF crashes with the stock</td><td>Detector blind to the event (the NVDA bug)</td><td>Market-only detection; sector only as a label</td></tr>
+      <tr><td>The whole market crashes</td><td>Market-only AR is near 0 for everything, so there is no case</td><td><span class="lab conj">open limitation</span> Yggdrasil explains moves relative to the market. An index-level trigger is not in the design</td></tr>
+      <tr><td>Earnings or CPI day</td><td>The trigger fires on a known event</td><td>Correct behavior: it is a case, and Engine 2b's scheduled-release terms let the search find the scheduled cause</td></tr>
+      <tr><td>Opening gap that recovers (MSFT)</td><td>A terminal with nothing to explain by the close</td><td>Secondary member, not a terminal</td></tr>
+      <tr><td>Split or dividend</td><td>Adjusted history changes after the fact</td><td>Unadjusted storage plus a corporate-actions table</td></tr>
+      <tr><td>Weekend news, Monday move</td><td>Cutoff set too late</td><td>Earliest venue open across the cluster (Amsterdam 08:00 UTC)</td></tr>
+      <tr><td>Yahoo rate-limits or disappears</td><td>No prices</td><td>Archive on first fetch; SerpApi google_finance fallback</td></tr>
+      <tr><td>Same-day clustering</td><td>Significance overstated more than 2×</td><td>Kolari–Pynnönen</td></tr>
+    </tbody>
+  </table></div>
+</section>

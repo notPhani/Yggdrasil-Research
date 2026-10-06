@@ -8,6 +8,9 @@ Research and design for **Yggdrasil**, a market event forensics system. Yggdrasi
 
 | Path | What it is |
 |---|---|
+| `blueprint/index.html` | **Yggdrasil Blueprint, the final architecture document** (design locked through Session 7 plus 4.2′): every engine's formulas and intermediate terms, parameter sensitivity, stability proofs, extreme cases, terminal mockups, build plan, measured facts and sources |
+| `blueprint/media/` | Ten Manim animations (MP4, H.264) with poster frames |
+| `blueprint/src/` | Page parts, `build.py` (assembles `index.html`), `final_scenes.py` (Manim sources for the five new animations), `verdict_check.py` (the clingo verdict check) |
 | `brief/index.html` | Visual brief: key findings, the architecture, the math, and Manim animations, including a 13-chapter film of the whole pipeline |
 | `brief/media/` | Rendered animations (MP4, H.264) and poster frames |
 | `brief/manim_pipeline.py`, `brief/manim_scenes.py` | Manim sources for the film and the five topic animations |
@@ -31,9 +34,12 @@ Research and design for **Yggdrasil**, a market event forensics system. Yggdrasi
 - **Verdicts:** evidence as a tight normal logic program with defeasible acceptance of each report; four brave and cautious stable-model queries give the verdict; Lean 4 checks witness models and LRAT refutation proofs.
 - **What the research overturned** from earlier plans: subtractive competition, Gaussian-prior MAP, MCTS/PUCT as the search core, the original EC2 bound, and classical entailment over conflicting sources.
 
-## Viewing the brief
+## Viewing the documents
 
-Online: https://notphani.github.io/Yggdrasil-Research/ (GitHub Pages, served from the `main` branch root; the site root redirects to the brief). Locally: open `brief/index.html` in a browser (it loads fonts and MathJax from public CDNs).
+- Blueprint (final): https://notphani.github.io/Yggdrasil-Research/blueprint/ (the site root redirects here)
+- Earlier research brief: https://notphani.github.io/Yggdrasil-Research/brief/
+
+Both are served by GitHub Pages from the `main` branch root. Locally, open `blueprint/index.html` or `brief/index.html` in a browser; they load fonts and MathJax from public CDNs.
 
 ## Re-rendering the animations
 

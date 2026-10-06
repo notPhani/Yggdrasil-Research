@@ -1,0 +1,245 @@
+
+<section id="build">
+  <div class="eyebrow">§12 · build DAG and the hackathon cut · Session 7 (7.1–7.4), accepted</div>
+  <h2>From zero code to a replay in four evenings</h2>
+  <div class="box warn">
+    <span class="tag">Status at the time of writing</span>
+    <p>No code exists yet. The repo <code>notPhani/Yggdrasil</code> and its deploy key are waiting on your "go". Decision 7.1 put the skeleton and Engine 1 on Tuesday 6 October. That slot went to this document, so the critical path below now starts on Wednesday, and the whole plan is one day tighter. Deadline: <b>Saturday 10 October, 23:59 IST</b>, Open Innovation track.</p>
+  </div>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 370" role="img" aria-label="Build dependency graph by day. The critical path runs skeleton, Engine 1 core, semantic dedup, Engine 2a, Engine 2b, Engine 3a, Engine 3b, dossier and tests, end-to-end replay, and submission. The stock observer depends only on the skeleton and joins at Engine 3a. A lane underneath lists what only you can do each day.">
+        <defs>
+          <marker id="m9a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+        </defs>
+        <g font-size="11" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity="0.75" text-anchor="middle">
+          <text x="102" y="22">TUE 6 (slipped)</text><text x="298" y="22">WED 7</text><text x="494" y="22">THU 8</text><text x="690" y="22">FRI 9</text><text x="892" y="22">SAT 10</text>
+        </g>
+        <g stroke="currentColor" opacity="0.18"><line x1="200" y1="30" x2="200" y2="270"/><line x1="396" y1="30" x2="396" y2="270"/><line x1="592" y1="30" x2="592" y2="270"/><line x1="788" y1="30" x2="788" y2="270"/></g>
+        <g fill="none" stroke="currentColor" stroke-width="1.4">
+          <rect x="16" y="40" width="172" height="48" rx="6"/>
+          <rect x="16" y="150" width="172" height="48" rx="6"/>
+          <rect x="212" y="40" width="172" height="48" rx="6"/>
+          <rect x="212" y="120" width="172" height="48" rx="6"/>
+          <rect x="212" y="200" width="172" height="48" rx="6"/>
+          <rect x="408" y="200" width="172" height="48" rx="6"/>
+          <rect x="408" y="80" width="172" height="48" rx="6"/>
+          <rect x="604" y="80" width="172" height="48" rx="6"/>
+          <rect x="604" y="200" width="172" height="48" rx="6"/>
+          <rect x="800" y="80" width="184" height="48" rx="6"/>
+          <rect x="800" y="200" width="184" height="48" rx="6"/>
+        </g>
+        <g fill="currentColor" font-size="11.5" font-family="IBM Plex Sans, system-ui, sans-serif" text-anchor="middle">
+          <text x="102" y="61" font-weight="600">skeleton</text><text x="102" y="77" font-size="10.5" opacity="0.8">contracts · D1–D6 · window loop</text>
+          <text x="102" y="171" font-weight="600">Engine 1 core</text><text x="102" y="187" font-size="10.5" opacity="0.8">adapter · L1 · clocks · missing flag</text>
+          <text x="298" y="61" font-weight="600">stock observer</text><text x="298" y="77" font-size="10.5" opacity="0.8">daily · market-only · clusters · τ*</text>
+          <text x="298" y="141" font-weight="600">L2 semantic dedup</text><text x="298" y="157" font-size="10.5" opacity="0.8">steps 1–2 + fallback A</text>
+          <text x="298" y="221" font-weight="600">Engine 2a</text><text x="298" y="237" font-size="10.5" opacity="0.8">events · narratives · vMF-EM</text>
+          <text x="494" y="221" font-weight="600">Engine 2b</text><text x="494" y="237" font-size="10.5" opacity="0.8">daily refit · α · bursts · F1 F3</text>
+          <text x="494" y="101" font-weight="600">Engine 3a</text><text x="494" y="117" font-size="10.5" opacity="0.8">DPBF · rivals · 20 placebos</text>
+          <text x="690" y="101" font-weight="600">Engine 3b</text><text x="690" y="117" font-size="10.5" opacity="0.8">queries · rules · verifier · clingo</text>
+          <text x="690" y="221" font-weight="600">dossier + tests</text><text x="690" y="237" font-size="10.5" opacity="0.8">T1 · double replay · synthetic DP</text>
+          <text x="892" y="101" font-weight="600">end-to-end replay</text><text x="892" y="117" font-size="10.5" opacity="0.8">Dec 16 → Jan 31 · case Jan 27</text>
+          <text x="892" y="221" font-weight="600">README · demo · submit</text><text x="892" y="237" font-size="10.5" opacity="0.8">&lt; 3 min video · disclosures</text>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#m9a)">
+          <path d="M188,64 H210"/>
+          <path d="M384,72 L406,96"/>
+        </g>
+        <g fill="none" stroke-width="2.4" style="color: var(--exo)" stroke="currentColor" marker-end="url(#m9a)">
+          <path d="M102,88 V148"/>
+          <path d="M188,170 L210,150"/>
+          <path d="M298,168 V198"/>
+          <path d="M384,224 H406"/>
+          <path d="M494,200 V130"/>
+          <path d="M580,104 H602"/>
+          <path d="M690,128 V198"/>
+          <path d="M776,212 L798,118"/>
+          <path d="M892,128 V198"/>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.6" marker-end="url(#m9a)">
+          <path d="M60,198 V262 H594 V164 H622 V130"/>
+        </g>
+        <text x="350" y="276" text-anchor="middle" font-size="10.5" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity="0.7">fetch service (C4) reused by 3b</text>
+        <g fill="none" stroke="currentColor" stroke-width="1" opacity="0.5">
+          <rect x="16" y="294" width="172" height="62" rx="6"/><rect x="212" y="294" width="172" height="62" rx="6"/><rect x="408" y="294" width="172" height="62" rx="6"/><rect x="604" y="294" width="172" height="62" rx="6"/><rect x="800" y="294" width="184" height="62" rx="6"/>
+        </g>
+        <g fill="currentColor" font-size="10.5" font-family="IBM Plex Sans, system-ui, sans-serif" text-anchor="middle">
+          <text x="102" y="314" font-weight="600" style="fill: var(--warn)">you</text><text x="102" y="330">say "go" · repo + deploy key</text><text x="102" y="345">start the 4-hour download</text>
+          <text x="298" y="314" font-weight="600" style="fill: var(--warn)">you</text><text x="298" y="330">review</text><text x="298" y="345">approve model downloads (1–2 GB)</text>
+          <text x="494" y="314" font-weight="600" style="fill: var(--warn)">you</text><text x="494" y="330">SerpApi key</text>
+          <text x="690" y="314" font-weight="600" style="fill: var(--warn)">you</text><text x="690" y="330">review the first dossier</text>
+          <text x="892" y="314" font-weight="600" style="fill: var(--warn)">you</text><text x="892" y="330">record the demo</text><text x="892" y="345">submit before 23:59 IST</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>The critical path is a single chain.</b> The yellow arrows carry everything: Engine 2b can't fit without 2a's series, 3a can't search without 2b's edges, and 3b can't judge without 3a's trees. Only the stock observer runs in parallel, joining at the search. Any slip anywhere on the yellow chain moves Saturday.</figcaption>
+  </figure>
+
+  <div class="tablewrap"><table>
+    <thead><tr><th>Unit</th><th>Ships</th><th>Deferred, and why</th></tr></thead>
+    <tbody>
+      <tr><td>Engine 1</td><td>GKG + Events + Mentions, L1 exact dedup, L2 steps 1–2 + fallback A, clocks, missing-batch flag</td><td>Full-body step 3: fetch volume</td></tr>
+      <tr><td>Stock observer</td><td>Daily replay trigger, clusters, τ*</td><td>Live Lee–Mykland: no full live run in the cut</td></tr>
+      <tr><td>Engine 2a</td><td>Events, narratives, membership, vMF-EM calibration; phenomena as labels</td><td>Phenomenon → narrative slow baseline: needs a longer history</td></tr>
+      <tr><td>Engine 2b</td><td>Daily refit, α, bursts, F1 (ω) and F3 on the replay</td><td>Online updates, full F2 and F4</td></tr>
+      <tr><td>Engine 3a</td><td>Exact DP, rivals, abstention, 20 placebos</td><td>60 placebos and the full calibration sweep</td></tr>
+      <tr><td>Engine 3b</td><td>Cached queries, rules + verifier, four-bit verdicts, deterministic-only comparison</td><td>Lean certification: stretch</td></tr>
+      <tr><td>Tests</td><td>T1 exact resume, double-run determinism, synthetic planted-optimum search</td><td>T2 and T3 convergence tests</td></tr>
+      <tr><td>Live</td><td>Minimal demo: poll the latest batch through Engines 1 and 2; a case only if the trigger fires</td><td>Full live pipeline</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="split">
+    <div class="col">
+      <h3>The demo story, under 3 minutes</h3>
+      <ol class="plain">
+        <li>Replay January 2025: narratives form, and the R1 burst enters through BOT on 20 January.</li>
+        <li>27 January: the trigger finds two clusters, chips and power, with τ* = 08:00 UTC.</li>
+        <li>The search: the best tree, rivals with odds, abstention, and the placebo p-value.</li>
+        <li>Verdicts: H3 CONTRADICTED from the V3 report's own caveat; H4 UNRESOLVED; H6 SUPPORTED.</li>
+        <li>"Same verdicts with every model switched off": the deterministic-only comparison.</li>
+      </ol>
+    </div>
+    <div class="col">
+      <h3>Risks</h3>
+      <ul class="plain">
+        <li><b>Time</b>: four evenings for six engines. Mitigation: a ruthless cut; you review instead of co-writing.</li>
+        <li><b>Download</b>: start the moment the adapter exists, replay core first (anytime order).</li>
+        <li><b>SerpApi credits</b>: 15 per case, cached; one case plus a few placebos.</li>
+        <li><b>Model weights</b>: about 1–2 GB, with licenses checked before fetching (7.3).</li>
+        <li><b>Yahoo endpoint</b>: archive on first fetch.</li>
+        <li><b>Disclosures</b>: Claude for design and code; open models (GLiNER, NLI cross-encoder, MiniLM); prior work in Yggdrasil-Research.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="facts">
+  <div class="eyebrow">§13 · measured facts ledger</div>
+  <h2>Everything above that came from real data</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Fact</th><th>Value</th><th>Measured on</th></tr></thead>
+    <tbody>
+      <tr><td>GKG documents per batch</td><td>1,326 (2025-01-27 12:00); 1,603 (2026-10-05 16:15)</td><td>2 batches</td></tr>
+      <tr><td>Per-document text and clocks</td><td>PAGE_TITLE 100%; PAGE_PRECISEPUBTIMESTAMP ≈ 59%; PAGE_AUTHORS 36–40%; quotations 20%; amounts 72%; sharing image 82%</td><td>2 batches</td></tr>
+      <tr><td>Bytes</td><td>GCAM ≈ 70% of file bytes (8,571 B/doc); kept set ≈ 1.65 KB/doc (13%)</td><td>2 batches</td></tr>
+      <tr><td>Repeated titles</td><td>296–413 docs per batch in 85–100 groups; one PA story on 15 Newsquest papers with 9 distinct signatures; "Gearing announcement" ×14 from one site; a shared image across all copies in 18–42 groups</td><td>2 batches</td></tr>
+      <tr><td>Themes</td><td>2,402–2,472 distinct per batch; TAX_FNCACT 77%; 36% of the vocabulary used once</td><td>2 batches</td></tr>
+      <tr><td>Event structure</td><td>Single-pass clustering of one batch: 61–67% singletons. "deepseek": 5 of 1,326 docs at 12:00 on the crash day, peaking at 47 per batch</td><td>2 batches</td></tr>
+      <tr><td>Live manifest</td><td>Batches listed before files exist (17:00 and 17:30 returned 404 while 16:15 was served)</td><td>2026-10-05</td></tr>
+      <tr><td>Canonicalization and language</td><td>+0.34% merges beyond exact URLs; English-only drops ≈ 74% of documents</td><td>research day</td></tr>
+      <tr><td>GKG storage</td><td>12,493 → 484 → 320 → 258 → 239 → 205 B/doc</td><td>2,929 docs</td></tr>
+      <tr><td>NVDA, 27 Jan 2025</td><td>142.62 → open 124.80 (gap −12.5%) → close 118.42 (−17.0%); volume 818.8M = 3.97×</td><td>Yahoo daily</td></tr>
+      <tr><td>ASML.AS</td><td>700.7 → 647.0 at the 08:00 UTC open (−7.7%)</td><td>Yahoo daily</td></tr>
+      <tr><td>Trigger</td><td>Market-only fires exactly SMH, XLK, NVDA, AVGO, TSM, VST, CEG, NRG, TLN; market+sector misses NVDA, AVGO, TSM</td><td>19 symbols</td></tr>
+      <tr><td>Clusters</td><td>{SMH, XLK, NVDA, AVGO, TSM} and {VST, CEG, NRG, TLN}, stable for ρ<sub>0</sub> 0.3–0.5; cross 0.02–0.21</td><td>250-day residuals</td></tr>
+      <tr><td>Price storage</td><td>66.6 / 55.7 / 27.6 / 16.3 (lossy) / 10.1 B per bar</td><td>15,584 bars</td></tr>
+      <tr><td>Data sources</td><td>Yahoo intraday only covers the last 60 days; Stooq blocked by a JS challenge</td><td>2026-10-05</td></tr>
+      <tr><td>GDELT throughput</td><td>≈ 2.2 MB/s single stream; 12.7 MB/s on 8 streams (short test)</td><td>2026-10-06</td></tr>
+      <tr><td>Manifest totals</td><td>Replay core 24.6 GB (524 MB/day); Jul–Dec 2024 95.4 GB; Jan–Jun 2024 108.6 GB; 2024 Events + Mentions 7.3 GB</td><td>masterfilelist</td></tr>
+      <tr><td>Verdict logic</td><td>Template gives 2 stable models; h1 0000, h3 0011, h4 1010, h6 1100</td><td>clingo, 2026-10-06</td></tr>
+      <tr><td>Binning in practice</td><td>38.5% of events shared a bin with another event</td><td>BTC Hawkes fit</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="sources">
+  <div class="eyebrow">§14 · sources</div>
+  <h2>Where every borrowed result comes from</h2>
+  <div class="grid3">
+    <div class="card"><b>Data and tools</b><span>
+      <a href="http://data.gdeltproject.org/documentation/GDELT-Global_Knowledge_Graph_Codebook-V2.1.pdf">GDELT GKG 2.1 codebook</a> ·
+      <a href="https://serpapi.com/search-api">SerpApi Google Search API</a> ·
+      Yahoo chart endpoint (unofficial) ·
+      <a href="https://arxiv.org/abs/1705.09811">clingo (Gebser et al. 2019)</a> ·
+      <a href="https://lean-lang.org/">Lean 4</a> and CaDiCaL ·
+      <a href="https://arxiv.org/abs/2311.08526">GLiNER (Zaratiana et al. 2024)</a> ·
+      GLiREL (Boylan et al. 2025) ·
+      <a href="https://arxiv.org/abs/1909.00161">NLI zero-shot (Yin, Hay &amp; Roth 2019)</a> ·
+      spaCy · sentence-transformers all-MiniLM-L6-v2</span></div>
+    <div class="card"><b>Engine 1 · dedup and provenance</b><span>
+      Broder 1997, MinHash ·
+      <a href="https://www.cs.princeton.edu/courses/archive/spr04/cos598B/bib/CharikarEstim.pdf">Charikar 2002, SimHash</a> ·
+      Manku, Jain &amp; Das Sarma 2007, near-duplicates for web crawling ·
+      <a href="https://doi.org/10.14778/1687627.1687690">Dong, Berti-Equille &amp; Srivastava 2009, copy detection</a></span></div>
+    <div class="card"><b>Stock observer</b><span>
+      MacKinlay 1997, event studies ·
+      <a href="https://papers.ssrn.com/abstract=1830364">Kolari &amp; Pynnönen 2010</a> ·
+      <a href="https://www.scheller.gatech.edu/directory/research/finance/lee/pdf/leemykland08.pdf">Lee &amp; Mykland 2008</a> ·
+      Iglewicz &amp; Hoaglin 1993, modified z-scores ·
+      <a href="https://www.nber.org/system/files/working_papers/w28687/w28687.pdf">Baker et al., rev. 2025, stock-market jumps</a></span></div>
+    <div class="card"><b>Engine 2a · grouping</b><span>
+      <a href="https://jmlr.org/papers/v6/banerjee05a.html">Banerjee et al. 2005, vMF mixtures</a> ·
+      Dempster, Laird &amp; Rubin 1977, EM ·
+      <a href="https://arxiv.org/abs/1810.08473">Traag, Waltman &amp; van Eck 2019, Leiden</a> ·
+      Aggarwal et al. 2003, CluStream · Cao et al. 2006, DenStream ·
+      <a href="https://aclanthology.org/D18-1483.pdf">Miranda et al. 2018, news stream clustering</a> ·
+      Du et al. 2015, Dirichlet–Hawkes (considered, rejected 3.9) ·
+      Hubert &amp; Arabie 1985, ARI · Kuhn 1955, Hungarian method ·
+      van Handel 2009, filter stability · Gelman &amp; Rubin 1992 ·
+      Horvitz &amp; Thompson 1952 · Brewer, Early &amp; Joyce 1972 and Ohlsson 1995, permanent random numbers</span></div>
+    <div class="card"><b>Engine 2b · attention</b><span>
+      Hawkes 1971 ·
+      <a href="https://arxiv.org/abs/1507.03228">Linderman &amp; Adams 2015</a> ·
+      <a href="https://arxiv.org/abs/1502.04592">Bacry, Mastromatteo &amp; Muzy 2015</a> ·
+      <a href="https://arxiv.org/abs/1501.00725">Bacry et al. 2020</a> ·
+      <a href="https://arxiv.org/abs/1612.09328">Mei &amp; Eisner 2017</a> ·
+      <a href="https://arxiv.org/abs/1603.09449">Kobayashi &amp; Lambiotte 2016</a> ·
+      <a href="https://doi.org/10.1103/physreve.96.012303">Omi, Hirata &amp; Aihara 2017</a> ·
+      <a href="https://doi.org/10.1214/aop/1065725193">Brémaud &amp; Massoulié 1996</a> ·
+      <a href="https://arxiv.org/abs/2103.17164">Sulem, Rivoirard &amp; Rousseau</a> ·
+      <a href="https://arxiv.org/abs/1509.02007">Kirchner 2016</a> ·
+      <a href="https://webpages.uidaho.edu/rwells/techdocs/Biological%20Signal%20Processing/Chapter%2015%20Prelude%20to%20ART.pdf">Grossberg, shunting networks</a> ·
+      <a href="https://doi.org/10.1257/aer.20130047">Matějka &amp; McKay 2015</a> ·
+      <a href="https://arxiv.org/abs/1711.01679">Rizoiu et al. 2018</a> ·
+      <a href="https://arxiv.org/abs/1308.6756">Filimonov &amp; Sornette 2015</a> ·
+      <a href="https://ideas.repec.org/a/taf/quantf/v19y2019i7p1165-1178.html">Wheatley, Wehrli &amp; Sornette 2019</a> ·
+      <a href="https://arxiv.org/abs/1305.4328">Gleeson et al. 2014</a> ·
+      <a href="https://doi.org/10.1126/sciadv.1602368">Garcia-Gavilanes et al. 2017</a> ·
+      Simon 1971 ·
+      <a href="https://arxiv.org/abs/1602.04511">Xu, Farajtabar &amp; Zha 2016</a> ·
+      <a href="https://doi.org/10.1137/080716542">Beck &amp; Teboulle 2009, FISTA</a> ·
+      <a href="https://doi.org/10.1111/jtsa.12167">Ahmad &amp; Francq 2016</a> ·
+      Dunn &amp; Smyth 1996 ·
+      <a href="https://doi.org/10.1111/j.1541-0420.2009.01191.x">Czado, Gneiting &amp; Held 2009</a> ·
+      <a href="https://arxiv.org/abs/0710.3742">Adams &amp; MacKay 2007</a> ·
+      <a href="https://doi.org/10.1198/016214502760046925">Zhuang, Ogata &amp; Vere-Jones 2002</a></span></div>
+    <div class="card"><b>Engine 3a · search</b><span>
+      Dreyfus &amp; Wagner 1971 ·
+      <a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/icde07steiner.pdf">Ding et al. 2007, DPBF</a> ·
+      <a href="https://arxiv.org/abs/cs/0611101">Björklund et al. 2007</a> ·
+      <a href="https://www.wisdom.weizmann.ac.il/~robi/papers/HK-GroupSteiner2-STOC03.pdf">Halperin &amp; Krauthgamer 2003</a> ·
+      Gilbert 1967, branched transport ·
+      <a href="https://research.ibm.com/publications/blinks-ranked-keyword-searches-on-graphs">He et al. 2007, BLINKS</a> ·
+      <a href="https://web-ainf.aau.at/pub/jannach/files/Conference_IJCAI_2015.pdf">Reiter 1987, via Jannach et al.</a> ·
+      <a href="https://arxiv.org/abs/1811.10928">Orseau et al. 2018, Levin tree search</a> ·
+      <a href="https://www.math.ucsd.edu/~fan/wp/localpartition.pdf">Andersen, Chung &amp; Lang 2006</a> ·
+      <a href="https://arxiv.org/abs/1603.05766">Phipson &amp; Smyth 2010</a> ·
+      Tversky &amp; Kahneman 1973 · Radovanović et al. 2010, hubness</span></div>
+    <div class="card"><b>Engine 3b · verdicts</b><span>
+      <a href="https://doi.org/10.1016/0004-3702(94)00041-X">Dung 1995</a> ·
+      <a href="https://doi.org/10.1016/S0004-3702(97)00015-5">Bondarenko et al. 1997</a> ·
+      <a href="https://doi.org/10.1016/j.artint.2012.10.008">Modgil &amp; Prakken 2013</a> ·
+      Modgil &amp; Caminada 2009, dialogue games ·
+      Fages 1994 ·
+      <a href="https://doi.org/10.1017/S1471068403001765">Erdem &amp; Lifschitz 2003</a> ·
+      <a href="https://doi.org/10.1145/502807.502810">Dantsin et al. 2001</a> ·
+      <a href="https://doi.org/10.1145/116825.116838">Van Gelder, Ross &amp; Schlipf 1991</a> ·
+      <a href="https://www.cia.gov/resources/csi/books-monographs/psychology-of-intelligence-analysis-2/">Heuer 1999</a> ·
+      Chapman et al. 2001, NegEx ·
+      <a href="https://arxiv.org/abs/1612.02353">Cruz-Filipe et al. 2017, LRAT</a></span></div>
+    <div class="card"><b>Feedback and incentives</b><span>
+      <a href="https://arxiv.org/abs/1706.09847">Ensign et al. 2018, runaway feedback loops</a> ·
+      Fudenberg &amp; Levine 1993, self-confirming equilibrium</span></div>
+    <div class="card"><b>Project documents</b><span>
+      <a href="https://github.com/notPhani/Yggdrasil-Research">Yggdrasil-Research</a>: the research report (25.6k words, theorem ledger), research notes, and the earlier brief</span></div>
+  </div>
+</section>
+
+<footer class="footer" style="margin-top: 3.6rem; padding-top: 2rem; border-top: 1px solid var(--rule)">
+  <p><b>Provenance.</b> Every design item traces to a locked session decision (Sessions 0–7, 5–6 October 2026). Every "measured" number traces to a real fetch or file listed in §13. Proofs marked <i>derived</i> were written for this project and have not been independently reviewed. Spot checks so far cover Lemma 6.6, Propositions 6.2/6.3(a), Lemma 6.5(b) and Theorem 12.6. Animations were rendered with Manim Community. Toy numbers are labelled wherever they appear.</p>
+  <p>Yggdrasil never forecasts prices and never recommends trades. "We do not know" is always an allowed answer.</p>
+</footer>
+</div>

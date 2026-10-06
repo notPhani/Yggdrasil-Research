@@ -1,0 +1,157 @@
+
+<section id="e3a">
+  <div class="eyebrow">§6 · Engine 3a · Search · Session 5, locked (5.1–5.13)</div>
+  <h2>The cheapest tree of stories that reaches every abnormal cluster</h2>
+
+  <div class="eli5">
+    <span class="tag">For a ten-year-old</span>
+    <p>Think of a treasure map. Every road between two stories has a toll: common roads are cheap, strange ones are expensive. The crashed stocks are treasure chests. We want the cheapest set of roads, starting from the "outside world" gate, that reaches every chest. Sharing a road is cheaper, like friends carpooling.</p>
+    <p>There is always a direct road from the gate to each chest labelled "I don't know", with a fixed toll. If no story road is cheaper, the honest answer wins.</p>
+    <p>And so the loudest story can't win just by being loud, we play the same game on 20 boring days when nothing happened, and count how often it "finds" a story anyway.</p>
+  </div>
+
+  <h3>The graph at the cutoff <span class="lab design">design · 5.1–5.3, 5.11, 5.12</span></h3>
+  <div class="math">\[ V = \{\text{BOT}\} \;\cup\; \{\text{narratives alive in } [\tau^* - 14\,\text{d}, \tau^*)\} \;\cup\; T, \qquad |T| = k = \text{number of clusters} \]</div>
+  <div class="math">\[ p_H(j \to i) = \frac{\sum_{t \lt \tau^*} w_t\, y_i(t)\, \alpha_{i \leftarrow j}(t)}{\sum_{t \lt \tau^*} w_t\, y_i(t)}, \qquad w_t = e^{-(\tau^* - t)/\tau_H},\ \ \tau_H = 3\,\text{d}, \qquad \text{edge kept iff } p_H \ge p_{\text{floor}} = 0.01 \]</div>
+  <div class="math">\[ \sigma_{j \to i} = \operatorname{rz}\big(\alpha_{i\leftarrow j},\ [\tau^* - 24\,\text{h}, \tau^*) \text{ vs trailing 30 d}\big), \qquad p^*(j \to i) \propto p_H(j \to i)\, e^{\gamma\, (\sigma_{j\to i})_+}, \ \text{renormalized with BOT} \to i \]</div>
+  <div class="math">\[ \operatorname{lift}_{u,x} = \frac{A_u(T_x) / A_u}{A(T_x) / A}, \qquad p_{\text{link}}(u \to x) = (1 - p_0)\, \frac{\exp\big(\log(\operatorname{lift}_{u,x} + \epsilon) + \operatorname{zatt}_u\big)}{\sum_{k} \exp\big(\log(\operatorname{lift}_{k,x} + \epsilon) + \operatorname{zatt}_k\big)}, \qquad p(\text{BOT} \to x) = p_0 \]</div>
+  <div class="col">
+    <p><b>Intermediate terms.</b> \(\alpha_{i\leftarrow j}(t)\) is Engine 2b's per-window share (§5). \(w_t\) weights recent windows more: an edge active an hour before the cutoff matters more than one active two weeks earlier. \(\operatorname{rz}\) is a robust z-score. \(\sigma_{j\to i}\) asks whether the spillover <i>jumped</i> just before the move, measuring the perturbation rather than the background field. \(T_x\) is cluster x's profile: its member companies' names, aliases and tickers, plus a small sector lexicon frozen as of 2024-12-31. \(A_u(T_x)\) is u's horizon attention in objects whose entities hit \(T_x\), and \(A\) without a subscript is everyone's. Lift is IDF applied to narratives: a story that mentions every company gets lift ≈ 1 and no bonus. \(\operatorname{zatt}_u\) is the robust z of u's attention in the last 24 hours against its trailing 30 days: was it hot right now? This is the only place where news meets prices. The observer never reads news, and Engine 2 never sees prices.</p>
+  </div>
+  <div class="math">\[ c(e) = -\ln p(e) + \lambda_{\text{node}}, \qquad c_{\text{int}}(e) = \operatorname{round}(1000\, c(e)) \ \text{milli-nats}, \qquad S^* = \arg\min_{S\ \text{feasible}} \sum_{e \in S} c(e) \]</div>
+  <div class="col"><p>A feasible S is an arborescence rooted at BOT that contains every terminal and whose leaves are all terminals. "We do not know" for cluster x means \(\text{BOT} \to x \in S^*\). BOT does four jobs at once: it is the Hawkes immigrant source, the root of every explanation, the door where new information enters (an R1 burst is the edge BOT → R1), and the price of abstention.</p></div>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 1000 330" role="img" aria-label="Illustrative explanation graph with toy costs in nats. The cheapest tree runs from BOT through R1 release and AI models, then splits to chip demand and data-center power, reaching the chips and power clusters for a total of 5.8 nats. The abstention tree costs 6.6 and the politics hub rival costs 7.3.">
+        <defs>
+          <marker id="m6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+        </defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.55" marker-end="url(#m6a)">
+          <path d="M98,182 L408,246"/>
+          <path d="M478,236 C720,236 800,110 842,80"/>
+          <path d="M478,252 C660,240 780,180 842,160"/>
+        </g>
+        <g fill="none" stroke-width="1.4" stroke-dasharray="6 5" style="color: var(--bad)" stroke="currentColor" marker-end="url(#m6a)">
+          <path d="M76,150 C150,0 700,0 842,62"/>
+          <path d="M98,186 C380,320 760,320 842,170"/>
+        </g>
+        <g fill="none" stroke-width="2.6" style="color: var(--exo)" stroke="currentColor" marker-end="url(#m6a)">
+          <path d="M98,166 L218,104"/>
+          <path d="M302,90 L388,90"/>
+          <path d="M488,84 L588,64"/>
+          <path d="M488,98 L588,146"/>
+          <path d="M692,60 L842,64"/>
+          <path d="M692,150 L842,156"/>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="1.4">
+          <circle cx="76" cy="174" r="24"/>
+          <rect x="220" y="72" width="82" height="36" rx="6"/>
+          <rect x="390" y="72" width="98" height="36" rx="6"/>
+          <rect x="590" y="42" width="102" height="36" rx="6"/>
+          <rect x="590" y="132" width="102" height="36" rx="6"/>
+          <rect x="410" y="228" width="68" height="36" rx="6" opacity="0.6"/>
+          <rect x="844" y="40" width="140" height="44" rx="6" style="stroke: var(--bad)"/>
+          <rect x="844" y="136" width="140" height="44" rx="6" style="stroke: var(--bad)"/>
+        </g>
+        <g fill="currentColor" font-size="12" font-family="IBM Plex Sans, system-ui, sans-serif" text-anchor="middle">
+          <text x="76" y="178" font-weight="600">BOT</text>
+          <text x="261" y="94">R1 release</text>
+          <text x="439" y="94">AI models</text>
+          <text x="641" y="64">chip demand</text>
+          <text x="641" y="154">DC power</text>
+          <text x="444" y="250" opacity="0.7">politics</text>
+          <text x="914" y="59" font-weight="600">Chips cluster</text>
+          <text x="914" y="75" font-size="10.5" opacity="0.75">NVDA AVGO TSM (+ETFs)</text>
+          <text x="914" y="155" font-weight="600">Power cluster</text>
+          <text x="914" y="171" font-size="10.5" opacity="0.75">VST CEG NRG TLN</text>
+        </g>
+        <g font-size="11" font-family="IBM Plex Mono, monospace" style="fill: var(--exo)">
+          <text x="148" y="122">0.9</text><text x="345" y="84" text-anchor="middle">0.8</text><text x="532" y="64">1.1</text><text x="532" y="134">1.6</text><text x="766" y="56" text-anchor="middle">0.5</text><text x="766" y="172" text-anchor="middle">0.9</text>
+        </g>
+        <g font-size="11" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity="0.7">
+          <text x="250" y="226">0.4</text><text x="783" y="102" text-anchor="middle">3.4</text><text x="705" y="228">3.5</text>
+        </g>
+        <g font-size="11" font-family="IBM Plex Mono, monospace" style="fill: var(--bad)">
+          <text x="470" y="16" text-anchor="middle">abstain: −ln 0.05 + 0.3 = 3.30</text>
+          <text x="470" y="306" text-anchor="middle">abstain: 3.30</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>One shared trunk beats two separate stories (toy numbers, in nats).</b> The yellow tree BOT → R1 → AI models → {chip demand → Chips, DC power → Power} costs 0.9 + 0.8 + 1.1 + 1.6 + 0.5 + 0.9 = 5.8. Abstaining on both clusters costs 6.6, so the odds are \(e^{0.8} \approx\) 2.2 : 1. The politics hub reaches both clusters too, but after the lift fix its links cost 3.4 and 3.5, for a total of 7.3, at odds of 4.5 : 1 against. That is still within \(\ln 20\), so it is reported as a rival. This is branched transport (Gilbert–Steiner): when shared edges are paid once, flows merge into trunks, the way rivers do.</figcaption>
+  </figure>
+
+  <h3>Solve exactly <span class="lab design">design · 5.5</span></h3>
+<pre class="code"># directed DPBF over states (v, X), X ⊆ T non-empty; integer costs; ties by (cost, node_id, sorted(X))
+push (0, x, {x}) for every terminal x
+while heap:
+    val, v, X = pop_min(heap)
+    if (v, X) done: continue;  mark done; Tval[v, X] = val
+    if v == BOT and X == T: return val, backtrack(v, X)            # first pop is optimal (Theorem 12.1)
+    for u in parents(v):        push (val + c(u, v), u, X)        # grow: put edge u -> v on top
+    for Y finished at v, Y ∩ X = ∅:  push (val + Tval[v, Y], v, X ∪ Y)   # merge two subtrees at v
+cost: O(3^k n + 2^k ((k + log n) n + m));  k = 2, n ≈ 300, m ≈ 6,000  →  about 4 × 10^4 basic steps</pre>
+  <div class="box proof">
+    <span class="tag"><b>Proof sketch</b> · Theorem 12.1, the first pop of (BOT, T) is optimal <span class="lab proven">undirected: Dreyfus–Wagner, DPBF</span> <span class="lab derived">directed version</span></span>
+    <p><b>Achievable:</b> every pushed value is the cost of a structure built by grow and merge steps. Where a merge shares nodes, deleting duplicate entering edges gives an arborescence that costs no more. So val ≥ Topt(v, X). <b>Optimal:</b> suppose (v, X) is the first state popped above its optimum. Decompose an optimal arborescence for (v, X) into grow and merge steps down to the base states, which are exact at 0. Some state of that decomposition is unfinished while all its children are finished. When its last child finished, it was pushed with a value at most its optimal sub-cost, which is at most Topt(v, X) < val because costs are ≥ 0. A min-heap would have popped it first, a contradiction. <span class="qed">QED</span> <b>Lemma 12.2:</b> every non-root node has exactly one entering edge, so adding \(\lambda_{\text{node}}\) to each edge charges each node exactly once. <b>Quantization:</b> rounding moves each edge by at most 0.0005 nats, so a tree with E ≤ 10 edges moves by at most 0.005 nats, an odds error under 0.5%. Ties are broken by a fixed key, so the result is replay-identical. <b>Feasibility always holds,</b> because the all-abstention tree is feasible.</p>
+  </div>
+  <div class="col"><p><b>Why exact, not approximate.</b> Group and directed Steiner problems approximate badly (no \(\log^{2-\epsilon} k\) ratio for group Steiner under standard assumptions; Halperin &amp; Krauthgamer 2003). Exact DP is exponential only in k. With one terminal per cluster, k = 2 on 27 January. The research design's push certificate (Theorem 12.6) and Levin tree search are kept as the path to scale, beyond about 2,000 nodes or once event-level nodes go in. At ~300 narratives, solving the whole graph exactly is cheaper than certifying a local piece.</p></div>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/CertifiedSearch.jpg" src="media/CertifiedSearch.mp4" aria-label="Animation: push mass backwards from the events, solve exactly, then certify"></video>
+    <figcaption><b>The scale path, not the hackathon solver (toy numbers).</b> Probability mass is pushed backwards from the market events so only the plausible neighborhood is explored. Exact DP then runs on that piece, and leftover residual mass proves that no unexplored chain could cost less than Γ (Theorem 12.6, <span class="lab derived">derived</span>). The hackathon skips the push and solves the full graph, which gives the same guarantee directly from Theorem 12.1.</figcaption>
+  </figure>
+
+  <h3>Competing explanations: a subset, defined precisely <span class="lab design">design · 5.6, 6.11</span></h3>
+  <div class="math">\[ \mathrm{OPT}_r = c(\text{BOT} \to r) + \min_{\emptyset \ne X \subseteq T} \Big[ T_{\text{full}}(r, X) + T_{-r}(\text{BOT}, T \setminus X) \Big], \qquad \mathcal R = \{ S_r : \mathrm{OPT}_r \le \mathrm{OPT} + \ln 20 \} \cup \{ S_0 \} \]</div>
+  <div class="col">
+    <p>For each entry narrative r, a child of BOT, \(S_r\) is the cheapest explanation whose root story enters through r. It is computed exactly from the DP tables (Lemma 11.2): the subtree below r covers some terminals X, and the rest of the tree avoids r. Requiring a different <i>entry</i> makes rivals different stories, not the same chain with one middle node swapped. \(S_0\) is abstention, always shown. Odds between two explanations are \(e^{\Delta\text{cost}}\).</p>
+    <p><b>Guarantee (from the definition):</b> if <i>any</i> explanation through root r has odds of at least 1 : 20 against the best, r's best version is in the report, because \(\mathrm{OPT}_r \le\) its cost \(\le \mathrm{OPT} + \ln 20\). <b>Not covered:</b> variations inside one root story (top-2 per root is an option, off by default), and anything outside the graph: non-English press, private information, edges below \(p_{\text{floor}}\). Those don't vanish. They fold into "we do not know".</p>
+  </div>
+  <div class="box">
+    <span class="tag">What the odds mean <span class="lab conj">conjecture 11.A</span> → <span class="lab derived">Lemma 11.1</span></span>
+    <p>If each edge were active independently with probability p(e), and each node carried a prior factor \(e^{-\lambda_{\text{node}}}\), then \(P(S) \propto \prod p(e)\, e^{-\lambda_{\text{node}}|S|} = e^{-\text{cost}(S)}\). \(S^*\) would be the MAP explanation, and the odds would be posterior odds. Edges aren't independent, so the odds are a ranking calibrated by placebos, not literal probabilities. In physics terms, cost is energy, \(S^*\) is the ground state, rivals are low-lying excitations, and the odds are Boltzmann factors at unit temperature.</p>
+  </div>
+
+  <h3>Hub bias: a feature as a prior, a bug as a decision rule <span class="lab design">design · 5.11–5.13</span></h3>
+  <figure>
+    <video class="video" controls playsinline preload="metadata" poster="media/HubPlacebo.jpg" src="media/HubPlacebo.mp4" aria-label="Animation: a loud politics narrative wins under raw scoring, lift and surprise remove its advantage, and a placebo histogram gives an empirical p-value"></video>
+    <figcaption><b>The loudest story touches everything, so the DP loves it (toy numbers).</b> The availability heuristic in algorithm form, and hubness from nearest-neighbor search. Three fixes. Lift: a story that mentions every company gets no link bonus. Surprise tilting: only spillovers that <i>jumped</i> before the cutoff get cheaper. Placebos: run the identical pipeline on days when nothing happened, and measure how often a story gets told anyway.</figcaption>
+  </figure>
+  <div class="math">\[ \text{FER} = \frac{\#\{\text{placebo terminals given a non-abstention explanation}\}}{\#\{\text{placebo terminals}\}} \le 5\% \]</div>
+  <div class="math">\[ h_u = \frac{\#\{\text{placebo explanations containing } u\}}{\#\{\text{placebo explanations}\}}, \qquad p_{\text{emp}} = \frac{1 + \#\{k : \text{cost}_k \le \text{cost}_{\text{real}}\}}{1 + K} \]</div>
+  <div class="col"><p>Placebos are K cutoffs at random times in the prior 90 days (case days excluded), with terminals built from instruments that did <i>not</i> move abnormally. \((p_0, \lambda_{\text{node}}, \gamma)\) are tuned so that FER ≤ 5%: fix the false-alarm rate, then maximize detection, which is Neyman–Pearson. Every dossier reports the hub frequency of each narrative it uses (e.g. "appears in 70% of explanations on ordinary days: low diagnosticity") and \(p_{\text{emp}}\): "this explanation fits better than 20 of 20 ordinary days".</p></div>
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · the empirical p-value is valid <span class="lab proven">rank argument; Phipson &amp; Smyth 2010</span> under <span class="lab conj">exchangeability</span></span>
+    <p>Under the null that the real case is just another day, the K + 1 costs are exchangeable, so the real cost's rank among them is uniform on {1, …, K + 1}, with ties counted against the real case. Hence \(P(p_{\text{emp}} \le j/(K+1)) \le j/(K+1)\). The +1 in numerator and denominator is what makes the test exact. Dropping it gives p = 0, which is anti-conservative. <span class="qed">QED</span> <b>Resolution:</b> with the hackathon's K = 20, the smallest possible p is 1/21 ≈ 0.048. With 40 placebo terminals, the standard error of a 5% FER is \(\sqrt{0.05 \cdot 0.95/40} \approx\) 3.4 points. The 60 placebos planned after the hackathon bring those to 1/61 and 2.8 points. Exchangeability between a moving and a non-moving instrument is an assumption, not a fact.</p>
+  </div>
+  <div class="col"><p><b>Feedback from verdicts (5.8).</b> If Engine 3b rules a claim CONTRADICTED, the edges that depend on it are deleted and the DP reruns. Only the graph changed, so the answer is still exact. This is consistency-based diagnosis: parsimonious consistent explanations are the minimal hitting sets of the conflict sets (Reiter 1987).</p></div>
+
+  <h3>Knobs, sensitivity and bounds</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Knob</th><th>Start value</th><th>Sensitivity (derived arithmetic)</th></tr></thead>
+    <tbody>
+      <tr><td>p<sub>0</sub></td><td>0.05</td><td>The abstention edge costs \(-\ln 0.05 + 0.3 = 3.30\) nats per terminal. A one-hop story BOT → r → x beats it only if \(p(\text{BOT}\to r)\,p(r \to x) \gt 0.05\,e^{0.6} = 0.091\). Raising p<sub>0</sub> makes "we do not know" more common</td></tr>
+      <tr><td>λ<sub>node</sub></td><td>0.3 nats</td><td>Each extra node multiplies the odds by \(e^{-0.3} = 0.74\), so a 4-hop chain pays 1.2 nats. Too high: abstention or one-hop chains always win. Too low: long, implausible chains. Check that chains stay at ≤ 4 hops and abstention isn't automatic</td></tr>
+      <tr><td>p<sub>floor</sub></td><td>0.01</td><td>The most expensive edge allowed is 4.91 nats. Edges below it fold into abstention</td></tr>
+      <tr><td>τ<sub>H</sub></td><td>3 d inside a 14 d horizon</td><td>Weight is 0.72 at 1 d, 0.37 at 3 d, 0.097 at 7 d, 0.009 at 14 d. With uniform mass, the last 4 days carry 74% of the weight</td></tr>
+      <tr><td>γ</td><td>fitted to FER</td><td>0: no tilt, so hubs win on level. Large: only spiking edges survive, which overfits noise and raises FER</td></tr>
+      <tr><td>rival window</td><td>ln 20 = 3.00 nats</td><td>Nearly equal to the abstention edge cost (3.00 vs 3.30), so a rival is reported roughly when it beats "abstain on one more cluster"</td></tr>
+      <tr><td>K placebos</td><td>20 (cut), 60 later</td><td>Minimum p = 1/(K + 1); FER standard error as above</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Extreme cases</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Case</th><th>What would go wrong</th><th>Avoidance</th></tr></thead>
+    <tbody>
+      <tr><td>The loudest narrative is in every answer</td><td>The availability heuristic, automated</td><td>Lift, surprise tilt, placebo FER ≤ 5%, hub flags</td></tr>
+      <tr><td>Few pre-cutoff documents tie a cluster to any story (power on Jan 27?)</td><td>A forced, weak story</td><td>Abstention wins for that cluster, <b>which is the honest answer</b></td></tr>
+      <tr><td>A terminal with no incoming story edges</td><td>Infeasible search</td><td>Never happens: the BOT → x edge always exists</td></tr>
+      <tr><td>Many clusters on one day</td><td>The \(3^k\) blowup</td><td>Fine up to about 8; beyond that, split the case or use the scale path</td></tr>
+      <tr><td>Graph above about 2,000 nodes</td><td>DP too slow</td><td>Push certificate plus Levin search (designed, deferred)</td></tr>
+      <tr><td>Float ties across machines</td><td>Different trees on different runs</td><td>Integer milli-nats plus a fixed tie key</td></tr>
+      <tr><td>Stale edges from two weeks ago</td><td>Old couplings explain today</td><td>3-day recency kernel and surprise tilt</td></tr>
+      <tr><td>The cause is outside the graph</td><td>A wrong story told confidently</td><td>It folds into abstention; dossiers state the observation limits</td></tr>
+    </tbody>
+  </table></div>
+</section>
