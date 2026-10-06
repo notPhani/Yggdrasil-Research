@@ -1,3 +1,11 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The complete Yggdrasil architecture: formulas, parameter sensitivity, stability proofs, extreme cases, terminal screens, build plan and sources.">
+</head>
+<body>
 <title>Yggdrasil Blueprint</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -402,7 +410,7 @@ live gotcha (measured 2026-10-05): lastupdate.txt lists batches before the files
 
   <h3>The four-step semantic cascade, cheapest first <span class="lab design">design · frozen 2026-10-05</span></h3>
   <figure>
-    <video class="video" controls playsinline preload="metadata" poster="media/DedupCascade.jpg" src="media/DedupCascade.mp4" aria-label="Animation: the four dedup steps, merging 15 wire copies while keeping 14 template-title filings apart"></video>
+    <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/DedupCascade.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/DedupCascade.mp4" aria-label="Animation: the four dedup steps, merging 15 wire copies while keeping 14 template-title filings apart"></video>
     <figcaption><b>Fifteen wire copies collapse. Fourteen look-alike filings don't.</b> The PA story on 15 Newsquest papers had 9 different theme/person/org signatures, so metadata hashing alone can't see the copy, but the title and sharing image can. "Gearing announcement" appeared 14 times from one site, and those are 14 different company filings. The template guard sends them to step 2, where their different canonical URLs and opening paragraphs keep them apart.</figcaption>
   </figure>
 
@@ -535,7 +543,7 @@ universe: Nasdaq-100 + S&amp;P 500 utilities + SOX + ASML.AS, ASM.AS, BESI.AS + 
 
   <h3>Clusters: one case per day, one terminal per cluster <span class="lab design">design · 2.6</span></h3>
   <figure>
-    <video class="video" controls playsinline preload="metadata" poster="media/TriggerClusters.jpg" src="media/TriggerClusters.mp4" aria-label="Animation: SAR dots move from the sector model to the market-only model, then fired stocks form two residual-correlation clusters"></video>
+    <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/TriggerClusters.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/TriggerClusters.mp4" aria-label="Animation: SAR dots move from the sector model to the market-only model, then fired stocks form two residual-correlation clusters"></video>
     <figcaption><b>Chips and power crashed together, but market history says they never move together.</b> Fired instruments are linked when their market-model residuals over the prior 250 days correlate at ρ ≥ 0.4 with the same sign. That gives {SMH, XLK, NVDA, AVGO, TSM} (within-cluster 0.30–0.79) and {VST, CEG, NRG, TLN} (0.41–0.73), identical for ρ<sub>0</sub> = 0.3, 0.4 and 0.5. Cross-cluster correlation is 0.02–0.21. Something new linked them that morning, and finding it is Engine 3's job.</figcaption>
   </figure>
   <div class="math">\[ i \sim j \iff \operatorname{corr}(\hat\varepsilon_i, \hat\varepsilon_j) \ge \rho_0 \;\wedge\; \operatorname{sign}(AR_i) = \operatorname{sign}(AR_j), \qquad \text{clusters} = \text{connected components of } \sim \text{ on fired instruments} \]</div>
@@ -621,7 +629,7 @@ universe: Nasdaq-100 + S&amp;P 500 utilities + SOX + ASML.AS, ASM.AS, BESI.AS + 
   </div>
 
   <figure>
-    <video class="video" controls playsinline preload="metadata" poster="media/ThreeLevels.jpg" src="media/ThreeLevels.mp4" aria-label="Animation: objects group into event clusters, event clusters into persistent narratives that can split, and narratives into a phenomenon"></video>
+    <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/ThreeLevels.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/ThreeLevels.mp4" aria-label="Animation: objects group into event clusters, event clusters into persistent narratives that can split, and narratives into a phenomenon"></video>
     <figcaption><b>One assignment rule, applied three times with slower memory each time.</b> Objects join event clusters (72-hour freshness), event clusters join narratives (14-day freshness, persistent ids, explicit splits), and narratives form phenomena (daily communities, persistent). This is a coarse-graining in the renormalization-group sense: the same rule, rescaled. The arrow runs one way. Grouping decides by content, and attention is computed afterwards.</figcaption>
   </figure>
 
@@ -792,11 +800,11 @@ universe: Nasdaq-100 + S&amp;P 500 utilities + SOX + ASML.AS, ASM.AS, BESI.AS + 
 
   <div class="split">
     <figure>
-      <video class="video" controls playsinline preload="metadata" poster="media/HawkesBumps.jpg" src="media/HawkesBumps.mp4" aria-label="Animation: events arrive and each adds a fading bump to the rate"></video>
+      <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/HawkesBumps.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/HawkesBumps.mp4" aria-label="Animation: events arrive and each adds a fading bump to the rate"></video>
       <figcaption><b>Self-exciting attention.</b> Each event adds a bump that decays. The rate at any moment is the baseline (outside news) plus every bump still fading. The area of one bump, n, is the average number of follow-on events.</figcaption>
     </figure>
     <figure>
-      <video class="video" controls playsinline preload="metadata" poster="media/BranchingTree.jpg" src="media/BranchingTree.mp4" aria-label="Animation: the same process as a family tree, subcritical then supercritical"></video>
+      <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/BranchingTree.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/BranchingTree.mp4" aria-label="Animation: the same process as a family tree, subcritical then supercritical"></video>
       <figcaption><b>The same process as a family tree.</b> Immigrants arrive from outside, and every event has on average n children. Below n = 1 every cascade dies out, with mean size 1/(1 − n), and a share 1 − n of all events is new information. Above 1 it runs away, like a reactor past critical mass.</figcaption>
     </figure>
   </div>
@@ -855,7 +863,7 @@ universe: Nasdaq-100 + S&amp;P 500 utilities + SOX + ASML.AS, ASM.AS, BESI.AS + 
   <h3>Competition divides, it never subtracts</h3>
   <div class="split">
     <figure>
-      <video class="video" controls playsinline preload="metadata" poster="media/Competition.jpg" src="media/Competition.mp4" aria-label="Animation: subtractive versus divisive competition, then splitting a narrative"></video>
+      <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/Competition.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/Competition.mp4" aria-label="Animation: subtractive versus divisive competition, then splitting a narrative"></video>
       <figcaption><b>The split test.</b> Subtracting the same amount from every narrative tilts shares toward the biggest one and wipes out the smallest. Dividing keeps the ratios. Split the AI narrative in two and the subtractive model changes AI's total (4.2 to 3.4) purely because of how you clustered. The divisive model gives the same 3.0.</figcaption>
     </figure>
     <figure>
@@ -912,7 +920,7 @@ universe: Nasdaq-100 + S&amp;P 500 utilities + SOX + ASML.AS, ASM.AS, BESI.AS + 
 
   <h3 id="alpha">Outputs for Engine 3: surprises and edge shares</h3>
   <figure>
-    <video class="video" controls playsinline preload="metadata" poster="media/AttributionFlow.jpg" src="media/AttributionFlow.mp4" aria-label="Animation: a shock enters the AI narrative through BOT and spills into GPU"></video>
+    <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/AttributionFlow.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/AttributionFlow.mp4" aria-label="Animation: a shock enters the AI narrative through BOT and spills into GPU"></video>
     <figcaption><b>Where GPU's attention came from (toy numbers).</b> R1's release enters the AI narrative through BOT as a large surprise. One window later AI's memory trace has risen and its share of GPU's attention grows. Those shares, averaged over the horizon, are the edge probabilities the search uses.</figcaption>
   </figure>
   <div class="math">\[ u_{it} = F_{\text{NB}}(y - 1) + U\,\big[F_{\text{NB}}(y) - F_{\text{NB}}(y - 1)\big], \quad U \sim \text{Philox (D2)}, \qquad \Phi^{-1}(u_{it}) \approx \mathcal N(0,1) \text{ under a correct model} \]</div>
@@ -1068,7 +1076,7 @@ cost: O(3^k n + 2^k ((k + log n) n + m));  k = 2, n ≈ 300, m ≈ 6,000  →  a
   </div>
   <div class="col"><p><b>Why exact, not approximate.</b> Group and directed Steiner problems approximate badly (no \(\log^{2-\epsilon} k\) ratio for group Steiner under standard assumptions; Halperin &amp; Krauthgamer 2003). Exact DP is exponential only in k. With one terminal per cluster, k = 2 on 27 January. The research design's push certificate (Theorem 12.6) and Levin tree search are kept as the path to scale, beyond about 2,000 nodes or once event-level nodes go in. At ~300 narratives, solving the whole graph exactly is cheaper than certifying a local piece.</p></div>
   <figure>
-    <video class="video" controls playsinline preload="metadata" poster="media/CertifiedSearch.jpg" src="media/CertifiedSearch.mp4" aria-label="Animation: push mass backwards from the events, solve exactly, then certify"></video>
+    <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/CertifiedSearch.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/CertifiedSearch.mp4" aria-label="Animation: push mass backwards from the events, solve exactly, then certify"></video>
     <figcaption><b>The scale path, not the hackathon solver (toy numbers).</b> Probability mass is pushed backwards from the market events so only the plausible neighborhood is explored. Exact DP then runs on that piece, and leftover residual mass proves that no unexplored chain could cost less than Γ (Theorem 12.6, <span class="lab derived">derived</span>). The hackathon skips the push and solves the full graph, which gives the same guarantee directly from Theorem 12.1.</figcaption>
   </figure>
 
@@ -1085,7 +1093,7 @@ cost: O(3^k n + 2^k ((k + log n) n + m));  k = 2, n ≈ 300, m ≈ 6,000  →  a
 
   <h3>Hub bias: a feature as a prior, a bug as a decision rule <span class="lab design">design · 5.11–5.13</span></h3>
   <figure>
-    <video class="video" controls playsinline preload="metadata" poster="media/HubPlacebo.jpg" src="media/HubPlacebo.mp4" aria-label="Animation: a loud politics narrative wins under raw scoring, lift and surprise remove its advantage, and a placebo histogram gives an empirical p-value"></video>
+    <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/HubPlacebo.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/HubPlacebo.mp4" aria-label="Animation: a loud politics narrative wins under raw scoring, lift and surprise remove its advantage, and a placebo histogram gives an empirical p-value"></video>
     <figcaption><b>The loudest story touches everything, so the DP loves it (toy numbers).</b> The availability heuristic in algorithm form, and hubness from nearest-neighbor search. Three fixes. Lift: a story that mentions every company gets no link bonus. Surprise tilting: only spillovers that <i>jumped</i> before the cutoff get cheaper. Placebos: run the identical pipeline on days when nothing happened, and measure how often a story gets told anyway.</figcaption>
   </figure>
   <div class="math">\[ \text{FER} = \frac{\#\{\text{placebo terminals given a non-abstention explanation}\}}{\#\{\text{placebo terminals}\}} \le 5\% \]</div>
@@ -1231,7 +1239,7 @@ ctl = clingo.Control(["0", "--enum-mode=cautious"])  # intersection of all stabl
 
   <div class="split">
     <figure>
-      <video class="video" controls playsinline preload="metadata" poster="media/Readings.jpg" src="media/Readings.mp4" aria-label="Animation: two stable readings of the evidence and the verified four-bit table"></video>
+      <video class="video" controls playsinline preload="metadata" poster="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/Readings.jpg" src="https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@b30c91ea7ba71211a58360fb7619046fba1d9e33/blueprint/media/Readings.mp4" aria-label="Animation: two stable readings of the evidence and the verified four-bit table"></video>
       <figcaption><b>Every consistent reading of the evidence.</b> An equal-tier allegation of chip smuggling against an equal-tier denial splits the evidence into two stable models. Whatever holds in both is certain; whatever holds in only one is open.</figcaption>
     </figure>
     <div class="col" style="gap: 0.6rem">
@@ -1990,3 +1998,6 @@ if (mq.addEventListener) mq.addEventListener("change", drawAll);
 new MutationObserver(drawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 })();
 </script>
+
+</body>
+</html>

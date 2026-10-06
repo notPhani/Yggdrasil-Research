@@ -9,7 +9,7 @@ Research and design for **Yggdrasil**, a market event forensics system. Yggdrasi
 | Path | What it is |
 |---|---|
 | `blueprint/index.html` | **Yggdrasil Blueprint, the final architecture document** (design locked through Session 7 plus 4.2′): every engine's formulas and intermediate terms, parameter sensitivity, stability proofs, extreme cases, terminal mockups, build plan, measured facts and sources |
-| `blueprint/media/` | Ten Manim animations (MP4, H.264) with poster frames |
+| `blueprint/media/` | Ten Manim animations (MP4, H.264) with poster frames; the page streams them from the jsDelivr CDN, pinned to commit b30c91e |
 | `blueprint/src/` | Page parts, `build.py` (assembles `index.html`), `final_scenes.py` (Manim sources for the five new animations), `verdict_check.py` (the clingo verdict check) |
 | `brief/index.html` | Visual brief: key findings, the architecture, the math, and Manim animations, including a 13-chapter film of the whole pipeline |
 | `brief/media/` | Rendered animations (MP4, H.264) and poster frames |
