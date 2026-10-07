@@ -116,6 +116,35 @@ def cmd_case(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verdict(args: argparse.Namespace) -> int:
+    """Engine 3b on a case produced by 'ygg case': hypotheses, evidence, claims, four-bit verdicts, dossier."""
+    from datetime import datetime
+
+    from ygg.dossier import render_markdown, render_terminal
+    from ygg.observation.pages import PageFetcher
+    from ygg.store.tables import connect
+    from ygg.verdicts.engine3b import build_hypotheses, evidence, judge
+
+    cfg = load_config(args.config)
+    data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
+    d = json.loads((data_dir / "cases" / f"{args.day}.json").read_text())
+    tau = datetime.fromisoformat(d["case"]["tau_star"])
+    con = connect(data_dir)
+    hyps = build_hypotheses(con, d["search"], d["search"]["t_snap"])
+    fetcher = None if args.no_fetch else PageFetcher(data_dir)
+    reps = {h.hid: evidence(h, tau, fetcher, fetch_top=args.fetch_top) for h in hyps}
+    v = judge(hyps, reps, tau)
+    d["verdicts"] = {**v, "hypotheses": [{"hid": h.hid, "label": h.entry_label, "event": h.event, "signature_ok": h.signature_ok,
+                                          "burst": h.burst, "surprise_ok": h.edges_surprise_ok,
+                                          "reports": [{k: (x if k != "claims" else [c.__dict__ for c in x]) for k, x in r.items()} for r in reps[h.hid]]}
+                                         for h in hyps]}
+    (data_dir / "cases" / f"{args.day}.json").write_text(json.dumps(d, indent=1, default=str))
+    md = render_markdown(d)
+    (data_dir / "cases" / f"{args.day}.md").write_text(md)
+    render_terminal(d)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="ygg", description="Yggdrasil: market event forensics")
     p.add_argument("--config", default=None, help="TOML config (default: config/default.toml)")
@@ -148,6 +177,13 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("day", help="YYYY-MM-DD")
     c.add_argument("--data-dir", default=None)
     c.set_defaults(func=cmd_case)
+
+    v = sub.add_parser("verdict", help="Engine 3b on a case: hypotheses, evidence, four-bit verdicts, dossier")
+    v.add_argument("day", help="YYYY-MM-DD (run 'ygg case DAY' first)")
+    v.add_argument("--no-fetch", action="store_true", help="deterministic-only, no page fetches (claims then need GDELT text only)")
+    v.add_argument("--fetch-top", type=int, default=6)
+    v.add_argument("--data-dir", default=None)
+    v.set_defaults(func=cmd_verdict)
 
     args = p.parse_args(argv)
     return args.func(args)
