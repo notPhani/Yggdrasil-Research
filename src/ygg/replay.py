@@ -40,7 +40,7 @@ def snapshot(data_dir: Path, t: int, cfg_hash: str, e2a: Engine2a, e2b: Engine2b
     """What Engine 3 reads at a cutoff: the narrative layer and the attention engine. The online event-cluster
     index (hundreds of thousands of centroids) is not needed downstream and is left out to keep snapshots small.
     Full-state resume (T1) is tested separately."""
-    blob = pickle.dumps({"narratives": e2a.model.narratives, "kappa": e2a.model.kappa, "log_pi": e2a.model.log_pi,
+    blob = pickle.dumps({"narratives": e2a.model.narratives, "kappa": e2a.model.kappa, "log_pi": getattr(e2a.model, "log_pi", {}),
                          "lineage": e2a.model.lineage, "e2b": e2b}, protocol=5)
     state_hash = stable_hash(e2a.state_hash(), json.dumps(sorted((n, float(v)) for n, v in e2b.lam_next.items())))
     m = SnapshotManifest(t=t, cfg_hash=cfg_hash, parent_snapshot_id=parent, inputs_hash=state_hash,
@@ -94,7 +94,8 @@ def run_replay(data_dir: Path, clock: WindowClock, start_day: str, end_day: str,
                for n in sorted(e2a.model.narratives.values(), key=lambda n: n.nid)]
         snapd = root / "e2a_narratives" / f"day={day}.json"
         snapd.parent.mkdir(parents=True, exist_ok=True)
-        snapd.write_text(json.dumps({"day": day, "kappa": e2a.model.kappa, "omega": e2b.omega, "r": e2b.r,
+        diag = e2a.model.diagnostics(e2a.hours(day_start + 95)) if e2a.learned else None
+        snapd.write_text(json.dumps({"day": day, "kappa": e2a.model.kappa, "omega": e2b.omega, "r": e2b.r, "e2a_diag": diag,
                                      "refit": e2b.refits[-1] if e2b.refits else None, "narratives": nar}, indent=0))
         led = acc["ledger"]
         roots = sum(x["roots"] for x in led)

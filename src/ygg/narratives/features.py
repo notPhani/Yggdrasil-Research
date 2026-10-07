@@ -25,6 +25,7 @@ class CausalIDF:
     def __init__(self, horizon_windows: int = 7 * 96):
         self.horizon = horizon_windows
         self.df: Counter = Counter()
+        self.total = 0                         # sum of df over entities
         self.n_docs = 0
         self.history: deque = deque()          # (window, Counter, n)
 
@@ -40,10 +41,12 @@ class CausalIDF:
             c.update(ents)
         self.history.append((t, c, len(docs_entities)))
         self.df.update(c)
+        self.total += sum(c.values())
         self.n_docs += len(docs_entities)
         while self.history and self.history[0][0] <= t - self.horizon:
             _, old, n = self.history.popleft()
             self.df.subtract(old)
+            self.total -= sum(old.values())
             self.n_docs -= n
             for k in [k for k, v in old.items() if self.df[k] <= 0]:
                 del self.df[k]

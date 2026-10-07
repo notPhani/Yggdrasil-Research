@@ -45,6 +45,7 @@ class EventCluster:
     last_window: int
     ents_sum: float = 0.0
     slot: int = -1
+    cnt: dict = field(default_factory=dict)      # entity -> number of member stories that mention it (2a-L)
 
 
 @dataclass
@@ -120,6 +121,7 @@ class EventClusterer:
             cl.centroid = cl.vsum / max(np.linalg.norm(cl.vsum), 1e-12)
             self.C[cl.slot] = cl.centroid
             for e, wt in w.items():
+                cl.cnt[e] = cl.cnt.get(e, 0) + 1
                 cl.ents[e] = cl.ents.get(e, 0.0) + wt
                 cl.ents_sum += wt
                 if wt >= self.cfg.rare_idf:
@@ -136,7 +138,7 @@ class EventClusterer:
             return best, False
         cid = self.next_id
         self.next_id += 1
-        cl = EventCluster(cid, v.copy(), v.copy(), dict(w), t_h, t_h, 1, window, window, sum(w.values()))
+        cl = EventCluster(cid, v.copy(), v.copy(), dict(w), t_h, t_h, 1, window, window, sum(w.values()), cnt={e: 1 for e in w})
         if self.free:
             cl.slot = self.free.pop()
         else:

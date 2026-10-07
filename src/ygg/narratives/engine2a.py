@@ -7,9 +7,11 @@ Per window (D4 order):
   y[n][t] = sum of root shares (unweighted attention, Session 1: no weighting)
   m[n][t] = sum of root and copy shares (reach)
 Shares are integers out of 255, so Lemma 5.1 holds exactly: sum_n y[n][t] + y[0][t] = 255 * roots[t].
-At each day boundary the vMF calibration is refitted on the trailing 7 days, i.e. through the previous
-day (D7). Every 6 hours the lineage checks run (dormancy, merge, split). The state can be pickled at
-any window boundary and resumed bit-identically (test T1).
+Narrative layer: the learned model (2a-L, ygg.narratives.learned; default since 2026-10-07): routing is
+MAP, births / merges / splits are Bayes-factor decisions, statistics update online. The gated model of
+the first real run (ygg.narratives.narratives: corpus-vMF background, join gate, m_emerge) stays available
+as the fallback ("gated"). Every 6 hours the lineage checks run (dormancy, merge, split). The state can be
+pickled at any window boundary and resumed bit-identically (test T1).
 """
 from __future__ import annotations
 
@@ -29,6 +31,7 @@ import pyarrow.parquet as pq
 from ygg.determinism import WindowClock
 from ygg.narratives.events import EventClusterer, EventConfig
 from ygg.narratives.features import CausalIDF, entities
+from ygg.narratives.learned import LearnedConfig, LearnedNarrativeModel
 from ygg.narratives.narratives import NarrativeConfig, NarrativeModel
 from ygg.observation import embed as emb
 
@@ -51,10 +54,12 @@ class Engine2a:
     dim: int = 256
     ev_cfg: EventConfig = field(default_factory=EventConfig)
     nr_cfg: NarrativeConfig = field(default_factory=NarrativeConfig)
+    lr_cfg: LearnedConfig | None = field(default_factory=LearnedConfig)     # None selects the gated fallback
 
     def __post_init__(self):
         self.events = EventClusterer(self.dim, self.ev_cfg)
-        self.model = NarrativeModel(self.dim, self.nr_cfg)
+        self.learned = self.lr_cfg is not None
+        self.model = LearnedNarrativeModel(self.dim, self.lr_cfg) if self.learned else NarrativeModel(self.dim, self.nr_cfg)
         self.idf = CausalIDF()
         self.cluster_mass: Counter = Counter()
         self.cluster_title: dict[int, str] = {}
@@ -70,7 +75,7 @@ class Engine2a:
         t_h = self.hours(t)
         day = self.clock.start(t).strftime("%Y-%m-%d")
         if day != self.last_day:
-            if self.last_day is not None:
+            if self.last_day is not None and not self.learned:
                 self.refits.append({"day": day, **self.model.refit(t_h)})
             self.last_day = day
         roots = [d for d in docs if d["copy_group"] == d["observation_id"]]
@@ -78,6 +83,7 @@ class Engine2a:
         touched: dict[int, int] = defaultdict(int)
         root_ents = []
         new_events = 0
+        new_cids = set()
         rows = []
         for d in roots:
             v = vecs.get(d["observation_id"])
@@ -88,11 +94,14 @@ class Engine2a:
             cid, is_new = self.events.assign(v, ents, self.idf, t_h, t)
             new_events += int(is_new)
             if is_new:
+                new_cids.add(cid)
                 self.cluster_title[cid] = d["title"]
             self.cluster_mass[cid] += 1
             touched[cid] += 1
             self.root_cluster[d["observation_id"]] = (cid, t_h)
-        for cid in sorted(touched):
+        if self.learned:
+            self._narrate_learned(t, t_h, touched, new_cids)
+        for cid in ([] if self.learned else sorted(touched)):
             cl = self.events.clusters[cid]
             ids, shares, routed = self.model.membership(cl.centroid, cl.ents, t_h)
             if routed is not None:
@@ -131,7 +140,13 @@ class Engine2a:
             for k in [k for k, (_, th) in self.root_cluster.items() if th < cutoff]:
                 del self.root_cluster[k]
         self.idf.close_window(t, root_ents)
-        lineage = self.model.lineage_check(t_h, t) if (t + 1) % self.nr_cfg.check_every_windows == 0 else []
+        every = self.lr_cfg.check_every_windows if self.learned else self.nr_cfg.check_every_windows
+        if (t + 1) % every != 0:
+            lineage = []
+        elif self.learned:
+            lineage = self.model.lineage_check(t_h, t, self.events.clusters)
+        else:
+            lineage = self.model.lineage_check(t_h, t)
         states = Counter(n.state for n in self.model.narratives.values())
         n_roots = sum(1 for r in rows if r["is_root"])
         return {
@@ -142,12 +157,35 @@ class Engine2a:
             "lineage": lineage,
         }
 
+    def _narrate_learned(self, t: int, t_h: float, touched: dict, new_cids: set) -> None:
+        """2a-L for this window's touched event clusters (D4 order: by cluster id)."""
+        m = self.model
+        m.set_background_counts(self.idf.df, len(self.idf.df), self.idf.total)
+        for cid in sorted(touched):
+            cl = self.events.clusters[cid]
+            w = {e: c / cl.n for e, c in cl.cnt.items()}
+            ids, shares, routed = m.membership(cl.centroid, w, t_h, self.idf, score=cid in new_cids)
+            if routed is not None:
+                m.route(cid, routed, cl.centroid, w, float(touched[cid]), t_h, t)
+            elif cl.n >= 2 and cid not in m.emerged_from and m.birth_evidence(cl.vsum, cl.n, cl.cnt) > 0:
+                nid = m.emerge(cid, cl.centroid, w, t_h, t, self.cluster_title.get(cid, ""))
+                m.narratives[nid].mass_total += touched[cid]
+                ids, shares, routed = m.membership(cl.centroid, w, t_h, self.idf)
+            else:
+                m.background_add(cid, cl.centroid, t_h)
+            self.cluster_members[cid] = (ids, shares)
+
     def state_hash(self) -> str:
-        """Canonical digest of the full state (sorted, so set/dict insertion order cannot leak in)."""
+        """Canonical digest of the full state (sorted, so set/dict insertion order cannot leak in). The learned
+        path hashes repr(), not pickle bytes: pickle memoizes shared objects, so equal states could differ."""
+        evs = [(c.cid, c.vsum.tobytes(), c.n, c.t_mean, c.t_last, sorted(c.ents.items()), sorted(c.cnt.items()))
+               for c in sorted(self.events.clusters.values(), key=lambda c: c.cid)]
+        if self.learned:
+            canon = (self.model.canon(), evs, sorted(self.idf.df.items()), self.idf.n_docs, sorted(self.root_cluster.items()),
+                     sorted(self.cluster_mass.items()), self.events.next_id)
+            return hashlib.sha256(repr(canon).encode()).hexdigest()
         nar = [(n.nid, n.mu.tobytes(), n.state, n.born_h, n.t_last_h, n.mass_total, sorted(n.ents.items()))
                for n in sorted(self.model.narratives.values(), key=lambda n: n.nid)]
-        evs = [(c.cid, c.vsum.tobytes(), c.n, c.t_mean, c.t_last, sorted(c.ents.items()))
-               for c in sorted(self.events.clusters.values(), key=lambda c: c.cid)]
         canon = (nar, evs, self.model.kappa, sorted(self.model.log_pi.items()), self.model.log_pi0,
                  sorted(self.idf.df.items()), self.idf.n_docs, sorted(self.root_cluster.items()),
                  sorted(self.cluster_mass.items()), self.events.next_id, len(self.model.lineage))
