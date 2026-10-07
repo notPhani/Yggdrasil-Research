@@ -79,6 +79,38 @@ def cmd_embed(args: argparse.Namespace) -> int:
     return 0
 
 
+def _replay_days(cfg, data_dir: Path, start: str | None, end: str | None) -> list[str]:
+    from datetime import date, timedelta
+
+    d0 = date.fromisoformat(start or cfg["replay"]["start"])
+    d1 = date.fromisoformat(end or cfg["replay"]["end_exclusive"])
+    days = [(d0 + timedelta(days=i)).isoformat() for i in range((d1 - d0).days)]
+    return [d for d in days if (data_dir / "tables" / "obs_doc" / f"day={d}" / "part-0.parquet").exists()]
+
+
+def cmd_embed_export(args: argparse.Namespace) -> int:
+    """Root titles for an off-box GPU embedding run (see ygg.observation.embed_transfer)."""
+    from ygg.observation.embed_transfer import export_inputs
+
+    cfg = load_config(args.config)
+    data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
+    export_inputs(data_dir, _replay_days(cfg, data_dir, args.start, args.end), Path(args.out), cfg["narratives"]["embed_model"],
+                  log=lambda m: print(m, flush=True))
+    return 0
+
+
+def cmd_embed_import(args: argparse.Namespace) -> int:
+    """Verify (sha256, ids, CPU parity sample) and install embeddings produced off-box."""
+    from ygg.observation.embed_transfer import import_outputs
+
+    cfg = load_config(args.config)
+    data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
+    out = import_outputs(data_dir, Path(args.src), _replay_days(cfg, data_dir, args.start, args.end), cfg["narratives"]["embed_model"],
+                         sample_per_day=args.sample, log=lambda m: print(m, flush=True))
+    print(json.dumps(out))
+    return 0
+
+
 def cmd_fit_narratives(args: argparse.Namespace) -> int:
     """2a-L: fit kappa_s, alpha and the entity temperature on the warmup only (prequential score)."""
     from ygg.determinism import WindowClock, parse_utc
@@ -219,6 +251,21 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--to", dest="end", default=None)
     e.add_argument("--data-dir", default=None)
     e.set_defaults(func=cmd_embed)
+
+    x = sub.add_parser("embed-export", help="export root titles for an off-box GPU embedding run")
+    x.add_argument("out", help="output directory (inputs/ is created inside)")
+    x.add_argument("--from", dest="start", default=None)
+    x.add_argument("--to", dest="end", default=None)
+    x.add_argument("--data-dir", default=None)
+    x.set_defaults(func=cmd_embed_export)
+
+    i = sub.add_parser("embed-import", help="verify and install embeddings produced off-box")
+    i.add_argument("src", help="directory with day=*.parquet and manifest.json from the GPU run")
+    i.add_argument("--from", dest="start", default=None)
+    i.add_argument("--to", dest="end", default=None)
+    i.add_argument("--sample", type=int, default=200, help="titles per day re-embedded here for the parity check")
+    i.add_argument("--data-dir", default=None)
+    i.set_defaults(func=cmd_embed_import)
 
     n = sub.add_parser("fit-narratives", help="2a-L: fit kappa_s, alpha, T on the warmup (prequential score)")
     n.add_argument("--cache", action="store_true", help="stage 1: cache the warmup's event clusters")
