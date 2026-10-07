@@ -49,16 +49,19 @@
       <tr><td>Syndication flood</td><td>E1, 3b</td><td>L2 collapse; <code>copy_of</code> defeated</td><td>L3 never merged (invariant)</td></tr>
       <tr><td>Missing or late GDELT batches</td><td>E1, 2b</td><td>Grace retry, missing flag, likelihood mask</td><td>no fake attention drop</td></tr>
       <tr><td>Sector channel absorbs the shock</td><td>observer</td><td>Market-only detection</td><td>measured fix (NVDA SAR −2.2 → −5.1)</td></tr>
-      <tr><td>Market-wide crash</td><td>observer</td><td><b>Not covered</b>: relative-move design</td><td>open limitation</td></tr>
+      <tr><td>Market-wide crash</td><td>observer</td><td>Index case on SPY and QQQ (A7)</td><td>fires on index shocks (acceptance run)</td></tr>
       <tr><td>Narrative id churn</td><td>2a, 2b</td><td>Persistent ids, hysteresis, lineage</td><td>memory conserved (Lemma 5.2)</td></tr>
       <tr><td>Explosive attention</td><td>2b</td><td>ω &gt; 0 or ρ ≤ 0.95</td><td>bounded means (Lemma 6.5)</td></tr>
       <tr><td>Spurious criticality</td><td>2b</td><td>Flexible baselines, explicit competition</td><td>empirical (Filimonov–Sornette)</td></tr>
       <tr><td>Non-unique fit</td><td>2b</td><td>Quasi-Poisson point estimates, NB2 only for PIT and intervals (4.2′, locked)</td><td>unique minimizer (Lemma 8.1)</td></tr>
       <tr><td>Hub wins every case</td><td>3a</td><td>Lift, surprise tilt, placebo FER ≤ 5%</td><td>valid empirical p (rank argument)</td></tr>
       <tr><td>No story reaches a cluster</td><td>3a</td><td>Abstention edge always present</td><td>always feasible</td></tr>
-      <tr><td>Many clusters on one day</td><td>3a</td><td>Split the case; push and Levin later</td><td>exact up to k ≈ 8</td></tr>
+      <tr><td>Many clusters on one day</td><td>3a</td><td>k ≤ 8 per exact solve; earnings terminals alone (A3)</td><td>exact within each group; synthetic k = 50 completes</td></tr>
       <tr><td>Contradictory witnesses</td><td>3b</td><td>Defeasible acceptance, tiers, independence</td><td>four-way partition (Theorem 14.1)</td></tr>
-      <tr><td>Incoherent evidence</td><td>3b</td><td>INCOHERENT plus grounded fallback</td><td>unique, polynomial</td></tr>
+      <tr><td>Incoherent evidence</td><td>3b</td><td>Cannot occur under the template; per-program tightness check (A4)</td><td>Theorem 14.4, E1</td></tr>
+      <tr><td>Look-ahead leak</td><td>everywhere</td><td>Rule D7 (A2)</td><td>future-perturbation test</td></tr>
+      <tr><td>Valve bypass by a mislabelled record</td><td>E1 → E2</td><td>Separate targeted table (A1)</td><td>T0: identical snapshots with SerpApi on/off</td></tr>
+      <tr><td>Sybil flood</td><td>2b, 3b</td><td>Corroboration for occurred(E), source concentration (A6)</td><td>attack-cost benchmark</td></tr>
       <tr><td>Model hallucination or leakage</td><td>3b</td><td>No generator; span-grounded verifier; deterministic-only run</td><td>span check is exact</td></tr>
       <tr><td>Cause outside the observed world</td><td>3a, 3b</td><td>Folds into "we do not know"</td><td>honest by design</td></tr>
       <tr><td>Different answer on rerun</td><td>everywhere</td><td>D1–D6, integer costs, archived calls</td><td>Theorem 3.1, test T1</td></tr>
@@ -67,7 +70,7 @@
 </section>
 
 <section id="analogies">
-  <div class="eyebrow">§10 · physics, game theory, economics</div>
+  <div class="eyebrow">§11 · physics, game theory, economics</div>
   <h2>The same mathematics, wearing other clothes</h2>
   <div class="col"><p>Each row says how far the link goes. <b>Exact</b> means the same equation or theorem. <b>Limit</b> means it holds in a stated limit. <b>Analogy</b> means it helps intuition but proves nothing here.</p></div>
   <div class="tablewrap"><table>
@@ -104,7 +107,7 @@
 </section>
 
 <section id="tui">
-  <div class="eyebrow">§11 · terminal screens · design mockups, illustrative numbers</div>
+  <div class="eyebrow">§12 · terminal screens · design mockups, illustrative numbers</div>
   <h2>What you will see in the terminal</h2>
   <div class="col"><p>These are design proposals for the CLI <span class="lab conj">proposed</span>. Where a value is a real measurement it is reused (prices, SAR, τ*, clusters). Search costs repeat the toy numbers from §6. Every other number is illustrative.</p></div>
 

@@ -1,0 +1,60 @@
+
+<section id="redteam">
+  <div class="eyebrow">§10 · red-team audit · two external audits, triaged and locked 2026-10-07</div>
+  <h2>Every critique answered: denied with a reason, or turned into a test</h2>
+  <div class="col">
+    <p>Two external audits raised five "P0" findings and about twenty-five more. Each was either denied with a derivation or measurement, or accepted as a design change with a test that would catch the failure. Three disputed claims were settled by experiment before answering <span class="lab measured">measured</span>:</p>
+  </div>
+<pre class="code">E1  3,000 random evidence programs on the locked clingo template
+    (up to 14 reports, 4 tiers, dense contradictions, shared owners)
+    programs with no stable model: 0        non-tight programs: 0
+    controls: a holds(a) &lt;-&gt; holds(b) bridge loop IS flagged non-tight; an odd negative cycle IS unsatisfiable
+E2  400 random directed graphs (3-7 nodes, 1-3 terminals, integer costs 0-9 including 0)
+    directed DPBF vs brute-force enumeration of arborescences: 0 mismatches (259 feasible; infeasible ones agree)
+E3  self-exciting softplus counts with NB2 noise (r = 1.5), 30 runs per size
+    n = 2000: quasi-Poisson vs NB2 lambda gap 0.26%; parameter gap sd ≈ 1/5 of sampling sd
+    n = 8000: lambda gap 0.15%; both estimators centred on the true parameters</pre>
+
+  <h3>Locked changes <span class="lab design">design · A1–A9, locked 2026-10-07</span></h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>Change</th><th>Answers</th><th>Test that proves it</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td>A1</td><td>Targeted pages live in their own table, written only by the fetch service. Engine 2's reader has no code path to it</td><td>P0-1: one mislabelled string tag would let the search confirm itself</td><td><b>T0</b>: replay with SerpApi on and off; every Engine 2 snapshot hash must be identical</td><td>hackathon</td></tr>
+      <tr><td>A2</td><td>Rule <b>D7</b>: parameters fitted through day D−1 are applied on day D. No stage reads an input with a later time</td><td>P0-2: refit look-ahead</td><td><b>Future-perturbation test</b>: scramble or drop every input after t; every output up to t must be bit-identical. It catches look-ahead in every engine</td><td>hackathon</td></tr>
+      <tr><td>A3</td><td>Exact search capped at k ≤ 8 terminals per solve. Scheduled-earnings terminals are solved alone (k = 1, a shortest path); the rest are grouped by residual correlation into groups of ≤ 8. The dossier states that sharing across groups was not searched</td><td>P0-3: \(3^k\) on earnings days (terminals are clusters, not stocks: 27 Jan had 9 movers and k = 2)</td><td>Synthetic case with k = 50 completes. Benchmark: k and solve time per day over 2024</td><td>cap: hackathon</td></tr>
+      <tr><td>A4</td><td>Tightness check (cycles through positive dependencies) on every ground program before the Lean path. A non-tight program skips Lean, and clingo verdicts still stand</td><td>Fages applies only to tight programs, and generated bridge rules can form loops</td><td>E1 as a permanent test, plus the bridge-loop control</td><td>hackathon</td></tr>
+      <tr><td>A5</td><td>Span grounding applies to every extractor: GKG amounts and quotations must match a verbatim span on the fetched page, like rule and verifier tuples</td><td>GDELT corruption and NER errors reaching verdicts</td><td>Span check on 100% of tuples. Benchmark: precision audit of 200 GKG records</td><td>hackathon</td></tr>
+      <tr><td>A6</td><td><code>occurred(E)</code> needs a report of tier ≤ 2, or reports from two independent owners. Each burst's source concentration (HHI over domains) goes in the dossier</td><td>Sybil floods; coordinated fabrication</td><td>Benchmark: inject mutated copies from M fake domains into the replay; report the smallest injection that changes S* or a verdict (attack cost)</td><td>after</td></tr>
+      <tr><td>A7</td><td>Index case: the same robust gate applied to SPY and QQQ against their own history opens a case with the index as terminal</td><td>Blindness to market-wide crashes</td><td>Fires on known 2024 index shocks; acceptance run</td><td>after</td></tr>
+      <tr><td>A8</td><td>Abstention wording: "no admissible explanation in observed English news before τ*", never "no cause"</td><td>Absence of evidence ≠ evidence of absence; paywalls, dark pools</td><td>Dossier template check</td><td>hackathon</td></tr>
+      <tr><td>A9</td><td>Tuning objectives written down. τ<sub>event</sub> maximizes agreement with GDELT's own event links (documents the Mentions table ties to one GlobalEventID should share a cluster). τ<sub>alive</sub>, τ<sub>dormant</sub> minimize daily id churn subject to 100–300 alive narratives. Tuning uses 16 Dec – 6 Jan only</td><td>Undocumented tuning; single-case overfitting</td><td>Objective values logged with every tuned config (D6)</td><td>after</td></tr>
+    </tbody>
+  </table></div>
+  <div class="col"><p><b>Permanent tests added to the suite:</b> E1 (stable model and tightness fuzz), E2 (DPBF differential test), T0 (valve), future-perturbation (D7), airgapped replay (network off, every hash reproduces, proving the D5 archive is complete), SerpApi-off replay (it must complete), and conservation invariants on every snapshot (Lemmas 5.1, 5.2).</p>
+  <p><b>Benchmarks after the hackathon:</b> a frozen-config run on every 2024 day the trigger fires (abstention rate, p-values, hub frequency, plus 10 hand-checked causes; it doubles as acceptance test 2.8); the quasi-Poisson vs NB2 gap and PIT flatness on the replay; the translingual GDELT first-seen lag for the R1 narrative; the GKG precision audit; a θ<sub>cand</sub> × j<sub>0</sub> sweep with a copy-group owner-diversity alarm; and Sybil attack cost.</p></div>
+
+  <h3>Denied, with the reason</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Critique</th><th>Why it does not hold</th></tr></thead>
+    <tbody>
+      <tr><td>P0-4: quasi-Poisson and NB2 have different minimizers, so PIT is evaluated off-centre</td><td>Both estimating equations target the same mean and differ only in variance weighting, an \(O(n^{-1/2})\) efficiency difference (E3: 0.15–0.26%, about 5× below sampling noise). They diverge only if the mean model is wrong, and the PIT histogram is the detector for exactly that</td></tr>
+      <tr><td>P0-5: directed first-pop optimality is unproven</td><td>Still labelled derived, but E2 found no counterexample in 400 graphs and becomes a permanent differential test</td></tr>
+      <tr><td>Theorem 14.1 assumes a stable model exists</td><td>The precondition is stated, and the empty case has its own output. Under the locked template the empty case is impossible (Theorem 14.4, §7; E1)</td></tr>
+      <tr><td>Knobs overfit to 27 January</td><td>p<sub>0</sub>, λ<sub>node</sub> and γ are tuned on placebo days, which exclude case days by construction. θ<sub>cand</sub> and j<sub>0</sub> use referee titles, and the τ thresholds use the pre-period. The fair part, a design debugged on one event, is answered by the 2024 frozen-config benchmark</td></tr>
+      <tr><td>Metadata collisions merge different events</td><td>No merge rule uses metadata alone (rejected in Session 1 at 44% false merges). Step 1 needs the same title plus image, byline or names</td></tr>
+      <tr><td>Split or merge exactly at τ*</td><td>Window steps are atomic, and a snapshot is emitted only after lineage operations finish. Conservation invariants run on every snapshot</td></tr>
+      <tr><td>k = 5–10 exhausts the budget</td><td>\(3^8 \times 300\) nodes is about 2 million steps, sub-second</td></tr>
+      <tr><td>15-minute clocks can't order flash crashes</td><td>Coarse clocks only remove evidence: anything in the batch containing τ* has first_seen ≥ τ*. They can never put an effect before its cause. The cost is that a cause in the last 15 minutes becomes "we do not know"</td></tr>
+      <tr><td>Publisher-timestamp bias (59% coverage)</td><td>Admissibility never reads the publisher timestamp. first_seen is our ingestion clock, with 100% coverage</td></tr>
+      <tr><td>Yahoo deprecation</td><td>The replay runs from archived responses (D5), and the airgapped replay test proves it. Live mode has the google_finance fallback</td></tr>
+      <tr><td>SerpApi referee bias</td><td>It only labels English near-duplicate pairs, which is our scope. It is cross-checked against 50 hand-checked merges</td></tr>
+      <tr><td>Coordinated PR waves</td><td>A PR wave is real information; if it moved the stock, it is the right answer. Fabrication falls under A6</td></tr>
+      <tr><td>Placebo spoofing</td><td>Placebos are drawn from the past 90 days at case time, and first_seen is our clock, so no one can plant stories in the past. Planting decoys every day only raises the base rate, which is what placebos measure</td></tr>
+      <tr><td>Epistemic DoS via contradictory sources</td><td>Equal-tier contradictions can force UNRESOLVED, the honest answer when equally credible sources disagree. They can never force a false SUPPORTED or CONTRADICTED, and never INCOHERENT (Theorem 14.4)</td></tr>
+      <tr><td>Stage-3 verification depends on SerpApi</td><td>Verification runs on local models. SerpApi only retrieves pages, and the system must work without it (handover). The SerpApi-off replay test checks this</td></tr>
+      <tr><td>Slow-burn moves, crypto, non-US markets</td><td>Out of scope: abnormal equity events. The venue logic is already session-aware (Euronext). A multi-week trigger is a later extension</td></tr>
+      <tr><td>Hawkes edges are correlation</td><td>Already stated: edges mean timing, and count as influence only after F4, which includes a common-shock (hidden confounder) control</td></tr>
+      <tr><td>English-only blind spot</td><td>Accepted as a measured limitation, not denied: the translingual benchmark measures the first-seen lag. Causes outside English fold into "we do not know" (A8 wording)</td></tr>
+    </tbody>
+  </table></div>
+</section>

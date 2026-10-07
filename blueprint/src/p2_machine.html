@@ -5,7 +5,7 @@
     <li><b>Fixed and locked: the Engine 2b objective (decision 4.2′, locked 2026-10-06).</b> The original 4.2 fitted the negative-binomial (NB2) likelihood, which is not convex. Counterexample: in a window with zero articles the NB2 loss is \(r\log(r+\lambda)\), which is concave in \(\lambda\), and since \(\lambda \approx \eta\) once \(\eta \gg s\), it is concave in the drive too. The uniqueness proofs (Lemmas 6.7, 8.1) only cover the quasi-Poisson loss. <b>Now locked:</b> point estimates come from quasi-Poisson with a Pearson dispersion. NB2 is used only for the PIT residuals, intervals, \(r\) and the held-out log score. The fit is unique again. <a href="#nb2">Details in §5.</a></li>
     <li><b>Two versions of the edge-share formula.</b> The Session 4 sheet wrote \(\alpha = \sigma(\eta/s)\,\mathrm{exc}/\lambda_{\text{raw}}\), and the report uses positive-part shares that send the surprise to BOT. They agree in the linear regime when every component is positive. Only the positive-part version is provably a probability vector (Lemma 7.1), so this doc uses it. <a href="#alpha">§5</a></li>
     <li><b>20 placebos give only a coarse false-explanation rate.</b> With 40 placebo terminals, the standard error of a 5% rate is about 3.4 points, and the smallest possible p-value is 1/21. The 60 placebos planned after the hackathon bring those to 2.8 points and 1/61. <a href="#e3a">§6</a></li>
-    <li><b>The build schedule has slipped.</b> Decision 7.1 put the repo skeleton and Engine 1 on Tuesday 6 October. That evening went to this document, so no code exists yet. <a href="#build">§12</a></li>
+    <li><b>The build schedule has slipped.</b> Decision 7.1 put the repo skeleton and Engine 1 on Tuesday 6 October. That evening went to this document, so no code exists yet. <a href="#build">§13</a></li>
   </ul>
 </div>
 
@@ -161,7 +161,7 @@
     <div class="card"><b>Stock observer</b><span>Owns prices, abnormal-return statistics, clusters and τ*. Never reads news.</span></div>
     <div class="card"><b>Engine 3 · Explanation</b><span>Owns the explanation graphs, search, queries, claims, programs, verdicts and dossiers. Never writes to Engine 2's state.</span></div>
     <div class="card"><b>2a → 2b, one way</b><span>Grouping decides by content alone. Attention is computed afterwards. Grouping never reads attention (decision 3.9′: the Dirichlet–Hawkes coupling was rejected as scope encroachment).</span></div>
-    <div class="card"><b>The one-way valve</b><span>Targeted pages are evidence, never attention. Without the valve, the search would choose what to fetch, the fetched pages would count as attention, and the model would get stronger on the very hypothesis it was asked to test.</span></div>
+    <div class="card"><b>The one-way valve</b><span>Targeted pages are evidence, never attention. Without the valve, the search would choose what to fetch, the fetched pages would count as attention, and the model would get stronger on the very hypothesis it was asked to test. Since A1 the valve is structural, not a tag: targeted pages live in their own table that Engine 2 cannot read, and test T0 requires identical Engine 2 snapshots with SerpApi on and off.</span></div>
   </div>
 
   <h3>One clock decides what counts as evidence</h3>
@@ -212,10 +212,11 @@
       <tr><td>D4</td><td>Every tie broken by <code>key(x) = (observed_time, source_rank, url_key, record_id)</code></td><td>hash-map iteration order</td></tr>
       <tr><td>D5</td><td>Nondeterministic calls (SerpApi, model inference) are archived on first call and replayed afterwards</td><td>external services changing; also saves credits</td></tr>
       <tr><td>D6</td><td>Every artifact stamped with <code>cfg_hash</code> and the code commit</td><td>silent config drift</td></tr>
+      <tr><td>D7</td><td>No stage reads an input timed after the window it computes. Parameters fitted through day D−1 apply on day D (A2). Tested by perturbing every input after t and requiring outputs up to t to stay bit-identical</td><td>look-ahead leaks</td></tr>
     </tbody>
   </table></div>
   <div class="box proof">
-    <span class="tag"><b>Proof</b> · Theorem 3.1, end-to-end replay determinism</span>
+    <span class="tag"><b>Proof</b> · Theorem 3.1, end-to-end replay determinism (D1–D6; D7 adds causality)</span>
     <p>Let \(x_0, x_1, \dots\) be the archived inputs (raw blobs plus archived model and API outputs) sorted by the D4 key, and let every stage be a state map \(s_{n+1} = \Phi(s_n, x_n, \text{cfg})\). Then \(s_0 = \text{init}(\text{cfg})\) depends only on the config. If \(s_n\) is a function of \((x_{\lt n}, \text{cfg})\), so is \(s_{n+1}\), provided \(\Phi\) reads nothing but its arguments. D1 removes the clock, D2 the RNG state, D3 the reduction order, D4 container iteration order, and D5 the outside world. By induction every state is a function of the inputs and the config, and every output is a projection of a state. <span class="qed">QED</span></p>
     <p>Rounding scores before threshold tests does not provide this guarantee, because a value can straddle a grid line. The guarantee comes from D3. <b>Acceptance test:</b> replay the same window range twice, and every snapshot hash and verdict must match bit for bit. Test T1 in §4 extends this to stopping and resuming from a snapshot.</p>
   </div>

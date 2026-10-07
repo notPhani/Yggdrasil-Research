@@ -1,6 +1,6 @@
 
 <section id="build">
-  <div class="eyebrow">§12 · build DAG and the hackathon cut · Session 7 (7.1–7.4), accepted</div>
+  <div class="eyebrow">§13 · build DAG and the hackathon cut · Session 7 (7.1–7.4), accepted</div>
   <h2>From zero code to a replay in four evenings</h2>
   <div class="box warn">
     <span class="tag">Status at the time of writing</span>
@@ -86,7 +86,8 @@
       <tr><td>Engine 2b</td><td>Daily refit, α, bursts, F1 (ω) and F3 on the replay</td><td>Online updates, full F2 and F4</td></tr>
       <tr><td>Engine 3a</td><td>Exact DP, rivals, abstention, 20 placebos</td><td>60 placebos and the full calibration sweep</td></tr>
       <tr><td>Engine 3b</td><td>Cached queries, rules + verifier, four-bit verdicts, deterministic-only comparison</td><td>Lean certification: stretch</td></tr>
-      <tr><td>Tests</td><td>T1 exact resume, double-run determinism, synthetic planted-optimum search</td><td>T2 and T3 convergence tests</td></tr>
+      <tr><td>Tests</td><td>T1 exact resume, double-run determinism, synthetic planted-optimum search, and the red-team suite: T0 valve, future-perturbation (D7), E1 stable-model and tightness fuzz, E2 DPBF differential, airgapped replay, SerpApi-off replay, snapshot conservation invariants</td><td>T2 and T3 convergence tests</td></tr>
+      <tr><td>Red-team changes</td><td>A1 separate targeted table, A2 D7, A3 k cap, A4 tightness check, A5 span grounding for every extractor, A8 abstention wording</td><td>A6 corroboration, A7 index case, A9 tuning objectives, and the benchmarks (except the 2024 run, which is acceptance test 2.8)</td></tr>
       <tr><td>Live</td><td>Minimal demo: poll the latest batch through Engines 1 and 2; a case only if the trigger fires</td><td>Full live pipeline</td></tr>
     </tbody>
   </table></div>
@@ -117,7 +118,7 @@
 </section>
 
 <section id="facts">
-  <div class="eyebrow">§13 · measured facts ledger</div>
+  <div class="eyebrow">§14 · measured facts ledger</div>
   <h2>Everything above that came from real data</h2>
   <div class="tablewrap"><table>
     <thead><tr><th>Fact</th><th>Value</th><th>Measured on</th></tr></thead>
@@ -140,13 +141,14 @@
       <tr><td>GDELT throughput</td><td>≈ 2.2 MB/s single stream; 12.7 MB/s on 8 streams (short test)</td><td>2026-10-06</td></tr>
       <tr><td>Manifest totals</td><td>Replay core 24.6 GB (524 MB/day); Jul–Dec 2024 95.4 GB; Jan–Jun 2024 108.6 GB; 2024 Events + Mentions 7.3 GB</td><td>masterfilelist</td></tr>
       <tr><td>Verdict logic</td><td>Template gives 2 stable models; h1 0000, h3 0011, h4 1010, h6 1100</td><td>clingo, 2026-10-06</td></tr>
+      <tr><td>Red-team checks</td><td>E1: 0 of 3,000 random template programs lack a stable model, 0 non-tight. E2: DPBF = brute force on 400 directed graphs. E3: quasi-Poisson vs NB2 lambda gap 0.15–0.26%</td><td>2026-10-07</td></tr>
       <tr><td>Binning in practice</td><td>38.5% of events shared a bin with another event</td><td>BTC Hawkes fit</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section id="sources">
-  <div class="eyebrow">§14 · sources</div>
+  <div class="eyebrow">§15 · sources</div>
   <h2>Where every borrowed result comes from</h2>
   <div class="grid3">
     <div class="card"><b>Data and tools</b><span>
@@ -239,7 +241,7 @@
 </section>
 
 <footer class="footer" style="margin-top: 3.6rem; padding-top: 2rem; border-top: 1px solid var(--rule)">
-  <p><b>Provenance.</b> Every design item traces to a locked session decision (Sessions 0–7, 5–6 October 2026). Every "measured" number traces to a real fetch or file listed in §13. Proofs marked <i>derived</i> were written for this project and have not been independently reviewed. Spot checks so far cover Lemma 6.6, Propositions 6.2/6.3(a), Lemma 6.5(b) and Theorem 12.6. Animations were rendered with Manim Community. Toy numbers are labelled wherever they appear.</p>
+  <p><b>Provenance.</b> Every design item traces to a locked session decision (Sessions 0–7, 5–6 October 2026; 4.2′ and red-team A1–A9, 6–7 October). Every "measured" number traces to a real fetch or file listed in §13. Proofs marked <i>derived</i> were written for this project and have not been independently reviewed. Spot checks so far cover Lemma 6.6, Propositions 6.2/6.3(a), Lemma 6.5(b) and Theorem 12.6. Animations were rendered with Manim Community. Toy numbers are labelled wherever they appear.</p>
   <p>Yggdrasil never forecasts prices and never recommends trades. "We do not know" is always an allowed answer.</p>
 </footer>
 </div>

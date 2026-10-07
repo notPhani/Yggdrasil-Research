@@ -106,7 +106,7 @@ universe: Nasdaq-100 + S&amp;P 500 utilities + SOX + ASML.AS, ASM.AS, BESI.AS + 
     <thead><tr><th>Case</th><th>What would go wrong</th><th>Avoidance</th></tr></thead>
     <tbody>
       <tr><td>The sector ETF crashes with the stock</td><td>Detector blind to the event (the NVDA bug)</td><td>Market-only detection; sector only as a label</td></tr>
-      <tr><td>The whole market crashes</td><td>Market-only AR is near 0 for everything, so there is no case</td><td><span class="lab conj">open limitation</span> Yggdrasil explains moves relative to the market. An index-level trigger is not in the design</td></tr>
+      <tr><td>The whole market crashes</td><td>Market-only AR is near 0 for everything, so there is no case</td><td><span class="lab design">A7, locked</span> Index case: the same robust gate on SPY and QQQ against their own history opens a case with the index as the terminal</td></tr>
       <tr><td>Earnings or CPI day</td><td>The trigger fires on a known event</td><td>Correct behavior: it is a case, and Engine 2b's scheduled-release terms let the search find the scheduled cause</td></tr>
       <tr><td>Opening gap that recovers (MSFT)</td><td>A terminal with nothing to explain by the close</td><td>Secondary member, not a terminal</td></tr>
       <tr><td>Split or dividend</td><td>Adjusted history changes after the fact</td><td>Unadjusted storage plus a corporate-actions table</td></tr>

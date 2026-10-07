@@ -63,7 +63,7 @@
   <div class="math">\[ H_S = \big\langle\ \texttt{trigger}(H, e),\ \ \texttt{before}(e, \text{move}) \Leftarrow \text{first_seen}(e) \lt \tau^*,\ \ \texttt{signature_ok}(H),\ \ \texttt{schema_refuter}(H, L)\ \big\rangle \]</div>
   <div class="math">\[ \texttt{signature_ok}(H) \iff \text{burst on the entry narrative before } \tau^* \;\wedge\; \forall (j \to i) \in S:\ \sigma_{j \to i} \gt 0 \]</div>
   <div class="col">
-    <p>The signature check is the strongest part of the design. Half of every hypothesis is verified from Engine 2's own measurements (tier 0), with no text and no model. Queries come from the hypothesis's central claim: <b>1 confirming and 2 disconfirming</b> (Heuer's rule: rank hypotheses by the evidence <i>against</i> them). That is at most 15 per case, all cached, so 250 free credits cover about 16 cases a month. \(P_{\text{pre}}\) candidates are date-bounded: <code>tbs=cdr:1,cd_min:&lt;τ*−14d&gt;,cd_max:&lt;τ*&gt;</code>.</p>
+    <p><b>Corroboration (A6):</b> <code>occurred(E)</code> needs a report of tier ≤ 2 or reports from two independent owners, and each burst's source concentration goes in the dossier, so a flood of fresh fake domains can't establish an event on its own. The signature check is the strongest part of the design. Half of every hypothesis is verified from Engine 2's own measurements (tier 0), with no text and no model. Queries come from the hypothesis's central claim: <b>1 confirming and 2 disconfirming</b> (Heuer's rule: rank hypotheses by the evidence <i>against</i> them). That is at most 15 per case, all cached, so 250 free credits cover about 16 cases a month. \(P_{\text{pre}}\) candidates are date-bounded: <code>tbs=cdr:1,cd_min:&lt;τ*−14d&gt;,cd_max:&lt;τ*&gt;</code>.</p>
   </div>
 
   <h3>Claims: typed tuples over a closed vocabulary, no LLM <span class="lab design">design · 6.3, 6.12, 6.13′</span></h3>
@@ -78,6 +78,7 @@
     </tbody>
   </table></div>
   <div class="col">
+    <p><b>Span grounding for every extractor (A5).</b> A GKG amount or quotation becomes a tuple only if it matches a verbatim span on the fetched page, exactly like rule and verifier tuples. GDELT's own extraction errors therefore can't reach a verdict.</p>
     <p><b>The verifier never generates.</b> It answers yes, no or contradiction about spans that deterministic code has already found, so a tuple can't contain knowledge the page doesn't. With pinned weights, CPU inference and fixed threads, it is deterministic even before archiving, and a small encoder carries far less memorized hindsight than a chat model. Every verdict carries a <b>verifier-dependent</b> flag (verdict flips when all <code>extractor = verifier</code> tuples are removed). The replay also runs in deterministic-only mode, stages 1–2, side by side.</p>
     <p><b>The decisive claim needs no model.</b> The V3 technical report words its cost as "excluding the costs associated with prior research and ablation experiments". Subject V3, predicate <code>cost_of</code>, cue "excluding" gives <code>scope = final_run_only</code>, which is contrary to the all-in reading. So H3 can be CONTRADICTED by rules alone.</p>
   </div>
@@ -128,9 +129,15 @@ ctl = clingo.Control(["0", "--enum-mode=cautious"])  # intersection of all stabl
     <p><b>Deterministic:</b> brave and cautious consequences are the union and intersection over the set of stable models. That is a unique set, independent of the order in which the solver finds models. <b>Tight:</b> the positive dependency graph (holds → ok, refuted → holds, expl → holds) has no cycle, because ok depends on defeated only through negation. So Fages' theorem applies: stable models are exactly the models of the completion. <b>Complexity:</b> brave reasoning is NP-complete and cautious is coNP-complete for normal programs. The verdict is a fixed Boolean combination of at most five SAT calls, which puts it in \(\Theta_2^P\). Disjunctive rules would raise it to \(\Sigma_2^P/\Pi_2^P\), so the rule language forbids them.</p>
   </div>
 
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Theorem 14.4, the locked template always has a stable model <span class="lab derived">derived</span> <span class="lab measured">E1: 0 / 3,000</span></span>
+    <p>Retracted reports and copies are defeated unconditionally, so they drop out. Among the remaining reports, R2 defeats R exactly when their literals are contrary, they are independent, and \(\text{tier}(R2) \le \text{tier}(R)\). <code>contrary</code> is symmetrized and <code>independent</code> is symmetric (different owners), and tiers form a total preorder. So an attack goes both ways between equal tiers, and only from better to worse between different tiers. Build a set S tier by tier, best tier first: add a report unless it conflicts with one already in S. Every report left out conflicts with a member of S of equal or better tier, which defeats it. Members of S never conflict with each other. So S is a stable extension, and with the standard ok/defeated encoding it gives a stable model of the program. The layers <code>holds</code>, <code>refuted</code> and <code>expl</code> sit above it and are stratified. <span class="qed">QED</span></p>
+    <p><b>Consequences.</b> INCOHERENT-EVIDENCE cannot occur under the locked template. Adversaries can force UNRESOLVED only by putting up sources of equal or better tier than the truth, never a false SUPPORTED or CONTRADICTED. Generated programs can still add bridge rules (\(\texttt{holds}(X) \leftarrow \texttt{holds}(Y)\)), and those can form positive loops that break tightness. So <b>A4</b> checks every ground program for cycles through positive dependencies before the Lean path. A non-tight program skips Lean, and its clingo verdicts still stand. E1's control confirms the check catches such a loop.</p>
+  </div>
+
   <div class="box warn">
-    <span class="tag">When there is no consistent reading at all</span>
-    <p>Odd attack cycles can leave no stable model. This is geometric frustration: an antiferromagnetic triangle has no ground state that satisfies every bond. Yggdrasil then emits <b>INCOHERENT-EVIDENCE</b>, with an UNSAT proof that no model exists, and falls back to the grounded labelling, the least fixpoint of the defense operator. It is unique, polynomial, and equal to the well-founded model. A true core atom gives SUPPORTED or CONTRADICTED. An undefined atom with arguments on both sides gives UNRESOLVED. Anything else is CONSISTENT-BUT-UNPROVEN. How often real evidence is incoherent is unknown, and the dossier counts it.</p>
+    <span class="tag">When there is no consistent reading at all (unreachable under the locked template, Theorem 14.4)</span>
+    <p>This is kept for future rule types (undercutters, asymmetric preferences). Odd attack cycles can leave no stable model. This is geometric frustration: an antiferromagnetic triangle has no ground state that satisfies every bond. Yggdrasil then emits <b>INCOHERENT-EVIDENCE</b>, with an UNSAT proof that no model exists, and falls back to the grounded labelling, the least fixpoint of the defense operator. It is unique, polynomial, and equal to the well-founded model. A true core atom gives SUPPORTED or CONTRADICTED. An undefined atom with arguments on both sides gives UNRESOLVED. Anything else is CONSISTENT-BUT-UNPROVEN. How often real evidence is incoherent is unknown, and the dossier counts it.</p>
   </div>
 
   <div class="box">
@@ -151,6 +158,7 @@ Fages (tight program, cited not formalized)    ──▶  every stable model con
     <li>Per hypothesis, two verdicts: before the cutoff (\(P_{\text{pre}}\)) and at report time (\(P_{\text{all}}\)), shown separately.</li>
     <li>Behind each verdict: source, tier, first-seen time, the quoted span, the link, the contradictions found, the diagnosticity list, and what would flip it.</li>
     <li>The verifier-dependent flag, and the deterministic-only comparison.</li>
+    <li>Abstention is worded "no admissible explanation in observed English news before τ*", never "no cause" (A8).</li>
     <li>No forecast and no advice, anywhere. Kept forever with every cited item.</li>
   </ul>
 
@@ -162,7 +170,8 @@ Fages (tight program, cited not formalized)    ──▶  every stable model con
       <tr><td>θ (entailment)</td><td>fitted on silver labels</td><td>Higher: fewer verifier tuples, more verdicts decided by rules alone</td></tr>
       <tr><td>tier registry</td><td>frozen 2024-12-31</td><td>Judgment calls, disclosed and logged as premises</td></tr>
       <tr><td>Contradictory sources</td><td>Classical logic would prove anything</td><td>Defeasible acceptance; equal tiers defeat each other into two readings</td></tr>
-      <tr><td>No stable model</td><td>No verdict</td><td>INCOHERENT-EVIDENCE plus the grounded fallback</td></tr>
+      <tr><td>No stable model</td><td>No verdict</td><td>Impossible under the locked template (Theorem 14.4). For future rule types: INCOHERENT-EVIDENCE plus the grounded fallback</td></tr>
+      <tr><td>Sybil flood of fake domains</td><td>A fabricated event looks established</td><td>A6 corroboration; attack-cost benchmark</td></tr>
       <tr><td>Everything comes out unproven</td><td>A useless dossier</td><td>The tier-0 signature gives every hypothesis a deterministic test</td></tr>
       <tr><td>Syndicated echo chamber</td><td>One claim counted 271 times</td><td><code>copy_of</code> defeats every copy; independence requires different groups and owners</td></tr>
       <tr><td>Retraction after the fact</td><td>A retracted report still believed</td><td><code>retracted(R)</code> defeats it in \(P_{\text{all}}\)</td></tr>

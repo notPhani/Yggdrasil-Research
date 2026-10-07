@@ -119,11 +119,11 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">Market Event Forensics · final architecture · design locked through Session 7 (+ 4.2′) · 6 October 2026</div>
+  <div class="eyebrow">Market Event Forensics · final architecture · design locked through Session 7 (+ 4.2′, red-team A1–A9) · 7 October 2026</div>
   <h1>Yggdrasil Blueprint</h1>
   <p class="lede">Yggdrasil reads the world's news every 15 minutes, builds a graph of stories and the attention each one gets, and when a stock moves abnormally it finds the simplest competing explanations, tests them against evidence, and proves which ones survive. This is the complete design: every engine, every formula with its intermediate terms, every knob and how sensitive it is, the bounds and stability proofs, the extreme cases and how each is avoided, the terminal screens, and the sources.</p>
   <div class="chips">
-    <span class="chip"><i style="background: var(--self)"></i>Design locked: Sessions 0 to 7</span>
+    <span class="chip"><i style="background: var(--self)"></i>Design locked: Sessions 0 to 7 + red-team A1–A9</span>
     <span class="chip"><i style="background: var(--bad)"></i>Build: not started, no code yet</span>
     <span class="chip"><i style="background: var(--exo)"></i>Measured facts are labeled</span>
     <span class="chip"><i style="background: var(--flow)"></i>Proofs: cited or derived (derived ones not yet independently reviewed)</span>
@@ -133,7 +133,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
     <p>Each part opens with a yellow-dashed box written for a ten-year-old. Then come the mechanism, the full math with every intermediate term named, the knobs and their sensitivity, the bounds and proofs that keep it stable, and the extreme cases with how they are avoided. Claim labels: <span class="lab proven">proven</span> a published theorem, cited; <span class="lab derived">derived</span> proved here, not yet independently reviewed; <span class="lab conj">conjecture</span> a hypothesis the experiments must test; <span class="lab conj">proposed</span> my suggestion, not yet your decision; <span class="lab measured">measured</span> produced from real data in this project; <span class="lab design">design</span> a locked decision.</p>
   </div>
   <nav class="toc" aria-label="Sections">
-    <a href="#machine">The machine</a><a href="#e1">Engine 1 · Observation</a><a href="#observer">Stock observer</a><a href="#e2a">Engine 2a · Grouping</a><a href="#e2b">Engine 2b · Attention</a><a href="#e3a">Engine 3a · Search</a><a href="#e3b">Engine 3b · Verdicts</a><a href="#knobs">All knobs</a><a href="#extremes">Extreme cases</a><a href="#analogies">Physics and games</a><a href="#tui">Terminal screens</a><a href="#build">Build plan</a><a href="#facts">Measured facts</a><a href="#sources">Sources</a>
+    <a href="#machine">The machine</a><a href="#e1">Engine 1 · Observation</a><a href="#observer">Stock observer</a><a href="#e2a">Engine 2a · Grouping</a><a href="#e2b">Engine 2b · Attention</a><a href="#e3a">Engine 3a · Search</a><a href="#e3b">Engine 3b · Verdicts</a><a href="#knobs">All knobs</a><a href="#extremes">Extreme cases</a><a href="#redteam">Red-team audit</a><a href="#analogies">Physics and games</a><a href="#tui">Terminal screens</a><a href="#build">Build plan</a><a href="#facts">Measured facts</a><a href="#sources">Sources</a>
   </nav>
 </header>
 
@@ -143,7 +143,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
     <li><b>Fixed and locked: the Engine 2b objective (decision 4.2′, locked 2026-10-06).</b> The original 4.2 fitted the negative-binomial (NB2) likelihood, which is not convex. Counterexample: in a window with zero articles the NB2 loss is \(r\log(r+\lambda)\), which is concave in \(\lambda\), and since \(\lambda \approx \eta\) once \(\eta \gg s\), it is concave in the drive too. The uniqueness proofs (Lemmas 6.7, 8.1) only cover the quasi-Poisson loss. <b>Now locked:</b> point estimates come from quasi-Poisson with a Pearson dispersion. NB2 is used only for the PIT residuals, intervals, \(r\) and the held-out log score. The fit is unique again. <a href="#nb2">Details in §5.</a></li>
     <li><b>Two versions of the edge-share formula.</b> The Session 4 sheet wrote \(\alpha = \sigma(\eta/s)\,\mathrm{exc}/\lambda_{\text{raw}}\), and the report uses positive-part shares that send the surprise to BOT. They agree in the linear regime when every component is positive. Only the positive-part version is provably a probability vector (Lemma 7.1), so this doc uses it. <a href="#alpha">§5</a></li>
     <li><b>20 placebos give only a coarse false-explanation rate.</b> With 40 placebo terminals, the standard error of a 5% rate is about 3.4 points, and the smallest possible p-value is 1/21. The 60 placebos planned after the hackathon bring those to 2.8 points and 1/61. <a href="#e3a">§6</a></li>
-    <li><b>The build schedule has slipped.</b> Decision 7.1 put the repo skeleton and Engine 1 on Tuesday 6 October. That evening went to this document, so no code exists yet. <a href="#build">§12</a></li>
+    <li><b>The build schedule has slipped.</b> Decision 7.1 put the repo skeleton and Engine 1 on Tuesday 6 October. That evening went to this document, so no code exists yet. <a href="#build">§13</a></li>
   </ul>
 </div>
 
@@ -299,7 +299,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
     <div class="card"><b>Stock observer</b><span>Owns prices, abnormal-return statistics, clusters and τ*. Never reads news.</span></div>
     <div class="card"><b>Engine 3 · Explanation</b><span>Owns the explanation graphs, search, queries, claims, programs, verdicts and dossiers. Never writes to Engine 2's state.</span></div>
     <div class="card"><b>2a → 2b, one way</b><span>Grouping decides by content alone. Attention is computed afterwards. Grouping never reads attention (decision 3.9′: the Dirichlet–Hawkes coupling was rejected as scope encroachment).</span></div>
-    <div class="card"><b>The one-way valve</b><span>Targeted pages are evidence, never attention. Without the valve, the search would choose what to fetch, the fetched pages would count as attention, and the model would get stronger on the very hypothesis it was asked to test.</span></div>
+    <div class="card"><b>The one-way valve</b><span>Targeted pages are evidence, never attention. Without the valve, the search would choose what to fetch, the fetched pages would count as attention, and the model would get stronger on the very hypothesis it was asked to test. Since A1 the valve is structural, not a tag: targeted pages live in their own table that Engine 2 cannot read, and test T0 requires identical Engine 2 snapshots with SerpApi on and off.</span></div>
   </div>
 
   <h3>One clock decides what counts as evidence</h3>
@@ -350,10 +350,11 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
       <tr><td>D4</td><td>Every tie broken by <code>key(x) = (observed_time, source_rank, url_key, record_id)</code></td><td>hash-map iteration order</td></tr>
       <tr><td>D5</td><td>Nondeterministic calls (SerpApi, model inference) are archived on first call and replayed afterwards</td><td>external services changing; also saves credits</td></tr>
       <tr><td>D6</td><td>Every artifact stamped with <code>cfg_hash</code> and the code commit</td><td>silent config drift</td></tr>
+      <tr><td>D7</td><td>No stage reads an input timed after the window it computes. Parameters fitted through day D−1 apply on day D (A2). Tested by perturbing every input after t and requiring outputs up to t to stay bit-identical</td><td>look-ahead leaks</td></tr>
     </tbody>
   </table></div>
   <div class="box proof">
-    <span class="tag"><b>Proof</b> · Theorem 3.1, end-to-end replay determinism</span>
+    <span class="tag"><b>Proof</b> · Theorem 3.1, end-to-end replay determinism (D1–D6; D7 adds causality)</span>
     <p>Let \(x_0, x_1, \dots\) be the archived inputs (raw blobs plus archived model and API outputs) sorted by the D4 key, and let every stage be a state map \(s_{n+1} = \Phi(s_n, x_n, \text{cfg})\). Then \(s_0 = \text{init}(\text{cfg})\) depends only on the config. If \(s_n\) is a function of \((x_{\lt n}, \text{cfg})\), so is \(s_{n+1}\), provided \(\Phi\) reads nothing but its arguments. D1 removes the clock, D2 the RNG state, D3 the reduction order, D4 container iteration order, and D5 the outside world. By induction every state is a function of the inputs and the config, and every output is a projection of a state. <span class="qed">QED</span></p>
     <p>Rounding scores before threshold tests does not provide this guarantee, because a value can straddle a grid line. The guarantee comes from D3. <b>Acceptance test:</b> replay the same window range twice, and every snapshot hash and verdict must match bit for bit. Test T1 in §4 extends this to stopping and resuming from a snapshot.</p>
   </div>
@@ -607,7 +608,7 @@ universe: Nasdaq-100 + S&amp;P 500 utilities + SOX + ASML.AS, ASM.AS, BESI.AS + 
     <thead><tr><th>Case</th><th>What would go wrong</th><th>Avoidance</th></tr></thead>
     <tbody>
       <tr><td>The sector ETF crashes with the stock</td><td>Detector blind to the event (the NVDA bug)</td><td>Market-only detection; sector only as a label</td></tr>
-      <tr><td>The whole market crashes</td><td>Market-only AR is near 0 for everything, so there is no case</td><td><span class="lab conj">open limitation</span> Yggdrasil explains moves relative to the market. An index-level trigger is not in the design</td></tr>
+      <tr><td>The whole market crashes</td><td>Market-only AR is near 0 for everything, so there is no case</td><td><span class="lab design">A7, locked</span> Index case: the same robust gate on SPY and QQQ against their own history opens a case with the index as the terminal</td></tr>
       <tr><td>Earnings or CPI day</td><td>The trigger fires on a known event</td><td>Correct behavior: it is a case, and Engine 2b's scheduled-release terms let the search find the scheduled cause</td></tr>
       <tr><td>Opening gap that recovers (MSFT)</td><td>A terminal with nothing to explain by the close</td><td>Secondary member, not a terminal</td></tr>
       <tr><td>Split or dividend</td><td>Adjusted history changes after the fact</td><td>Unadjusted storage plus a corporate-actions table</td></tr>
@@ -761,7 +762,7 @@ universe: Nasdaq-100 + S&amp;P 500 utilities + SOX + ASML.AS, ASM.AS, BESI.AS + 
     <tbody>
       <tr><td>σ<sub>event</sub></td><td>72 h (locked)</td><td>The kernel weight is 0.946 at 24 h, 0.607 at 72 h, 0.135 at 144 h. Shorter: a slow-building event fragments into several clusters. Longer: unrelated events with shared entities fuse</td></tr>
       <tr><td>σ<sub>narr</sub></td><td>14 d (locked)</td><td>0.882 at 7 d, 0.607 at 14 d, 0.135 at 28 d. Shorter: recurring stories spawn new ids instead of continuing. Longer: stale narratives keep absorbing new events</td></tr>
-      <tr><td>τ<sub>event</sub>, τ<sub>alive</sub>, τ<sub>dormant</sub></td><td>tuned on the pre-period</td><td>These set the number of active narratives (target 100–300). \(\tau_{\text{dormant}} - \tau_{\text{alive}}\) is the dead band: 0 means flapping between states, large means old stories never return</td></tr>
+      <tr><td>τ<sub>event</sub>, τ<sub>alive</sub>, τ<sub>dormant</sub></td><td>tuned on the pre-period (A9)</td><td>τ<sub>event</sub> maximizes agreement with GDELT's own event links (Mentions → GlobalEventID). τ<sub>alive</sub> and τ<sub>dormant</sub> minimize daily id churn subject to 100–300 alive narratives. \(\tau_{\text{dormant}} - \tau_{\text{alive}}\) is the dead band: 0 means flapping between states, large means old stories never return</td></tr>
       <tr><td>split/merge cadence</td><td>6 h × 3 checks</td><td>If each check had an independent false-positive rate q, a spurious split would need probability \(q^3\) (q = 0.1 gives 0.001). Consecutive checks share data, so treat that as optimistic. T2's churn metric is the real measurement</td></tr>
       <tr><td>dormancy</td><td>7 days without mass</td><td>Shorter: weekend lulls put weekday stories to sleep</td></tr>
       <tr><td>phenomenon hysteresis</td><td>7 daily checks, 30-day memory</td><td>At least a week to restructure. Needs history longer than the replay to mean much</td></tr>
@@ -1072,7 +1073,7 @@ while heap:
 cost: O(3^k n + 2^k ((k + log n) n + m));  k = 2, n ≈ 300, m ≈ 6,000  →  about 4 × 10^4 basic steps</pre>
   <div class="box proof">
     <span class="tag"><b>Proof sketch</b> · Theorem 12.1, the first pop of (BOT, T) is optimal <span class="lab proven">undirected: Dreyfus–Wagner, DPBF</span> <span class="lab derived">directed version</span></span>
-    <p><b>Achievable:</b> every pushed value is the cost of a structure built by grow and merge steps. Where a merge shares nodes, deleting duplicate entering edges gives an arborescence that costs no more. So val ≥ Topt(v, X). <b>Optimal:</b> suppose (v, X) is the first state popped above its optimum. Decompose an optimal arborescence for (v, X) into grow and merge steps down to the base states, which are exact at 0. Some state of that decomposition is unfinished while all its children are finished. When its last child finished, it was pushed with a value at most its optimal sub-cost, which is at most Topt(v, X) < val because costs are ≥ 0. A min-heap would have popped it first, a contradiction. <span class="qed">QED</span> <b>Lemma 12.2:</b> every non-root node has exactly one entering edge, so adding \(\lambda_{\text{node}}\) to each edge charges each node exactly once. <b>Quantization:</b> rounding moves each edge by at most 0.0005 nats, so a tree with E ≤ 10 edges moves by at most 0.005 nats, an odds error under 0.5%. Ties are broken by a fixed key, so the result is replay-identical. <b>Feasibility always holds,</b> because the all-abstention tree is feasible.</p>
+    <p><b>Achievable:</b> every pushed value is the cost of a structure built by grow and merge steps. Where a merge shares nodes, deleting duplicate entering edges gives an arborescence that costs no more. So val ≥ Topt(v, X). <b>Optimal:</b> suppose (v, X) is the first state popped above its optimum. Decompose an optimal arborescence for (v, X) into grow and merge steps down to the base states, which are exact at 0. Some state of that decomposition is unfinished while all its children are finished. When its last child finished, it was pushed with a value at most its optimal sub-cost, which is at most Topt(v, X) < val because costs are ≥ 0. A min-heap would have popped it first, a contradiction. <span class="qed">QED</span> <b>Lemma 12.2:</b> every non-root node has exactly one entering edge, so adding \(\lambda_{\text{node}}\) to each edge charges each node exactly once. <b>Quantization:</b> rounding moves each edge by at most 0.0005 nats, so a tree with E ≤ 10 edges moves by at most 0.005 nats, an odds error under 0.5%. Ties are broken by a fixed key, so the result is replay-identical. <b>Feasibility always holds,</b> because the all-abstention tree is feasible. <b>Evidence for the directed case:</b> differential test E2 ran DPBF against brute-force enumeration on 400 random directed graphs and found 0 mismatches <span class="lab measured">measured</span>. It stays in the suite permanently.</p>
   </div>
   <div class="col"><p><b>Why exact, not approximate.</b> Group and directed Steiner problems approximate badly (no \(\log^{2-\epsilon} k\) ratio for group Steiner under standard assumptions; Halperin &amp; Krauthgamer 2003). Exact DP is exponential only in k. With one terminal per cluster, k = 2 on 27 January. The research design's push certificate (Theorem 12.6) and Levin tree search are kept as the path to scale, beyond about 2,000 nodes or once event-level nodes go in. At ~300 narratives, solving the whole graph exactly is cheaper than certifying a local piece.</p></div>
   <figure>
@@ -1126,7 +1127,7 @@ cost: O(3^k n + 2^k ((k + log n) n + m));  k = 2, n ≈ 300, m ≈ 6,000  →  a
       <tr><td>The loudest narrative is in every answer</td><td>The availability heuristic, automated</td><td>Lift, surprise tilt, placebo FER ≤ 5%, hub flags</td></tr>
       <tr><td>Few pre-cutoff documents tie a cluster to any story (power on Jan 27?)</td><td>A forced, weak story</td><td>Abstention wins for that cluster, <b>which is the honest answer</b></td></tr>
       <tr><td>A terminal with no incoming story edges</td><td>Infeasible search</td><td>Never happens: the BOT → x edge always exists</td></tr>
-      <tr><td>Many clusters on one day</td><td>The \(3^k\) blowup</td><td>Fine up to about 8; beyond that, split the case or use the scale path</td></tr>
+      <tr><td>Many clusters on one day (earnings season)</td><td>The \(3^k\) blowup</td><td><span class="lab design">A3</span> Exact solves are capped at k ≤ 8. Scheduled-earnings terminals are solved alone (a shortest path), the rest are grouped by residual correlation, and the dossier says sharing across groups was not searched</td></tr>
       <tr><td>Graph above about 2,000 nodes</td><td>DP too slow</td><td>Push certificate plus Levin search (designed, deferred)</td></tr>
       <tr><td>Float ties across machines</td><td>Different trees on different runs</td><td>Integer milli-nats plus a fixed tie key</td></tr>
       <tr><td>Stale edges from two weeks ago</td><td>Old couplings explain today</td><td>3-day recency kernel and surprise tilt</td></tr>
@@ -1199,7 +1200,7 @@ cost: O(3^k n + 2^k ((k + log n) n + m));  k = 2, n ≈ 300, m ≈ 6,000  →  a
   <div class="math">\[ H_S = \big\langle\ \texttt{trigger}(H, e),\ \ \texttt{before}(e, \text{move}) \Leftarrow \text{first_seen}(e) \lt \tau^*,\ \ \texttt{signature_ok}(H),\ \ \texttt{schema_refuter}(H, L)\ \big\rangle \]</div>
   <div class="math">\[ \texttt{signature_ok}(H) \iff \text{burst on the entry narrative before } \tau^* \;\wedge\; \forall (j \to i) \in S:\ \sigma_{j \to i} \gt 0 \]</div>
   <div class="col">
-    <p>The signature check is the strongest part of the design. Half of every hypothesis is verified from Engine 2's own measurements (tier 0), with no text and no model. Queries come from the hypothesis's central claim: <b>1 confirming and 2 disconfirming</b> (Heuer's rule: rank hypotheses by the evidence <i>against</i> them). That is at most 15 per case, all cached, so 250 free credits cover about 16 cases a month. \(P_{\text{pre}}\) candidates are date-bounded: <code>tbs=cdr:1,cd_min:&lt;τ*−14d&gt;,cd_max:&lt;τ*&gt;</code>.</p>
+    <p><b>Corroboration (A6):</b> <code>occurred(E)</code> needs a report of tier ≤ 2 or reports from two independent owners, and each burst's source concentration goes in the dossier, so a flood of fresh fake domains can't establish an event on its own. The signature check is the strongest part of the design. Half of every hypothesis is verified from Engine 2's own measurements (tier 0), with no text and no model. Queries come from the hypothesis's central claim: <b>1 confirming and 2 disconfirming</b> (Heuer's rule: rank hypotheses by the evidence <i>against</i> them). That is at most 15 per case, all cached, so 250 free credits cover about 16 cases a month. \(P_{\text{pre}}\) candidates are date-bounded: <code>tbs=cdr:1,cd_min:&lt;τ*−14d&gt;,cd_max:&lt;τ*&gt;</code>.</p>
   </div>
 
   <h3>Claims: typed tuples over a closed vocabulary, no LLM <span class="lab design">design · 6.3, 6.12, 6.13′</span></h3>
@@ -1214,6 +1215,7 @@ cost: O(3^k n + 2^k ((k + log n) n + m));  k = 2, n ≈ 300, m ≈ 6,000  →  a
     </tbody>
   </table></div>
   <div class="col">
+    <p><b>Span grounding for every extractor (A5).</b> A GKG amount or quotation becomes a tuple only if it matches a verbatim span on the fetched page, exactly like rule and verifier tuples. GDELT's own extraction errors therefore can't reach a verdict.</p>
     <p><b>The verifier never generates.</b> It answers yes, no or contradiction about spans that deterministic code has already found, so a tuple can't contain knowledge the page doesn't. With pinned weights, CPU inference and fixed threads, it is deterministic even before archiving, and a small encoder carries far less memorized hindsight than a chat model. Every verdict carries a <b>verifier-dependent</b> flag (verdict flips when all <code>extractor = verifier</code> tuples are removed). The replay also runs in deterministic-only mode, stages 1–2, side by side.</p>
     <p><b>The decisive claim needs no model.</b> The V3 technical report words its cost as "excluding the costs associated with prior research and ablation experiments". Subject V3, predicate <code>cost_of</code>, cue "excluding" gives <code>scope = final_run_only</code>, which is contrary to the all-in reading. So H3 can be CONTRADICTED by rules alone.</p>
   </div>
@@ -1264,9 +1266,15 @@ ctl = clingo.Control(["0", "--enum-mode=cautious"])  # intersection of all stabl
     <p><b>Deterministic:</b> brave and cautious consequences are the union and intersection over the set of stable models. That is a unique set, independent of the order in which the solver finds models. <b>Tight:</b> the positive dependency graph (holds → ok, refuted → holds, expl → holds) has no cycle, because ok depends on defeated only through negation. So Fages' theorem applies: stable models are exactly the models of the completion. <b>Complexity:</b> brave reasoning is NP-complete and cautious is coNP-complete for normal programs. The verdict is a fixed Boolean combination of at most five SAT calls, which puts it in \(\Theta_2^P\). Disjunctive rules would raise it to \(\Sigma_2^P/\Pi_2^P\), so the rule language forbids them.</p>
   </div>
 
+  <div class="box proof">
+    <span class="tag"><b>Proof</b> · Theorem 14.4, the locked template always has a stable model <span class="lab derived">derived</span> <span class="lab measured">E1: 0 / 3,000</span></span>
+    <p>Retracted reports and copies are defeated unconditionally, so they drop out. Among the remaining reports, R2 defeats R exactly when their literals are contrary, they are independent, and \(\text{tier}(R2) \le \text{tier}(R)\). <code>contrary</code> is symmetrized and <code>independent</code> is symmetric (different owners), and tiers form a total preorder. So an attack goes both ways between equal tiers, and only from better to worse between different tiers. Build a set S tier by tier, best tier first: add a report unless it conflicts with one already in S. Every report left out conflicts with a member of S of equal or better tier, which defeats it. Members of S never conflict with each other. So S is a stable extension, and with the standard ok/defeated encoding it gives a stable model of the program. The layers <code>holds</code>, <code>refuted</code> and <code>expl</code> sit above it and are stratified. <span class="qed">QED</span></p>
+    <p><b>Consequences.</b> INCOHERENT-EVIDENCE cannot occur under the locked template. Adversaries can force UNRESOLVED only by putting up sources of equal or better tier than the truth, never a false SUPPORTED or CONTRADICTED. Generated programs can still add bridge rules (\(\texttt{holds}(X) \leftarrow \texttt{holds}(Y)\)), and those can form positive loops that break tightness. So <b>A4</b> checks every ground program for cycles through positive dependencies before the Lean path. A non-tight program skips Lean, and its clingo verdicts still stand. E1's control confirms the check catches such a loop.</p>
+  </div>
+
   <div class="box warn">
-    <span class="tag">When there is no consistent reading at all</span>
-    <p>Odd attack cycles can leave no stable model. This is geometric frustration: an antiferromagnetic triangle has no ground state that satisfies every bond. Yggdrasil then emits <b>INCOHERENT-EVIDENCE</b>, with an UNSAT proof that no model exists, and falls back to the grounded labelling, the least fixpoint of the defense operator. It is unique, polynomial, and equal to the well-founded model. A true core atom gives SUPPORTED or CONTRADICTED. An undefined atom with arguments on both sides gives UNRESOLVED. Anything else is CONSISTENT-BUT-UNPROVEN. How often real evidence is incoherent is unknown, and the dossier counts it.</p>
+    <span class="tag">When there is no consistent reading at all (unreachable under the locked template, Theorem 14.4)</span>
+    <p>This is kept for future rule types (undercutters, asymmetric preferences). Odd attack cycles can leave no stable model. This is geometric frustration: an antiferromagnetic triangle has no ground state that satisfies every bond. Yggdrasil then emits <b>INCOHERENT-EVIDENCE</b>, with an UNSAT proof that no model exists, and falls back to the grounded labelling, the least fixpoint of the defense operator. It is unique, polynomial, and equal to the well-founded model. A true core atom gives SUPPORTED or CONTRADICTED. An undefined atom with arguments on both sides gives UNRESOLVED. Anything else is CONSISTENT-BUT-UNPROVEN. How often real evidence is incoherent is unknown, and the dossier counts it.</p>
   </div>
 
   <div class="box">
@@ -1287,6 +1295,7 @@ Fages (tight program, cited not formalized)    ──▶  every stable model con
     <li>Per hypothesis, two verdicts: before the cutoff (\(P_{\text{pre}}\)) and at report time (\(P_{\text{all}}\)), shown separately.</li>
     <li>Behind each verdict: source, tier, first-seen time, the quoted span, the link, the contradictions found, the diagnosticity list, and what would flip it.</li>
     <li>The verifier-dependent flag, and the deterministic-only comparison.</li>
+    <li>Abstention is worded "no admissible explanation in observed English news before τ*", never "no cause" (A8).</li>
     <li>No forecast and no advice, anywhere. Kept forever with every cited item.</li>
   </ul>
 
@@ -1298,7 +1307,8 @@ Fages (tight program, cited not formalized)    ──▶  every stable model con
       <tr><td>θ (entailment)</td><td>fitted on silver labels</td><td>Higher: fewer verifier tuples, more verdicts decided by rules alone</td></tr>
       <tr><td>tier registry</td><td>frozen 2024-12-31</td><td>Judgment calls, disclosed and logged as premises</td></tr>
       <tr><td>Contradictory sources</td><td>Classical logic would prove anything</td><td>Defeasible acceptance; equal tiers defeat each other into two readings</td></tr>
-      <tr><td>No stable model</td><td>No verdict</td><td>INCOHERENT-EVIDENCE plus the grounded fallback</td></tr>
+      <tr><td>No stable model</td><td>No verdict</td><td>Impossible under the locked template (Theorem 14.4). For future rule types: INCOHERENT-EVIDENCE plus the grounded fallback</td></tr>
+      <tr><td>Sybil flood of fake domains</td><td>A fabricated event looks established</td><td>A6 corroboration; attack-cost benchmark</td></tr>
       <tr><td>Everything comes out unproven</td><td>A useless dossier</td><td>The tier-0 signature gives every hypothesis a deterministic test</td></tr>
       <tr><td>Syndicated echo chamber</td><td>One claim counted 271 times</td><td><code>copy_of</code> defeats every copy; independence requires different groups and owners</td></tr>
       <tr><td>Retraction after the fact</td><td>A retracted report still believed</td><td><code>retracted(R)</code> defeats it in \(P_{\text{all}}\)</td></tr>
@@ -1359,16 +1369,19 @@ Fages (tight program, cited not formalized)    ──▶  every stable model con
       <tr><td>Syndication flood</td><td>E1, 3b</td><td>L2 collapse; <code>copy_of</code> defeated</td><td>L3 never merged (invariant)</td></tr>
       <tr><td>Missing or late GDELT batches</td><td>E1, 2b</td><td>Grace retry, missing flag, likelihood mask</td><td>no fake attention drop</td></tr>
       <tr><td>Sector channel absorbs the shock</td><td>observer</td><td>Market-only detection</td><td>measured fix (NVDA SAR −2.2 → −5.1)</td></tr>
-      <tr><td>Market-wide crash</td><td>observer</td><td><b>Not covered</b>: relative-move design</td><td>open limitation</td></tr>
+      <tr><td>Market-wide crash</td><td>observer</td><td>Index case on SPY and QQQ (A7)</td><td>fires on index shocks (acceptance run)</td></tr>
       <tr><td>Narrative id churn</td><td>2a, 2b</td><td>Persistent ids, hysteresis, lineage</td><td>memory conserved (Lemma 5.2)</td></tr>
       <tr><td>Explosive attention</td><td>2b</td><td>ω &gt; 0 or ρ ≤ 0.95</td><td>bounded means (Lemma 6.5)</td></tr>
       <tr><td>Spurious criticality</td><td>2b</td><td>Flexible baselines, explicit competition</td><td>empirical (Filimonov–Sornette)</td></tr>
       <tr><td>Non-unique fit</td><td>2b</td><td>Quasi-Poisson point estimates, NB2 only for PIT and intervals (4.2′, locked)</td><td>unique minimizer (Lemma 8.1)</td></tr>
       <tr><td>Hub wins every case</td><td>3a</td><td>Lift, surprise tilt, placebo FER ≤ 5%</td><td>valid empirical p (rank argument)</td></tr>
       <tr><td>No story reaches a cluster</td><td>3a</td><td>Abstention edge always present</td><td>always feasible</td></tr>
-      <tr><td>Many clusters on one day</td><td>3a</td><td>Split the case; push and Levin later</td><td>exact up to k ≈ 8</td></tr>
+      <tr><td>Many clusters on one day</td><td>3a</td><td>k ≤ 8 per exact solve; earnings terminals alone (A3)</td><td>exact within each group; synthetic k = 50 completes</td></tr>
       <tr><td>Contradictory witnesses</td><td>3b</td><td>Defeasible acceptance, tiers, independence</td><td>four-way partition (Theorem 14.1)</td></tr>
-      <tr><td>Incoherent evidence</td><td>3b</td><td>INCOHERENT plus grounded fallback</td><td>unique, polynomial</td></tr>
+      <tr><td>Incoherent evidence</td><td>3b</td><td>Cannot occur under the template; per-program tightness check (A4)</td><td>Theorem 14.4, E1</td></tr>
+      <tr><td>Look-ahead leak</td><td>everywhere</td><td>Rule D7 (A2)</td><td>future-perturbation test</td></tr>
+      <tr><td>Valve bypass by a mislabelled record</td><td>E1 → E2</td><td>Separate targeted table (A1)</td><td>T0: identical snapshots with SerpApi on/off</td></tr>
+      <tr><td>Sybil flood</td><td>2b, 3b</td><td>Corroboration for occurred(E), source concentration (A6)</td><td>attack-cost benchmark</td></tr>
       <tr><td>Model hallucination or leakage</td><td>3b</td><td>No generator; span-grounded verifier; deterministic-only run</td><td>span check is exact</td></tr>
       <tr><td>Cause outside the observed world</td><td>3a, 3b</td><td>Folds into "we do not know"</td><td>honest by design</td></tr>
       <tr><td>Different answer on rerun</td><td>everywhere</td><td>D1–D6, integer costs, archived calls</td><td>Theorem 3.1, test T1</td></tr>
@@ -1376,8 +1389,69 @@ Fages (tight program, cited not formalized)    ──▶  every stable model con
   </table></div>
 </section>
 
+
+<section id="redteam">
+  <div class="eyebrow">§10 · red-team audit · two external audits, triaged and locked 2026-10-07</div>
+  <h2>Every critique answered: denied with a reason, or turned into a test</h2>
+  <div class="col">
+    <p>Two external audits raised five "P0" findings and about twenty-five more. Each was either denied with a derivation or measurement, or accepted as a design change with a test that would catch the failure. Three disputed claims were settled by experiment before answering <span class="lab measured">measured</span>:</p>
+  </div>
+<pre class="code">E1  3,000 random evidence programs on the locked clingo template
+    (up to 14 reports, 4 tiers, dense contradictions, shared owners)
+    programs with no stable model: 0        non-tight programs: 0
+    controls: a holds(a) &lt;-&gt; holds(b) bridge loop IS flagged non-tight; an odd negative cycle IS unsatisfiable
+E2  400 random directed graphs (3-7 nodes, 1-3 terminals, integer costs 0-9 including 0)
+    directed DPBF vs brute-force enumeration of arborescences: 0 mismatches (259 feasible; infeasible ones agree)
+E3  self-exciting softplus counts with NB2 noise (r = 1.5), 30 runs per size
+    n = 2000: quasi-Poisson vs NB2 lambda gap 0.26%; parameter gap sd ≈ 1/5 of sampling sd
+    n = 8000: lambda gap 0.15%; both estimators centred on the true parameters</pre>
+
+  <h3>Locked changes <span class="lab design">design · A1–A9, locked 2026-10-07</span></h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>Change</th><th>Answers</th><th>Test that proves it</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td>A1</td><td>Targeted pages live in their own table, written only by the fetch service. Engine 2's reader has no code path to it</td><td>P0-1: one mislabelled string tag would let the search confirm itself</td><td><b>T0</b>: replay with SerpApi on and off; every Engine 2 snapshot hash must be identical</td><td>hackathon</td></tr>
+      <tr><td>A2</td><td>Rule <b>D7</b>: parameters fitted through day D−1 are applied on day D. No stage reads an input with a later time</td><td>P0-2: refit look-ahead</td><td><b>Future-perturbation test</b>: scramble or drop every input after t; every output up to t must be bit-identical. It catches look-ahead in every engine</td><td>hackathon</td></tr>
+      <tr><td>A3</td><td>Exact search capped at k ≤ 8 terminals per solve. Scheduled-earnings terminals are solved alone (k = 1, a shortest path); the rest are grouped by residual correlation into groups of ≤ 8. The dossier states that sharing across groups was not searched</td><td>P0-3: \(3^k\) on earnings days (terminals are clusters, not stocks: 27 Jan had 9 movers and k = 2)</td><td>Synthetic case with k = 50 completes. Benchmark: k and solve time per day over 2024</td><td>cap: hackathon</td></tr>
+      <tr><td>A4</td><td>Tightness check (cycles through positive dependencies) on every ground program before the Lean path. A non-tight program skips Lean, and clingo verdicts still stand</td><td>Fages applies only to tight programs, and generated bridge rules can form loops</td><td>E1 as a permanent test, plus the bridge-loop control</td><td>hackathon</td></tr>
+      <tr><td>A5</td><td>Span grounding applies to every extractor: GKG amounts and quotations must match a verbatim span on the fetched page, like rule and verifier tuples</td><td>GDELT corruption and NER errors reaching verdicts</td><td>Span check on 100% of tuples. Benchmark: precision audit of 200 GKG records</td><td>hackathon</td></tr>
+      <tr><td>A6</td><td><code>occurred(E)</code> needs a report of tier ≤ 2, or reports from two independent owners. Each burst's source concentration (HHI over domains) goes in the dossier</td><td>Sybil floods; coordinated fabrication</td><td>Benchmark: inject mutated copies from M fake domains into the replay; report the smallest injection that changes S* or a verdict (attack cost)</td><td>after</td></tr>
+      <tr><td>A7</td><td>Index case: the same robust gate applied to SPY and QQQ against their own history opens a case with the index as terminal</td><td>Blindness to market-wide crashes</td><td>Fires on known 2024 index shocks; acceptance run</td><td>after</td></tr>
+      <tr><td>A8</td><td>Abstention wording: "no admissible explanation in observed English news before τ*", never "no cause"</td><td>Absence of evidence ≠ evidence of absence; paywalls, dark pools</td><td>Dossier template check</td><td>hackathon</td></tr>
+      <tr><td>A9</td><td>Tuning objectives written down. τ<sub>event</sub> maximizes agreement with GDELT's own event links (documents the Mentions table ties to one GlobalEventID should share a cluster). τ<sub>alive</sub>, τ<sub>dormant</sub> minimize daily id churn subject to 100–300 alive narratives. Tuning uses 16 Dec – 6 Jan only</td><td>Undocumented tuning; single-case overfitting</td><td>Objective values logged with every tuned config (D6)</td><td>after</td></tr>
+    </tbody>
+  </table></div>
+  <div class="col"><p><b>Permanent tests added to the suite:</b> E1 (stable model and tightness fuzz), E2 (DPBF differential test), T0 (valve), future-perturbation (D7), airgapped replay (network off, every hash reproduces, proving the D5 archive is complete), SerpApi-off replay (it must complete), and conservation invariants on every snapshot (Lemmas 5.1, 5.2).</p>
+  <p><b>Benchmarks after the hackathon:</b> a frozen-config run on every 2024 day the trigger fires (abstention rate, p-values, hub frequency, plus 10 hand-checked causes; it doubles as acceptance test 2.8); the quasi-Poisson vs NB2 gap and PIT flatness on the replay; the translingual GDELT first-seen lag for the R1 narrative; the GKG precision audit; a θ<sub>cand</sub> × j<sub>0</sub> sweep with a copy-group owner-diversity alarm; and Sybil attack cost.</p></div>
+
+  <h3>Denied, with the reason</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Critique</th><th>Why it does not hold</th></tr></thead>
+    <tbody>
+      <tr><td>P0-4: quasi-Poisson and NB2 have different minimizers, so PIT is evaluated off-centre</td><td>Both estimating equations target the same mean and differ only in variance weighting, an \(O(n^{-1/2})\) efficiency difference (E3: 0.15–0.26%, about 5× below sampling noise). They diverge only if the mean model is wrong, and the PIT histogram is the detector for exactly that</td></tr>
+      <tr><td>P0-5: directed first-pop optimality is unproven</td><td>Still labelled derived, but E2 found no counterexample in 400 graphs and becomes a permanent differential test</td></tr>
+      <tr><td>Theorem 14.1 assumes a stable model exists</td><td>The precondition is stated, and the empty case has its own output. Under the locked template the empty case is impossible (Theorem 14.4, §7; E1)</td></tr>
+      <tr><td>Knobs overfit to 27 January</td><td>p<sub>0</sub>, λ<sub>node</sub> and γ are tuned on placebo days, which exclude case days by construction. θ<sub>cand</sub> and j<sub>0</sub> use referee titles, and the τ thresholds use the pre-period. The fair part, a design debugged on one event, is answered by the 2024 frozen-config benchmark</td></tr>
+      <tr><td>Metadata collisions merge different events</td><td>No merge rule uses metadata alone (rejected in Session 1 at 44% false merges). Step 1 needs the same title plus image, byline or names</td></tr>
+      <tr><td>Split or merge exactly at τ*</td><td>Window steps are atomic, and a snapshot is emitted only after lineage operations finish. Conservation invariants run on every snapshot</td></tr>
+      <tr><td>k = 5–10 exhausts the budget</td><td>\(3^8 \times 300\) nodes is about 2 million steps, sub-second</td></tr>
+      <tr><td>15-minute clocks can't order flash crashes</td><td>Coarse clocks only remove evidence: anything in the batch containing τ* has first_seen ≥ τ*. They can never put an effect before its cause. The cost is that a cause in the last 15 minutes becomes "we do not know"</td></tr>
+      <tr><td>Publisher-timestamp bias (59% coverage)</td><td>Admissibility never reads the publisher timestamp. first_seen is our ingestion clock, with 100% coverage</td></tr>
+      <tr><td>Yahoo deprecation</td><td>The replay runs from archived responses (D5), and the airgapped replay test proves it. Live mode has the google_finance fallback</td></tr>
+      <tr><td>SerpApi referee bias</td><td>It only labels English near-duplicate pairs, which is our scope. It is cross-checked against 50 hand-checked merges</td></tr>
+      <tr><td>Coordinated PR waves</td><td>A PR wave is real information; if it moved the stock, it is the right answer. Fabrication falls under A6</td></tr>
+      <tr><td>Placebo spoofing</td><td>Placebos are drawn from the past 90 days at case time, and first_seen is our clock, so no one can plant stories in the past. Planting decoys every day only raises the base rate, which is what placebos measure</td></tr>
+      <tr><td>Epistemic DoS via contradictory sources</td><td>Equal-tier contradictions can force UNRESOLVED, the honest answer when equally credible sources disagree. They can never force a false SUPPORTED or CONTRADICTED, and never INCOHERENT (Theorem 14.4)</td></tr>
+      <tr><td>Stage-3 verification depends on SerpApi</td><td>Verification runs on local models. SerpApi only retrieves pages, and the system must work without it (handover). The SerpApi-off replay test checks this</td></tr>
+      <tr><td>Slow-burn moves, crypto, non-US markets</td><td>Out of scope: abnormal equity events. The venue logic is already session-aware (Euronext). A multi-week trigger is a later extension</td></tr>
+      <tr><td>Hawkes edges are correlation</td><td>Already stated: edges mean timing, and count as influence only after F4, which includes a common-shock (hidden confounder) control</td></tr>
+      <tr><td>English-only blind spot</td><td>Accepted as a measured limitation, not denied: the translingual benchmark measures the first-seen lag. Causes outside English fold into "we do not know" (A8 wording)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
 <section id="analogies">
-  <div class="eyebrow">§10 · physics, game theory, economics</div>
+  <div class="eyebrow">§11 · physics, game theory, economics</div>
   <h2>The same mathematics, wearing other clothes</h2>
   <div class="col"><p>Each row says how far the link goes. <b>Exact</b> means the same equation or theorem. <b>Limit</b> means it holds in a stated limit. <b>Analogy</b> means it helps intuition but proves nothing here.</p></div>
   <div class="tablewrap"><table>
@@ -1414,7 +1488,7 @@ Fages (tight program, cited not formalized)    ──▶  every stable model con
 </section>
 
 <section id="tui">
-  <div class="eyebrow">§11 · terminal screens · design mockups, illustrative numbers</div>
+  <div class="eyebrow">§12 · terminal screens · design mockups, illustrative numbers</div>
   <h2>What you will see in the terminal</h2>
   <div class="col"><p>These are design proposals for the CLI <span class="lab conj">proposed</span>. Where a value is a real measurement it is reused (prices, SAR, τ*, clusters). Search costs repeat the toy numbers from §6. Every other number is illustrative.</p></div>
 
@@ -1482,7 +1556,7 @@ T1 resume from S(2025-01-13): 4,512 / 4,512 snapshot hashes equal   <span class=
 </section>
 
 <section id="build">
-  <div class="eyebrow">§12 · build DAG and the hackathon cut · Session 7 (7.1–7.4), accepted</div>
+  <div class="eyebrow">§13 · build DAG and the hackathon cut · Session 7 (7.1–7.4), accepted</div>
   <h2>From zero code to a replay in four evenings</h2>
   <div class="box warn">
     <span class="tag">Status at the time of writing</span>
@@ -1568,7 +1642,8 @@ T1 resume from S(2025-01-13): 4,512 / 4,512 snapshot hashes equal   <span class=
       <tr><td>Engine 2b</td><td>Daily refit, α, bursts, F1 (ω) and F3 on the replay</td><td>Online updates, full F2 and F4</td></tr>
       <tr><td>Engine 3a</td><td>Exact DP, rivals, abstention, 20 placebos</td><td>60 placebos and the full calibration sweep</td></tr>
       <tr><td>Engine 3b</td><td>Cached queries, rules + verifier, four-bit verdicts, deterministic-only comparison</td><td>Lean certification: stretch</td></tr>
-      <tr><td>Tests</td><td>T1 exact resume, double-run determinism, synthetic planted-optimum search</td><td>T2 and T3 convergence tests</td></tr>
+      <tr><td>Tests</td><td>T1 exact resume, double-run determinism, synthetic planted-optimum search, and the red-team suite: T0 valve, future-perturbation (D7), E1 stable-model and tightness fuzz, E2 DPBF differential, airgapped replay, SerpApi-off replay, snapshot conservation invariants</td><td>T2 and T3 convergence tests</td></tr>
+      <tr><td>Red-team changes</td><td>A1 separate targeted table, A2 D7, A3 k cap, A4 tightness check, A5 span grounding for every extractor, A8 abstention wording</td><td>A6 corroboration, A7 index case, A9 tuning objectives, and the benchmarks (except the 2024 run, which is acceptance test 2.8)</td></tr>
       <tr><td>Live</td><td>Minimal demo: poll the latest batch through Engines 1 and 2; a case only if the trigger fires</td><td>Full live pipeline</td></tr>
     </tbody>
   </table></div>
@@ -1599,7 +1674,7 @@ T1 resume from S(2025-01-13): 4,512 / 4,512 snapshot hashes equal   <span class=
 </section>
 
 <section id="facts">
-  <div class="eyebrow">§13 · measured facts ledger</div>
+  <div class="eyebrow">§14 · measured facts ledger</div>
   <h2>Everything above that came from real data</h2>
   <div class="tablewrap"><table>
     <thead><tr><th>Fact</th><th>Value</th><th>Measured on</th></tr></thead>
@@ -1622,13 +1697,14 @@ T1 resume from S(2025-01-13): 4,512 / 4,512 snapshot hashes equal   <span class=
       <tr><td>GDELT throughput</td><td>≈ 2.2 MB/s single stream; 12.7 MB/s on 8 streams (short test)</td><td>2026-10-06</td></tr>
       <tr><td>Manifest totals</td><td>Replay core 24.6 GB (524 MB/day); Jul–Dec 2024 95.4 GB; Jan–Jun 2024 108.6 GB; 2024 Events + Mentions 7.3 GB</td><td>masterfilelist</td></tr>
       <tr><td>Verdict logic</td><td>Template gives 2 stable models; h1 0000, h3 0011, h4 1010, h6 1100</td><td>clingo, 2026-10-06</td></tr>
+      <tr><td>Red-team checks</td><td>E1: 0 of 3,000 random template programs lack a stable model, 0 non-tight. E2: DPBF = brute force on 400 directed graphs. E3: quasi-Poisson vs NB2 lambda gap 0.15–0.26%</td><td>2026-10-07</td></tr>
       <tr><td>Binning in practice</td><td>38.5% of events shared a bin with another event</td><td>BTC Hawkes fit</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section id="sources">
-  <div class="eyebrow">§14 · sources</div>
+  <div class="eyebrow">§15 · sources</div>
   <h2>Where every borrowed result comes from</h2>
   <div class="grid3">
     <div class="card"><b>Data and tools</b><span>
@@ -1721,7 +1797,7 @@ T1 resume from S(2025-01-13): 4,512 / 4,512 snapshot hashes equal   <span class=
 </section>
 
 <footer class="footer" style="margin-top: 3.6rem; padding-top: 2rem; border-top: 1px solid var(--rule)">
-  <p><b>Provenance.</b> Every design item traces to a locked session decision (Sessions 0–7, 5–6 October 2026). Every "measured" number traces to a real fetch or file listed in §13. Proofs marked <i>derived</i> were written for this project and have not been independently reviewed. Spot checks so far cover Lemma 6.6, Propositions 6.2/6.3(a), Lemma 6.5(b) and Theorem 12.6. Animations were rendered with Manim Community. Toy numbers are labelled wherever they appear.</p>
+  <p><b>Provenance.</b> Every design item traces to a locked session decision (Sessions 0–7, 5–6 October 2026; 4.2′ and red-team A1–A9, 6–7 October). Every "measured" number traces to a real fetch or file listed in §13. Proofs marked <i>derived</i> were written for this project and have not been independently reviewed. Spot checks so far cover Lemma 6.6, Propositions 6.2/6.3(a), Lemma 6.5(b) and Theorem 12.6. Animations were rendered with Manim Community. Toy numbers are labelled wherever they appear.</p>
   <p>Yggdrasil never forecasts prices and never recommends trades. "We do not know" is always an allowed answer.</p>
 </footer>
 </div>
