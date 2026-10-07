@@ -18,12 +18,15 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
 from ygg.contracts import OBSERVATION_SCHEMA
 from ygg.determinism import WindowClock, parse_utc, stable_hash
+from ygg.observation import embed as emb
 from ygg.observation.canon import CANON_VERSION, url_key
+from ygg.observation.dedup_l2 import L2Config, L2Dedup
 from ygg.observation.gdelt_fetch import Ledger, load_manifest, plan
 from ygg.observation.parse import PARSERS
 from ygg.store.blobs import BlobStore
@@ -32,7 +35,8 @@ PARSE_VERSION = f"parse-1+{CANON_VERSION}"
 WINDOW_LEDGER_SCHEMA = pa.schema([
     ("window", pa.int32()), ("batch_ts", pa.timestamp("us", tz="UTC")), ("gkg_status", pa.string()),
     ("export_status", pa.string()), ("mentions_status", pa.string()), ("missing_batch", pa.bool_()),
-    ("rows", pa.int32()), ("new_objects", pa.int32()), ("l1_dups", pa.int32()), ("quarantined", pa.int32()),
+    ("rows", pa.int32()), ("new_objects", pa.int32()), ("l1_dups", pa.int32()), ("l2_merges", pa.int32()),
+    ("roots", pa.int32()), ("quarantined", pa.int32()),
 ])
 DUP_SCHEMA = pa.schema([("observation_id", pa.string()), ("canonical_id", pa.string()), ("matched_on", pa.string()),
                         ("window", pa.int32())])
@@ -63,8 +67,12 @@ def _parse_job(args: tuple[str, str, str]) -> tuple[str, str, int, int]:
 
 # ---------------------------------------------------------------- stage 2: sequential pass
 class Engine1:
-    def __init__(self, data_dir: Path, clock: WindowClock, fetch_status: dict[tuple[str, str], tuple[str, str]]):
+    def __init__(self, data_dir: Path, clock: WindowClock, fetch_status: dict[tuple[str, str], tuple[str, str]],
+                 l2: L2Config | None = None, embed_model: str | None = emb.DEFAULT_MODEL):
         self.data_dir, self.clock, self.fetch_status = data_dir, clock, fetch_status
+        self.l2 = L2Dedup(l2 or L2Config())
+        self.embed_model = embed_model
+        self.day_vecs: dict[str, list] = defaultdict(list)
         self.tables = data_dir / "tables"
         self.by_native: dict[str, str] = {}
         self.by_url: dict[bytes, str] = {}
@@ -115,10 +123,19 @@ class Engine1:
                     "amounts": r["amounts"], "copy_group": oid, "member_count": 1, "member_ids": [oid],
                     "merge_evidence": "", "content_hash": "", "raw_ref": gkg_sha, "origin": "broad",
                 })
+            vecs = emb.encode([r["title"] for r in new], self.embed_model) if (self.embed_model and new) else None
+            for i, r in enumerate(new):
+                v = vecs[i] if vecs is not None else None
+                root, evidence = self.l2.assign(r, v)
+                r["copy_group"], r["merge_evidence"] = root, evidence
+            if vecs is not None:
+                self.day_vecs[day].append(([r["observation_id"] for r in new], vecs))
         ledger = {
             "window": t, "batch_ts": observed, "gkg_status": gkg_status, "export_status": self._status(ts, "export")[0],
             "mentions_status": self._status(ts, "mentions")[0], "missing_batch": gkg_status != "ok",
-            "rows": rows_n, "new_objects": len(new), "l1_dups": len(dups), "quarantined": quar,
+            "rows": rows_n, "new_objects": len(new), "l1_dups": len(dups),
+            "l2_merges": sum(1 for r in new if r["merge_evidence"].startswith("L2")),
+            "roots": sum(1 for r in new if r["copy_group"] == r["observation_id"]), "quarantined": quar,
         }
         bucket = self.day_rows[day]
         bucket.append(("obs_doc", new))
@@ -134,6 +151,10 @@ class Engine1:
         return new, ledger
 
     def flush_day(self, day: str) -> None:
+        parts = self.day_vecs.pop(day, [])
+        if parts and self.embed_model:
+            ids = [i for p in parts for i in p[0]]
+            emb.write_day(emb.cache_path(self.data_dir, self.embed_model, day), ids, np.concatenate([p[1] for p in parts]))
         groups: dict[str, list] = defaultdict(list)
         for name, payload in self.day_rows.pop(day, []):
             groups[name].append(payload)
@@ -170,7 +191,7 @@ def complete_days(data_dir: Path, start: str, end: str) -> list[str]:
 
 
 def run_ingest(data_dir: Path, start_day: str, end_day: str, delta_s: int, lag_s: int, workers: int = 4,
-               log=print) -> dict:
+               log=print, l2: L2Config | None = None, embed_model: str | None = emb.DEFAULT_MODEL) -> dict:
     start, end = start_day.replace("-", "") + "000000", end_day.replace("-", "") + "000000"
     days = complete_days(data_dir, start, end)
     if not days:
@@ -196,7 +217,7 @@ def run_ingest(data_dir: Path, start_day: str, end_day: str, delta_s: int, lag_s
                 log(f"parse {parsed}/{len(jobs)} files  {time.monotonic() - t0:.0f}s")
     log(f"parse done: {len(jobs)} files in {time.monotonic() - t0:.0f}s")
     clock = WindowClock(parse_utc(start_day), delta_s, lag_s)
-    eng = Engine1(data_dir, clock, status)
+    eng = Engine1(data_dir, clock, status, l2=l2, embed_model=embed_model)
     end_t = clock.window_of(datetime.strptime(last, "%Y%m%d").replace(tzinfo=timezone.utc) + timedelta(days=1))
     totals = defaultdict(int)
     t1 = time.monotonic()
@@ -206,6 +227,8 @@ def run_ingest(data_dir: Path, start_day: str, end_day: str, delta_s: int, lag_s
         totals["rows"] += led["rows"]
         totals["objects"] += led["new_objects"]
         totals["l1_dups"] += led["l1_dups"]
+        totals["l2_merges"] += led["l2_merges"]
+        totals["roots"] += led["roots"]
         totals["missing"] += int(led["missing_batch"])
         if (t + 1) % 96 == 0:
             log(f"day {clock.start(t).strftime('%Y-%m-%d')} done: {dict(totals)}  {time.monotonic() - t1:.0f}s")

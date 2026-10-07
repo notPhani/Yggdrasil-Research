@@ -52,8 +52,13 @@ def cmd_ingest(args: argparse.Namespace) -> int:
         with log_path.open("a") as f:
             f.write(msg + "\n")
 
+    from ygg.observation.dedup_l2 import L2Config
+
+    d = cfg["dedup"]
+    l2 = L2Config(horizon_h=d["horizon_h"], j0=d["j0"], theta_a=d["theta_a"], logo_titles=d["logo_titles"])
     summary = run_ingest(data_dir, cfg["replay"]["start"], args.end or cfg["replay"]["end_exclusive"],
-                         cfg["replay"]["window_seconds"], cfg["replay"]["ingest_lag_seconds"], workers=args.workers, log=log)
+                         cfg["replay"]["window_seconds"], cfg["replay"]["ingest_lag_seconds"], workers=args.workers, log=log,
+                         l2=l2, embed_model=d["embed_model"])
     log(json.dumps(summary))
     return 0
 

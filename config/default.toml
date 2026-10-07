@@ -15,3 +15,10 @@ workers = 8                          # measured 12.7 MB/s on 8 streams (2026-10-
 
 [determinism]
 tie_key = ["observed_time", "source_rank", "url_key", "record_id"]   # D4
+
+[dedup]                              # L2 semantic dedup (Session 1, frozen four-step B; cut: step 1 + fallback A)
+horizon_h = 72.0
+j0 = 0.5                             # names Jaccard for step 1 / A; tuned later against the SerpApi filter=0 referee (A9)
+theta_a = 0.9                        # title-embedding cosine for fallback A (requires matching entities or an amount too)
+logo_titles = 5                      # an image under >= 5 distinct titles from one source is a site logo (guard)
+embed_model = "minishlab/potion-base-8M"   # same-event AUC 0.832 vs 0.854 MiniLM; ~11k titles/s; bit-identical

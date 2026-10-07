@@ -28,7 +28,7 @@ def gkg_line(rid, url, title="A title", ts="20241216000000"):
 def zip_blob(lines):
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as z:
-        z.writestr("x.gkg.csv", "\n".join(lines) + "\n")
+        z.writestr(zipfile.ZipInfo("x.gkg.csv", date_time=(2024, 12, 16, 0, 0, 0)), "\n".join(lines) + "\n")
     return buf.getvalue()
 
 
