@@ -39,6 +39,25 @@ def cmd_fetch_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_ingest(args: argparse.Namespace) -> int:
+    from ygg.observation.engine1 import run_ingest
+
+    cfg = load_config(args.config)
+    data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
+    log_path = data_dir / "tables" / "ingest.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    def log(msg: str) -> None:
+        print(msg, flush=True)
+        with log_path.open("a") as f:
+            f.write(msg + "\n")
+
+    summary = run_ingest(data_dir, cfg["replay"]["start"], args.end or cfg["replay"]["end_exclusive"],
+                         cfg["replay"]["window_seconds"], cfg["replay"]["ingest_lag_seconds"], workers=args.workers, log=log)
+    log(json.dumps(summary))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="ygg", description="Yggdrasil: market event forensics")
     p.add_argument("--config", default=None, help="TOML config (default: config/default.toml)")
@@ -55,6 +74,12 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("fetch-status", help="show download progress")
     s.add_argument("--data-dir", default=None)
     s.set_defaults(func=cmd_fetch_status)
+
+    g = sub.add_parser("ingest", help="Engine 1: parse downloaded batches, exact dedup, clocks, day-partitioned tables")
+    g.add_argument("--to", dest="end", help="end day, exclusive (default: replay end); stops at the last fully downloaded day")
+    g.add_argument("--workers", type=int, default=4)
+    g.add_argument("--data-dir", default=None)
+    g.set_defaults(func=cmd_ingest)
 
     args = p.parse_args(argv)
     return args.func(args)
