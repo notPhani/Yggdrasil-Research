@@ -10,6 +10,14 @@ soft membership (3.3) and explicit lineage (3.5).
   lineage: merge after 3 agreeing 6-hour checks; split after 3 agreeing checks; dormant after 7 days without mass
 
 Cut note: the entity weight w_ent is fixed in config, and themes are not used yet. 3.4' fits w_ent in the M-step.
+
+Changes from the first real-data run (proposed, pending lock):
+  - "none" is a broad vMF fitted to the corpus (its own EM component), not the uniform density on the sphere.
+    Against uniform, a story joined a narrative once its cosine to the centroid exceeded ~0.11 (kappa 60),
+    which let a few narratives absorb most of the news.
+  - Joining requires salient shared entities (IDF-weighted Jaccard >= 0.05) or a very high title cosine
+    (>= 0.6). Title cosine alone is a weak signal here (same-event pairs average 0.39).
+  - m_emerge = 25 keeps emergence at ~58 narratives a day (target 100-300 alive under 7-day dormancy).
 """
 from __future__ import annotations
 
@@ -31,7 +39,7 @@ class NarrativeConfig:
     tau_alive: float = 2.0
     tau_dormant: float = 4.0
     sigma_narr_h: float = 14 * 24.0       # locked (3.9')
-    m_emerge: int = 8                     # event-cluster objects needed before it may start a narrative
+    m_emerge: int = 25                    # event-cluster objects needed before it may start a narrative (calibrated: ~58 new/day)
     eta: float = 0.02                     # slow centroid drift per absorbed event-cluster update
     top_m: int = 3
     ent_top: int = 10                     # entity term computed for the 10 most similar narratives
@@ -44,6 +52,9 @@ class NarrativeConfig:
     tau_split: float = 0.55
     split_min_share: float = 0.25
     split_min_items: int = 12
+    background: str = "corpus_vmf"        # "uniform" (3.4' as written) or "corpus_vmf" (proposed fix, see module doc)
+    j_gate: float = 0.05                  # join only with salient shared entities (IDF-weighted Jaccard) ...
+    cos_gate: float = 0.6                 # ... or, without entity overlap, a very high title cosine
 
 
 @dataclass
@@ -72,6 +83,12 @@ def log_vmf_norm(kappa: float, d: int) -> float:
     return log_c + log_a
 
 
+def log_c(kappa: float, d: int) -> float:
+    """log C_d(kappa), the vMF normalizer on the unit sphere in d dimensions."""
+    nu = d / 2.0 - 1.0
+    return nu * math.log(kappa) - (d / 2.0) * math.log(2 * math.pi) - (math.log(ive(nu, kappa)) + kappa)
+
+
 def largest_remainder_uint8(p: np.ndarray) -> np.ndarray:
     """Quantize a probability vector to integers summing to exactly 255 (keeps Lemma 5.1 exact)."""
     x = p * 255.0
@@ -95,33 +112,68 @@ class NarrativeModel:
     merge_streak: dict = field(default_factory=lambda: defaultdict(int))
     split_streak: dict = field(default_factory=lambda: defaultdict(int))
     emerged_from: set = field(default_factory=set)
+    refit_count: int = 0
 
     def __post_init__(self):
         self.kappa = self.kappa or self.cfg.kappa0
-        self._norm = log_vmf_norm(self.kappa, self.dim)
+        self.mu0 = np.zeros(self.dim)                       # background ("none") direction
+        self.kappa0 = 1.0
+        self.bg_sum = np.zeros(self.dim)                    # causal running sum of event vectors (initial background)
+        self.bg_n = 0.0
+        self._refresh_norm()
+
+    def _refresh_norm(self) -> None:
+        if self.cfg.background == "uniform":
+            self._norm = log_vmf_norm(self.kappa, self.dim)
+        else:
+            self._norm = log_c(self.kappa, self.dim) - log_c(self.kappa0, self.dim)
+
+    def _bg(self, X: np.ndarray) -> np.ndarray:
+        """kappa0 * cos(x, mu0): the background log-density up to its constant (zero for the uniform background)."""
+        if self.cfg.background == "uniform":
+            return np.zeros(X.shape[0]) if X.ndim == 2 else 0.0
+        return self.kappa0 * (X @ self.mu0)
+
+    def _update_bg_running(self, x: np.ndarray, mass: float) -> None:
+        if self.cfg.background == "uniform" or self.refit_count > 0:
+            return
+        self.bg_sum += mass * x
+        self.bg_n += mass
+        r = float(np.linalg.norm(self.bg_sum) / max(self.bg_n, 1e-9))
+        if self.bg_n >= 20 and r > 0:
+            self.mu0 = self.bg_sum / np.linalg.norm(self.bg_sum)
+            r = min(r, self.cfg.rbar_max)
+            self.kappa0 = max(r * (self.dim - r * r) / (1 - r * r), 1.0)
+            self._refresh_norm()
 
     # ------------------------------------------------------------ scoring
     def _ids(self, states=("alive", "dormant")) -> list[str]:
         return sorted(n for n, v in self.narratives.items() if v.state in states)
 
-    def gains(self, x: np.ndarray, ents: dict, t_h: float, ids: list[str]) -> np.ndarray:
+    def gains(self, x: np.ndarray, ents: dict, t_h: float, ids: list[str], gate: bool = False) -> np.ndarray:
         if not ids:
             return np.zeros(0)
         mus = np.stack([self.narratives[n].mu for n in ids])
         cos = mus @ x
-        g = self.kappa * cos + np.array([self.log_pi.get(n, math.log(1e-3)) for n in ids]) - self.log_pi0 + self._norm
+        g = self.kappa * cos + np.array([self.log_pi.get(n, math.log(1e-3)) for n in ids]) - self.log_pi0 + self._norm - self._bg(x)
         top = np.argsort(-cos, kind="stable")[: self.cfg.ent_top]
         e_sum = sum(ents.values())
+        jac = np.zeros(len(ids))
         for i in top:
             nar = self.narratives[ids[i]]
-            g[i] += self.cfg.w_ent * weighted_jaccard(ents, nar.ents, e_sum, nar.esum())
+            jac[i] = weighted_jaccard(ents, nar.ents, e_sum, nar.esum())
+            g[i] += self.cfg.w_ent * jac[i]
         dt = np.array([t_h - self.narratives[n].t_last_h for n in ids])
-        return g - dt * dt / (2.0 * self.cfg.sigma_narr_h ** 2)
+        g = g - dt * dt / (2.0 * self.cfg.sigma_narr_h ** 2)
+        if gate:
+            ok = (jac >= self.cfg.j_gate) | (cos >= self.cfg.cos_gate)
+            g = np.where(ok, g, -np.inf)
+        return g
 
     def membership(self, x: np.ndarray, ents: dict, t_h: float) -> tuple[list[str], np.ndarray, str | None]:
         """Top-m narratives (alive or dormant) with uint8 shares, the none share last; plus the routed narrative."""
         ids = self._ids()
-        g = self.gains(x, ents, t_h, ids)
+        g = self.gains(x, ents, t_h, ids, gate=True)
         if len(ids) == 0:
             return [], np.array([255], np.uint8), None
         alive = np.array([self.narratives[n].state == "alive" for n in ids])
@@ -132,7 +184,7 @@ class NarrativeModel:
             routed = ids[int(np.flatnonzero(~alive)[np.argmax(g[~alive])])]
         order = np.argsort(-g, kind="stable")[: self.cfg.top_m]
         # only narratives a cluster may join (alive, or dormant above the stricter bar) receive mass
-        keep = [i for i in order if (alive[i] and g[i] >= self.cfg.tau_alive) or (not alive[i] and g[i] >= self.cfg.tau_dormant)]
+        keep = [i for i in order if np.isfinite(g[i]) and ((alive[i] and g[i] >= self.cfg.tau_alive) or (not alive[i] and g[i] >= self.cfg.tau_dormant))]
         logits = np.array([g[i] for i in keep] + [0.0])
         p = np.exp(logits - logits.max())
         p /= p.sum()
@@ -165,6 +217,7 @@ class NarrativeModel:
 
     def record(self, t_h: float, cid: int, x: np.ndarray, ents: dict, mass: float) -> None:
         self.em_buffer.append((t_h, cid, np.asarray(x, np.float32), None, mass))
+        self._update_bg_running(np.asarray(x, float), mass)
 
     # ------------------------------------------------------------ daily EM (fitted through the previous day: D7)
     def refit(self, now_h: float) -> dict:
@@ -186,7 +239,7 @@ class NarrativeModel:
             MU = np.stack([self.narratives[n].mu for n in ids])
             lp = np.array([self.log_pi.get(n, math.log(1e-3)) for n in ids])
             tl = np.array([self.narratives[n].t_last_h for n in ids])
-            G = self.kappa * (X @ MU.T) + lp - self.log_pi0 + self._norm
+            G = self.kappa * (X @ MU.T) + lp - self.log_pi0 + self._norm - self._bg(X)[:, None]
             G -= (T_items[:, None] - tl[None, :]) ** 2 / (2.0 * self.cfg.sigma_narr_h ** 2)
             L = np.concatenate([G, np.zeros((len(items), 1))], axis=1)
             L -= L.max(axis=1, keepdims=True)
@@ -204,7 +257,15 @@ class NarrativeModel:
             self.log_pi0 = math.log(max(W[:, -1].sum() / tot, 1e-6))
             rbar = min(float(norms.sum() / max(mass_n.sum(), 1e-12)), self.cfg.rbar_max)
             self.kappa = max(rbar * (d - rbar * rbar) / (1 - rbar * rbar), 1.0)
-            self._norm = log_vmf_norm(self.kappa, d)
+            if self.cfg.background != "uniform":
+                s0 = W[:, -1] @ X
+                n0 = float(np.linalg.norm(s0))
+                if n0 > 0:
+                    self.mu0 = s0 / n0
+                    r0 = min(n0 / max(float(W[:, -1].sum()), 1e-12), self.cfg.rbar_max)
+                    self.kappa0 = max(r0 * (d - r0 * r0) / (1 - r0 * r0), 1.0)
+            self._refresh_norm()
+        self.refit_count += 1
         return {"kappa": self.kappa, "pi0": math.exp(self.log_pi0), "items": len(items), "narratives": len(ids)}
 
     # ------------------------------------------------------------ 6-hourly lineage checks
@@ -265,7 +326,7 @@ class NarrativeModel:
             Xs = np.stack([latest[c][2] for c in keys])
             MU = np.stack([self.narratives[n].mu for n in ids])
             lp = np.array([self.log_pi.get(n, math.log(1e-3)) for n in ids])
-            G = self.kappa * (Xs @ MU.T) + lp - self.log_pi0 + self._norm
+            G = self.kappa * (Xs @ MU.T) + lp - self.log_pi0 + self._norm - self._bg(Xs)[:, None]
             best = np.argmax(G, axis=1)
             for r, c in enumerate(keys):
                 j = int(best[r])
