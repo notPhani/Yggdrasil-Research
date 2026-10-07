@@ -6,16 +6,22 @@ Research and design for **Yggdrasil**, a market event forensics system. Yggdrasi
 
 ## Code (hackathon build, in progress)
 
-The implementation lives in `src/ygg/`. It is a Python 3.12 package with a `ygg` command, and its config is in `config/default.toml`.
+The implementation lives in `src/ygg/`, a Python 3.12 package with a `ygg` command. Config: `config/default.toml`.
 
 ```
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-.venv/bin/ygg fetch            # GDELT 2.0 English stream, 2024-12-16 .. 2025-01-31: 13,533 files, 24.6 GB, md5-verified, resumable
-.venv/bin/ygg fetch-status     # progress bar
-.venv/bin/pytest -q            # determinism (D1-D7), contracts (C1-C4, A1), loop causality, fetcher
+.venv/bin/ygg fetch                  # GDELT 2.0 English stream, 2024-12-16 .. 2025-01-31: 13,533 files, 24.6 GB, md5-verified, resumable
+.venv/bin/ygg ingest                 # Engine 1: parse, canonical URLs, exact + semantic dedup, clocks, missing-batch flag
+.venv/bin/ygg replay                 # Engines 2a + 2b window by window; snapshots at every case and placebo cutoff
+.venv/bin/ygg case 2025-01-27        # stock observer + Engine 3a: clusters, tau*, explanation trees, rivals, abstention
+.venv/bin/ygg verdict 2025-01-27     # Engine 3b: hypotheses, evidence, claims, four-bit verdicts, dossier
+.venv/bin/pytest -q                  # 60 tests: determinism D1-D7, contracts, red-team E1/E2/A4/A6, engines
 ```
 
-Milestones: M0 skeleton and fetch (done) · M1 Engine 1 · M2 stock observer + Engine 2a · M3 Engine 2b + 3a · M4 Engine 3b · M5 end-to-end replay and demo.
+Measured on the replay (2024-12-16 .. 2025-01-31):
+- Engine 1: 5.80M GKG rows -> 5.77M unique objects (exact dedup) -> 4.01M stories after merging 1.76M syndicated copies (L2); 1 missing GDELT batch, flagged and masked
+- Stock observer (universe frozen at 2024-12-31, 149 names): 27 Jan 2025 fires unaided on chips {NVDA, AVGO, TSM, MRVL, CDNS (+SMH, XLK)}, power {VST, CEG, NRG, PEG}, ASM.AS and COHR, with tau* = 08:00 UTC; other January cases are the LA wildfire utilities (EIX, PCG) and earnings reactions
+- 2024 acceptance run: cases on 122 of 252 trading days (mostly earnings); search terminals k <= 8 on 251 of 252 days
 
 ## Contents
 
