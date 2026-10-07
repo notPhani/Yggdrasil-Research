@@ -96,7 +96,7 @@ class LearnedConfig:
     sigma_h: float = 14 * 24.0          # locked (3.9'): narrative time scale (decay and time prior)
     dormant_after_h: float = 7 * 24.0   # hand-set, disclosed
     top_m: int = 3
-    n_cand: int = 48                    # scored exactly: the 48 most similar narratives + those holding a rare entity
+    n_cand: int = 16                    # scored exactly: the 16 most similar narratives + those holding a rare entity
     rare_idf: float = 5.0
     ent_keep: int = 300                 # entity profile size per narrative (pruned to the heaviest)
     check_every_windows: int = 24       # merge / split / dormancy checks every 6 hours
@@ -219,12 +219,12 @@ class LearnedNarrativeModel:
                 "dormant": len(self._ids(("dormant",))), "preq_mean": self.preq["sum"] / max(self.preq["n"], 1)}
 
     # ------------------------------------------------------------ scoring
-    def gains(self, x: np.ndarray, w: dict, t_h: float, idf=None) -> tuple[list[str], np.ndarray]:
+    def gains(self, x: np.ndarray, w: dict, t_h: float, idf=None, with_cos: bool = False):
         """Exact gains over the background for the candidates: the n_cand most similar narratives plus any
         narrative whose profile holds one of the event's rare entities."""
         ids, slots, pos = self.active()
         if not ids:
-            return [], np.zeros(0)
+            return ([], np.zeros(0), np.zeros(0)) if with_cos else ([], np.zeros(0))
         cos_all = self.MU[slots] @ x.astype(np.float32)
         k = min(self.cfg.n_cand, len(ids))
         cand = set(np.argpartition(-cos_all, k - 1)[:k].tolist()) if k < len(ids) else set(range(len(ids)))
@@ -243,25 +243,37 @@ class LearnedNarrativeModel:
              + self.cfg.kappa_s * cos_all[ci].astype(float) - bg
              + sum(w.values()) * (math.log(b) - np.log(self.Ev[sl] / u_now + b)) / T
              - dt * dt / (2.0 * self.cfg.sigma_h ** 2))
-        where = {int(c): j for j, c in enumerate(ci)}
+        cand_ids = [ids[i] for i in ci]
+        where = None
         for e, we in w.items():
             owners = self.by_entity.get(e)
             if not owners:
                 continue
             p0 = self.phi0(e)
-            lb = math.log(b * p0)
-            for o in owners:
-                j = where.get(pos[o])
-                if j is not None:
-                    g[j] += we * (math.log(self.narratives[o].ents[e] / u_now + b * p0) - lb) / T
-        return [ids[i] for i in ci], g
+            bp0 = b * p0
+            lb = math.log(bp0)
+            if len(owners) > len(cand_ids):               # common entity: scan the candidates instead
+                for j, nid in enumerate(cand_ids):
+                    c = self.narratives[nid].ents.get(e)
+                    if c:
+                        g[j] += we * (math.log(c / u_now + bp0) - lb) / T
+            else:
+                if where is None:
+                    where = {int(c): j for j, c in enumerate(ci)}
+                for o in owners:
+                    j = where.get(pos[o])
+                    if j is not None:
+                        g[j] += we * (math.log(self.narratives[o].ents[e] / u_now + bp0) - lb) / T
+        if with_cos:
+            return cand_ids, g, cos_all[ci].astype(float)
+        return cand_ids, g
 
     def membership(self, x: np.ndarray, w: dict, t_h: float, idf=None, score: bool = False
                    ) -> tuple[list[str], np.ndarray, str | None]:
         """Top-m narratives with uint8 shares (background share last) and the MAP narrative (None = background)."""
-        cand, g = self.gains(x, w, t_h, idf)
+        cand, g, cos = self.gains(x, w, t_h, idf, with_cos=True)
         if score:
-            self.score_new(x, w, cand, g)
+            self.score_new(x, w, cand, g, cos)
         if len(cand) == 0:
             return [], np.array([255], np.uint8), None
         order = np.lexsort((np.arange(len(g)), -g))[: self.cfg.top_m]
@@ -271,19 +283,15 @@ class LearnedNarrativeModel:
         routed = cand[int(order[0])] if g[order[0]] > 0 else None
         return [cand[i] for i in order], largest_remainder_uint8(p), routed
 
-    def score_new(self, x: np.ndarray, w: dict, cand: list[str], g: np.ndarray) -> float:
+    def score_new(self, x: np.ndarray, w: dict, cand: list[str], g: np.ndarray, cos: np.ndarray) -> float:
         """Prequential log p(x | w) for a brand-new event, before any update (see module doc)."""
         ent0 = sum(we * math.log(self.phi0(e)) for e, we in w.items()) / self.cfg.temp
         bg_vmf = self._lc_0 + self.kappa0 * float(self.mu0 @ x)
-        lr = [self._log_pi0() + ent0]                    # log r_k up to a shared constant
-        lp = [bg_vmf]                                    # log vMF density of x under k
-        for j, nid in enumerate(cand):
-            n_vmf = self._lc_s + self.cfg.kappa_s * float(self.narratives[nid].mu @ x)
-            lr.append(lr[0] + float(g[j]) - (n_vmf - bg_vmf))
-            lp.append(n_vmf)
-        r = np.array(lr)
+        base = self._log_pi0() + ent0                   # log r_k up to a shared constant
+        n_vmf = self._lc_s + self.cfg.kappa_s * cos      # log vMF density of x under each candidate
+        r = np.concatenate([[base], base + g - (n_vmf - bg_vmf)])
         r -= np.logaddexp.reduce(r)
-        val = float(np.logaddexp.reduce(r + np.array(lp)))
+        val = float(np.logaddexp.reduce(r + np.concatenate([[bg_vmf], n_vmf])))
         self.preq["sum"] += val
         self.preq["n"] += 1
         return val
@@ -297,11 +305,11 @@ class LearnedNarrativeModel:
     def log_dm(self, cnt: dict) -> float:
         """Dirichlet-multinomial evidence of entity counts under the prior beta * phi_0, minus the background likelihood."""
         b = self.cfg.beta
-        out = float(gammaln(b) - gammaln(b + sum(cnt.values())))
-        for e, c in cnt.items():
-            p0 = self.phi0(e)
-            out += float(gammaln(b * p0 + c) - gammaln(b * p0)) - c * math.log(p0)
-        return out
+        if not cnt:
+            return 0.0
+        c = np.fromiter(cnt.values(), float, len(cnt))
+        p0 = np.fromiter((self.phi0(e) for e in cnt), float, len(cnt))
+        return float(gammaln(b) - gammaln(b + c.sum()) + (gammaln(b * p0 + c) - gammaln(b * p0) - c * np.log(p0)).sum())
 
     def group_evidence(self, X: np.ndarray, W: list[dict]) -> float:
         """log BF(these events share a narrative direction and entity profile vs the background), without alpha."""
