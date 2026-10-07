@@ -49,11 +49,18 @@ class CausalIDF:
                 del self.df[k]
 
 
-def weighted_jaccard(a: dict[str, float], b: dict[str, float]) -> float:
-    """sum over shared keys of min weight / sum over the union of max weight."""
+def weighted_jaccard(a: dict[str, float], b: dict[str, float], sum_a: float | None = None, sum_b: float | None = None) -> float:
+    """sum over shared keys of min weight / sum over the union of max weight.
+    Uses sum(max) = sum(a) + sum(b) - sum(min over shared keys), so the cost is O(min(|a|, |b|))."""
     if not a or not b:
         return 0.0
-    keys = a.keys() | b.keys()
-    num = sum(min(a.get(k, 0.0), b.get(k, 0.0)) for k in keys)
-    den = sum(max(a.get(k, 0.0), b.get(k, 0.0)) for k in keys)
+    small, big = (a, b) if len(a) <= len(b) else (b, a)
+    num = 0.0
+    for k, v in small.items():
+        w = big.get(k)
+        if w is not None:
+            num += v if v < w else w
+    sa = sum(a.values()) if sum_a is None else sum_a
+    sb = sum(b.values()) if sum_b is None else sum_b
+    den = sa + sb - num
     return num / den if den > 0 else 0.0

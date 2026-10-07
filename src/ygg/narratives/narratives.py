@@ -56,6 +56,12 @@ class Narrative:
     t_last_h: float
     mass_total: float = 0.0
     label: str = ""
+    ent_sum: float = -1.0
+
+    def esum(self) -> float:
+        if self.ent_sum < 0:
+            self.ent_sum = float(sum(self.ents.values()))
+        return self.ent_sum
 
 
 def log_vmf_norm(kappa: float, d: int) -> float:
@@ -105,8 +111,10 @@ class NarrativeModel:
         cos = mus @ x
         g = self.kappa * cos + np.array([self.log_pi.get(n, math.log(1e-3)) for n in ids]) - self.log_pi0 + self._norm
         top = np.argsort(-cos, kind="stable")[: self.cfg.ent_top]
+        e_sum = sum(ents.values())
         for i in top:
-            g[i] += self.cfg.w_ent * weighted_jaccard(ents, self.narratives[ids[i]].ents)
+            nar = self.narratives[ids[i]]
+            g[i] += self.cfg.w_ent * weighted_jaccard(ents, nar.ents, e_sum, nar.esum())
         dt = np.array([t_h - self.narratives[n].t_last_h for n in ids])
         return g - dt * dt / (2.0 * self.cfg.sigma_narr_h ** 2)
 
@@ -142,6 +150,7 @@ class NarrativeModel:
             n.ents[e] = 0.98 * n.ents.get(e, 0.0) + w
         if len(n.ents) > 400:
             n.ents = dict(sorted(n.ents.items(), key=lambda kv: (-kv[1], kv[0]))[:300])
+        n.ent_sum = -1.0
         n.t_last_h = t_h
         n.mass_total += mass
 
@@ -155,7 +164,7 @@ class NarrativeModel:
         return nid
 
     def record(self, t_h: float, cid: int, x: np.ndarray, ents: dict, mass: float) -> None:
-        self.em_buffer.append((t_h, cid, x, ents, mass))
+        self.em_buffer.append((t_h, cid, np.asarray(x, np.float32), None, mass))
 
     # ------------------------------------------------------------ daily EM (fitted through the previous day: D7)
     def refit(self, now_h: float) -> dict:
@@ -171,8 +180,14 @@ class NarrativeModel:
         X = np.stack([it[2] for it in items])
         m = np.array([it[4] for it in items], float)
         d = self.dim
+        T_items = np.array([it[0] for it in items])
         for _ in range(self.cfg.em_iters):
-            G = np.stack([self.gains(it[2], it[3], it[0], ids) for it in items])      # items x narratives
+            # vMF E-step (cosine part; the entity term is a fixed-weight feature, not a calibrated density)
+            MU = np.stack([self.narratives[n].mu for n in ids])
+            lp = np.array([self.log_pi.get(n, math.log(1e-3)) for n in ids])
+            tl = np.array([self.narratives[n].t_last_h for n in ids])
+            G = self.kappa * (X @ MU.T) + lp - self.log_pi0 + self._norm
+            G -= (T_items[:, None] - tl[None, :]) ** 2 / (2.0 * self.cfg.sigma_narr_h ** 2)
             L = np.concatenate([G, np.zeros((len(items), 1))], axis=1)
             L -= L.max(axis=1, keepdims=True)
             R = np.exp(L)
@@ -245,12 +260,17 @@ class NarrativeModel:
         ids = self._ids(("alive",))
         if not ids:
             return out
-        for cid in sorted(latest):
-            t_h, _, x, ents, mass = latest[cid]
-            g = self.gains(x, ents, t_h, ids)
-            j = int(np.argmax(g))
-            if g[j] >= self.cfg.tau_alive:
-                by_n[ids[j]].append((x, mass))
+        keys = sorted(latest)
+        if keys:
+            Xs = np.stack([latest[c][2] for c in keys])
+            MU = np.stack([self.narratives[n].mu for n in ids])
+            lp = np.array([self.log_pi.get(n, math.log(1e-3)) for n in ids])
+            G = self.kappa * (Xs @ MU.T) + lp - self.log_pi0 + self._norm
+            best = np.argmax(G, axis=1)
+            for r, c in enumerate(keys):
+                j = int(best[r])
+                if G[r, j] >= self.cfg.tau_alive:
+                    by_n[ids[j]].append((latest[c][2], latest[c][4]))
         for nid in ids:
             pts = by_n.get(nid, [])
             ok = False
