@@ -4,6 +4,19 @@ Research and design for **Yggdrasil**, a market event forensics system. Yggdrasi
 
 **Status: research and design only. Nothing is implemented yet.**
 
+## Code (hackathon build, in progress)
+
+The implementation lives in `src/ygg/`. It is a Python 3.12 package with a `ygg` command, and its config is in `config/default.toml`.
+
+```
+python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+.venv/bin/ygg fetch            # GDELT 2.0 English stream, 2024-12-16 .. 2025-01-31: 13,533 files, 24.6 GB, md5-verified, resumable
+.venv/bin/ygg fetch-status     # progress bar
+.venv/bin/pytest -q            # determinism (D1-D7), contracts (C1-C4, A1), loop causality, fetcher
+```
+
+Milestones: M0 skeleton and fetch (done) · M1 Engine 1 · M2 stock observer + Engine 2a · M3 Engine 2b + 3a · M4 Engine 3b · M5 end-to-end replay and demo.
+
 ## Contents
 
 | Path | What it is |

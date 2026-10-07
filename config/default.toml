@@ -1,0 +1,17 @@
+# Yggdrasil default configuration. Its sha256 (paths excluded) is the cfg_hash stamped on every artifact (D6).
+
+[paths]
+data_dir = "data"                    # gitignored; raw blobs, Parquet tables, snapshots
+
+[replay]
+start = "2024-12-16"                 # blind cold start begins (3.7)
+warmup_end = "2025-01-06"            # end of the 3-week cold start; replay proper from here
+end_exclusive = "2025-02-01"         # replay runs through 2025-01-31
+window_seconds = 900                 # Delta = 15 min, fixed by GDELT
+ingest_lag_seconds = 900             # D1: ingested_time = observed_time + 15 min in replay
+
+[fetch]
+workers = 8                          # measured 12.7 MB/s on 8 streams (2026-10-06)
+
+[determinism]
+tie_key = ["observed_time", "source_rank", "url_key", "record_id"]   # D4
