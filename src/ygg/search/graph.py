@@ -108,6 +108,7 @@ class Explanation:
     graph: Graph
     node_names: list[str]
     p: dict = field(default_factory=dict)          # (u, v) -> probability
+    sigma: dict = field(default_factory=dict)      # (u, v) -> spillover surprise (robust z) for narrative edges
 
 
 def build_graph(t_star: int, narratives: dict, alpha_rows: list[dict], y_rows: list[dict], objects: list[dict],
@@ -147,6 +148,7 @@ def build_graph(t_star: int, narratives: dict, alpha_rows: list[dict], y_rows: l
         by_target[i][j] = v
     today = int((t_end_h - 1e-9) // 24)
     p = {}
+    sig = {}
     for i, par in by_target.items():
         tot = sum(par.values())
         tilted = {}
@@ -157,6 +159,7 @@ def build_graph(t_star: int, narratives: dict, alpha_rows: list[dict], y_rows: l
                 recent = [a for d, xs in days.items() if d >= today for a in xs]
                 hist = np.array([np.mean(xs) for d, xs in days.items() if d < today])
                 sigma = robust_z(float(np.mean(recent)), hist) if recent else 0.0
+                sig[(j, i)] = sigma
                 v *= math.exp(cfg.gamma * max(0.0, sigma))
             tilted[j] = v
         z = sum(tilted.values())
@@ -206,4 +209,5 @@ def build_graph(t_star: int, narratives: dict, alpha_rows: list[dict], y_rows: l
             cost[e] = int(round(1000.0 * (-math.log(pv) + cfg.lambda_node)))
             probs[e] = pv
     term_nodes = [k0 + xi for xi in range(len(terminals)) if (0, k0 + xi) in cost]
-    return Explanation(Graph(len(names), 0, term_nodes, cost), names, probs)
+    sigmas = {(node[j], node[i]): v for (j, i), v in sig.items() if j in node and i in node}
+    return Explanation(Graph(len(names), 0, term_nodes, cost), names, probs, sigmas)

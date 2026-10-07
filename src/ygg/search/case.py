@@ -69,7 +69,8 @@ def explain(data_dir: Path, clock, t_snap: int, terminals: list[Terminal], cfg: 
             f"{ex.node_names[v]} :: {snap['narratives'][ex.node_names[v]].label[:90]}"
 
         def tree(edges):
-            return [{"from": label(u), "to": label(v), "p": round(ex.p[(u, v)], 4), "cost_mnats": g.cost[(u, v)]} for u, v in sorted(edges)]
+            return [{"from": label(u), "to": label(v), "p": round(ex.p[(u, v)], 4), "cost_mnats": g.cost[(u, v)],
+                     "sigma": round(ex.sigma[(u, v)], 2) if (u, v) in ex.sigma else None} for u, v in sorted(edges)]
         results.append({
             "terminals": [t.name for t in group],
             "nodes": len(ex.node_names), "edges": len(g.cost),
