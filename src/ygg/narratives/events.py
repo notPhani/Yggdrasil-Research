@@ -2,11 +2,13 @@
 
   score(o, c) = (w_txt * cos(e_o, mu_c) + w_ent * J_idf(ents_o, ents_c)) * exp(-(t_o - t_c)^2 / (2 * sigma^2))
   assign(o)   = argmax_c score if >= tau_event, else a new cluster
-Candidates: clusters seen in the last 7 days that share a rare entity with o or an embedding LSH bucket.
+Candidates: clusters seen in the last 7 days that share an embedding LSH bucket with o, or one of the 32
+most recent clusters holding one of o's rare entities (the cap bounds the fan-out of entities that burst).
 The LSH hyperplanes come from a keyed Philox stream (D2), so buckets are identical across runs.
 """
 from __future__ import annotations
 
+import bisect
 import heapq
 import math
 from collections import defaultdict, deque
@@ -30,6 +32,7 @@ class EventConfig:
     rare_idf: float = 5.0          # an entity counts as rare above this IDF
     max_candidates: int = 64
     ent_top: int = 8               # entity term computed for the 8 candidates with the highest cosine
+    per_entity: int = 32           # rare-entity candidates: the most recent clusters per entity
 
 
 @dataclass
@@ -55,7 +58,7 @@ class EventClusterer:
     seed_key: str = "event-lsh-v1"
     clusters: dict = field(default_factory=dict)
     buckets: list = field(default_factory=list)
-    by_entity: dict = field(default_factory=lambda: defaultdict(set))
+    by_entity: dict = field(default_factory=lambda: defaultdict(list))   # entity -> recent cids, ascending
     recent: deque = field(default_factory=deque)          # (t_last_hours, cid) for expiry
     next_id: int = 0
 
@@ -85,7 +88,9 @@ class EventClusterer:
             for e in c.ents:
                 s = self.by_entity.get(e)
                 if s is not None:
-                    s.discard(cid)
+                    i = bisect.bisect_left(s, cid)
+                    if i < len(s) and s[i] == cid:
+                        del s[i]
                     if not s:
                         del self.by_entity[e]
             del self.clusters[cid]
@@ -99,7 +104,7 @@ class EventClusterer:
             cand |= self.buckets[i].get(k, set())
         for e, wt in w.items():
             if wt >= self.cfg.rare_idf:
-                cand |= self.by_entity.get(e, set())
+                cand.update(self.by_entity.get(e, ()))
         best, best_s = None, -1.0
         if cand:
             ids = sorted(heapq.nlargest(self.cfg.max_candidates, cand)) if len(cand) > self.cfg.max_candidates else sorted(cand)
@@ -125,7 +130,7 @@ class EventClusterer:
                 cl.ents[e] = cl.ents.get(e, 0.0) + wt
                 cl.ents_sum += wt
                 if wt >= self.cfg.rare_idf:
-                    self.by_entity[e].add(best)
+                    self._index(e, best)
             cl.t_mean = (cl.t_mean * cl.n + t_h) / (cl.n + 1)
             cl.n += 1
             cl.t_last, cl.last_window = t_h, window
@@ -152,6 +157,15 @@ class EventClusterer:
             self.buckets[i][k].add(cid)
         for e, wt in w.items():
             if wt >= self.cfg.rare_idf:
-                self.by_entity[e].add(cid)
+                self._index(e, cid)
         self.recent.append((t_h, cid))
         return cid, True
+
+    def _index(self, e: str, cid: int) -> None:
+        s = self.by_entity[e]
+        i = bisect.bisect_left(s, cid)
+        if i < len(s) and s[i] == cid:
+            return
+        s.insert(i, cid)
+        if len(s) > self.cfg.per_entity:
+            del s[0]

@@ -158,22 +158,7 @@ class Engine2a:
         }
 
     def _narrate_learned(self, t: int, t_h: float, touched: dict, new_cids: set) -> None:
-        """2a-L for this window's touched event clusters (D4 order: by cluster id)."""
-        m = self.model
-        m.set_background_counts(self.idf.df, len(self.idf.df), self.idf.total)
-        for cid in sorted(touched):
-            cl = self.events.clusters[cid]
-            w = {e: c / cl.n for e, c in cl.cnt.items()}
-            ids, shares, routed = m.membership(cl.centroid, w, t_h, self.idf, score=cid in new_cids)
-            if routed is not None:
-                m.route(cid, routed, cl.centroid, w, float(touched[cid]), t_h, t)
-            elif cl.n >= 2 and cid not in m.emerged_from and m.birth_evidence(cl.vsum, cl.n, cl.cnt) > 0:
-                nid = m.emerge(cid, cl.centroid, w, t_h, t, self.cluster_title.get(cid, ""))
-                m.narratives[nid].mass_total += touched[cid]
-                ids, shares, routed = m.membership(cl.centroid, w, t_h, self.idf)
-            else:
-                m.background_add(cid, cl.centroid, t_h)
-            self.cluster_members[cid] = (ids, shares)
+        narrate_learned(self.model, self.idf, self.events.clusters, touched, new_cids, self.cluster_title, self.cluster_members, t, t_h)
 
     def state_hash(self) -> str:
         """Canonical digest of the full state (sorted, so set/dict insertion order cannot leak in). The learned
@@ -190,6 +175,26 @@ class Engine2a:
                  sorted(self.idf.df.items()), self.idf.n_docs, sorted(self.root_cluster.items()),
                  sorted(self.cluster_mass.items()), self.events.next_id, len(self.model.lineage))
         return hashlib.sha256(pickle.dumps(canon, protocol=5)).hexdigest()
+
+
+def narrate_learned(m: LearnedNarrativeModel, idf: CausalIDF, clusters: dict, touched: dict, new_cids: set, titles: dict,
+                    members: dict, t: int, t_h: float) -> None:
+    """2a-L for one window's touched event clusters (D4 order: by cluster id). Shared by Engine2a and the
+    warmup fit (ygg.narratives.fit), so both run exactly the same decisions."""
+    m.set_background_counts(idf.df, len(idf.df), idf.total)
+    for cid in sorted(touched):
+        cl = clusters[cid]
+        w = {e: c / cl.n for e, c in cl.cnt.items()}
+        ids, shares, routed = m.membership(cl.centroid, w, t_h, idf, score=cid in new_cids)
+        if routed is not None:
+            m.route(cid, routed, cl.centroid, w, float(touched[cid]), t_h, t)
+        elif cl.n >= 2 and cid not in m.emerged_from and m.birth_evidence(cl.vsum, cl.n, cl.cnt) > 0:
+            nid = m.emerge(cid, cl.centroid, w, t_h, t, titles.get(cid, ""))
+            m.narratives[nid].mass_total += touched[cid]
+            ids, shares, routed = m.membership(cl.centroid, w, t_h, idf)
+        else:
+            m.background_add(cid, cl.centroid, t_h)
+        members[cid] = (ids, shares)
 
 
 def read_day(data_dir: Path, day: str, model: str) -> tuple[dict[int, list[dict]], dict[str, np.ndarray]]:

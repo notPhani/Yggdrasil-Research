@@ -79,6 +79,27 @@ def cmd_embed(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_fit_narratives(args: argparse.Namespace) -> int:
+    """2a-L: fit kappa_s, alpha and the entity temperature on the warmup only (prequential score)."""
+    from ygg.determinism import WindowClock, parse_utc
+    from ygg.narratives.fit import _days, build_cache, grid
+    from ygg.observation import embed as emb
+
+    cfg = load_config(args.config)
+    data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
+    clock = WindowClock(parse_utc(cfg["replay"]["start"]), cfg["replay"]["window_seconds"], cfg["replay"]["ingest_lag_seconds"])
+    model = cfg["narratives"]["embed_model"]
+    end = args.end or cfg["replay"]["warmup_end"]
+    log = lambda m: print(m, flush=True)
+    if args.cache:
+        build_cache(data_dir, clock, cfg["replay"]["start"], end, model, log=log)
+    if args.grid:
+        f = lambda s, typ: [typ(x) for x in s.split(",")]
+        grid(data_dir, clock, _days(cfg["replay"]["start"], end), args.burn_in, emb.cached_dim(data_dir, model),
+             f(args.kappas, float), f(args.log_alphas, float), f(args.temps, float), log=log)
+    return 0
+
+
 def cmd_replay(args: argparse.Namespace) -> int:
     """Engines 2a + 2b over the replay, with snapshots at every case cutoff and placebo cutoff in data/cases/plan.json."""
     from ygg.config import cfg_hash
@@ -198,6 +219,17 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--to", dest="end", default=None)
     e.add_argument("--data-dir", default=None)
     e.set_defaults(func=cmd_embed)
+
+    n = sub.add_parser("fit-narratives", help="2a-L: fit kappa_s, alpha, T on the warmup (prequential score)")
+    n.add_argument("--cache", action="store_true", help="stage 1: cache the warmup's event clusters")
+    n.add_argument("--grid", action="store_true", help="stage 2: score each setting (resumable)")
+    n.add_argument("--to", dest="end", default=None, help="end day, exclusive (default: warmup_end)")
+    n.add_argument("--burn-in", type=int, default=7)
+    n.add_argument("--kappas", default="100,200,400")
+    n.add_argument("--log-alphas", default="-10,-40,-160")
+    n.add_argument("--temps", default="1,3")
+    n.add_argument("--data-dir", default=None)
+    n.set_defaults(func=cmd_fit_narratives)
 
     r = sub.add_parser("replay", help="Engines 2a + 2b over the replay window (needs 'ygg ingest' first)")
     r.add_argument("--to", dest="end", help="end day, exclusive (default: replay end)")
