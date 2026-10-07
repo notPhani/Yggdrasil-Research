@@ -21,4 +21,7 @@ horizon_h = 72.0
 j0 = 0.5                             # names Jaccard for step 1 / A; tuned later against the SerpApi filter=0 referee (A9)
 theta_a = 0.9                        # title-embedding cosine for fallback A (requires matching entities or an amount too)
 logo_titles = 5                      # an image under >= 5 distinct titles from one source is a site logo (guard)
-embed_model = "minishlab/potion-base-8M"   # same-event AUC 0.832 vs 0.854 MiniLM; ~11k titles/s; bit-identical
+embed_model = "minishlab/potion-base-8M"   # near-duplicate step only; theta_a is calibrated on it; ~11k titles/s
+
+[narratives]
+embed_model = "sentence-transformers/all-MiniLM-L6-v2"   # Engine 2a; same-event AUC 0.854 (potion 0.832); fp32 ONNX

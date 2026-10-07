@@ -63,6 +63,22 @@ def cmd_ingest(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_embed(args: argparse.Namespace) -> int:
+    """Narrative-layer title embeddings for every root document, one cached file per day (resumable)."""
+    from datetime import date, timedelta
+
+    from ygg.observation.embed import embed_roots
+
+    cfg = load_config(args.config)
+    data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
+    d0 = date.fromisoformat(args.start or cfg["replay"]["start"])
+    d1 = date.fromisoformat(args.end or cfg["replay"]["end_exclusive"])
+    days = [(d0 + timedelta(days=i)).isoformat() for i in range((d1 - d0).days)]
+    days = [d for d in days if (data_dir / "tables" / "obs_doc" / f"day={d}" / "part-0.parquet").exists()]
+    print(json.dumps(embed_roots(data_dir, days, args.model or cfg["narratives"]["embed_model"], log=lambda m: print(m, flush=True))))
+    return 0
+
+
 def cmd_replay(args: argparse.Namespace) -> int:
     """Engines 2a + 2b over the replay, with snapshots at every case cutoff and placebo cutoff in data/cases/plan.json."""
     from ygg.config import cfg_hash
@@ -81,7 +97,7 @@ def cmd_replay(args: argparse.Namespace) -> int:
         with log_path.open("a") as f:
             f.write(msg + "\n")
 
-    out = run_replay(data_dir, clock, cfg["replay"]["start"], args.end or cfg["replay"]["end_exclusive"], cfg["dedup"]["embed_model"],
+    out = run_replay(data_dir, clock, cfg["replay"]["start"], args.end or cfg["replay"]["end_exclusive"], cfg["narratives"]["embed_model"],
                      cfg_hash(cfg), snapshot_windows=snaps, log=log)
     (data_dir / "tables" / "replay_summary.json").write_text(json.dumps(out, indent=1, default=str))
     log(f"replay done: {len(out['snapshots'])} snapshots")
@@ -175,6 +191,13 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--workers", type=int, default=4)
     g.add_argument("--data-dir", default=None)
     g.set_defaults(func=cmd_ingest)
+
+    e = sub.add_parser("embed", help="narrative-layer title embeddings for root documents (after 'ygg ingest'; resumable)")
+    e.add_argument("--model", default=None, help="default: [narratives] embed_model")
+    e.add_argument("--from", dest="start", default=None)
+    e.add_argument("--to", dest="end", default=None)
+    e.add_argument("--data-dir", default=None)
+    e.set_defaults(func=cmd_embed)
 
     r = sub.add_parser("replay", help="Engines 2a + 2b over the replay window (needs 'ygg ingest' first)")
     r.add_argument("--to", dest="end", help="end day, exclusive (default: replay end)")

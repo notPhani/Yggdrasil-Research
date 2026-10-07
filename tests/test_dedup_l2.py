@@ -86,3 +86,21 @@ def test_short_generic_titles_need_an_image():
     l2.assign(doc("w1", "Weather forecast", "a.com", names=["London"]), None)
     r, ev = l2.assign(doc("w2", "Weather forecast", "b.com", names=["London"]), None)
     assert ev == "root"
+
+
+def test_encode_encodes_each_distinct_title_once_and_keeps_order(monkeypatch):
+    import numpy as np
+
+    from ygg.observation import embed
+
+    seen = []
+
+    def fake(titles, model):
+        seen.append(list(titles))
+        return np.array([[len(t), 1.0] for t in titles], np.float32)
+
+    monkeypatch.setattr(embed, "_encode_raw", fake)
+    out = embed.encode(["bb", "a", "bb", "ccc"], "x/y")
+    assert seen == [["a", "bb", "ccc"]]
+    assert np.allclose(out[0], out[2]) and not np.allclose(out[0], out[1])
+    assert np.allclose(np.linalg.norm(out, axis=1), 1.0)

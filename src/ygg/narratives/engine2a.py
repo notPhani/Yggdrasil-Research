@@ -165,7 +165,7 @@ def read_day(data_dir: Path, day: str, model: str) -> tuple[dict[int, list[dict]
 
 def run_engine2a(data_dir: Path, clock: WindowClock, days: list[str], model: str, log=print,
                  ev_cfg: EventConfig | None = None, nr_cfg: NarrativeConfig | None = None, out_name: str = "e2a") -> dict:
-    eng = Engine2a(clock, 256, ev_cfg or EventConfig(), nr_cfg or NarrativeConfig())
+    eng = Engine2a(clock, emb.cached_dim(data_dir, model), ev_cfg or EventConfig(), nr_cfg or NarrativeConfig())
     out_root = Path(data_dir) / "tables"
     t0 = time.monotonic()
     for day in days:
