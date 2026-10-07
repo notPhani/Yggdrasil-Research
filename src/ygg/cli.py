@@ -105,6 +105,10 @@ def cmd_embed_import(args: argparse.Namespace) -> int:
 
     cfg = load_config(args.config)
     data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
+    if args.release:
+        from ygg.observation.embed_transfer import download_release
+
+        download_release(args.repo, args.release, Path(args.src), log=lambda m: print(m, flush=True))
     out = import_outputs(data_dir, Path(args.src), _replay_days(cfg, data_dir, args.start, args.end), cfg["narratives"]["embed_model"],
                          sample_per_day=args.sample, log=lambda m: print(m, flush=True))
     print(json.dumps(out))
@@ -264,6 +268,8 @@ def main(argv: list[str] | None = None) -> int:
     i.add_argument("--from", dest="start", default=None)
     i.add_argument("--to", dest="end", default=None)
     i.add_argument("--sample", type=int, default=200, help="titles per day re-embedded here for the parity check")
+    i.add_argument("--release", default=None, help="download this GitHub release tag into SRC first (e.g. embeddings-minilm-v1)")
+    i.add_argument("--repo", default="notPhani/Yggdrasil-Research")
     i.add_argument("--data-dir", default=None)
     i.set_defaults(func=cmd_embed_import)
 

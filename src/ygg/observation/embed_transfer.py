@@ -2,6 +2,8 @@
 
   export   data/tables/obs_doc -> DIR/inputs/day=D.parquet (observation_id, title; roots only, in the same order
            and with the same title rule as embed_roots) + DIR/inputs/manifest.json (rows and sha256 per file)
+  download a published GitHub release of the GPU output -> DIR/day=D.parquet + DIR/manifest.json (asset names
+           are mapped back by date, since GitHub may rewrite characters such as '=' in uploaded names)
   import   DIR/day=D.parquet (observation_id, vec int8[384]) + DIR/manifest.json from the GPU run:
            1. sha256 and row counts match the GPU manifest
            2. ids and order match this box's roots exactly
@@ -54,6 +56,35 @@ def export_inputs(data_dir: Path, days: list[str], out_dir: Path, model: str, lo
     man = {"model": model, "max_tokens": emb.MAX_TOKENS, "normalize": True, "int8_scale": 127, "files": files}
     (out / "manifest.json").write_text(json.dumps(man, indent=1, sort_keys=True))
     return man
+
+
+def download_release(repo: str, tag: str, dest: Path, log=print) -> list[str]:
+    """Public release assets via the GitHub API (no token needed for a public repo); resumable by size."""
+    import re
+    import urllib.request
+
+    req = urllib.request.Request(f"https://api.github.com/repos/{repo}/releases/tags/{tag}",
+                                 headers={"Accept": "application/vnd.github+json", "User-Agent": "yggdrasil-research"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        assets = json.loads(r.read())["assets"]
+    dest = Path(dest)
+    dest.mkdir(parents=True, exist_ok=True)
+    got = []
+    for a in sorted(assets, key=lambda a: a["name"]):
+        m = re.search(r"(\d{4}-\d{2}-\d{2})", a["name"])
+        name = f"day={m.group(1)}.parquet" if m and a["name"].endswith(".parquet") else a["name"]
+        out = dest / name
+        if out.exists() and out.stat().st_size == a["size"]:
+            got.append(name)
+            continue
+        tmp = out.with_suffix(out.suffix + ".part")
+        urllib.request.urlretrieve(a["browser_download_url"], tmp)
+        if tmp.stat().st_size != a["size"]:
+            raise IOError(f"{a['name']}: got {tmp.stat().st_size} bytes, expected {a['size']}")
+        tmp.replace(out)
+        got.append(name)
+        log(f"download {name}: {a['size'] / 1e6:.1f} MB")
+    return got
 
 
 def _read_vecs(path: Path) -> tuple[list[str], np.ndarray]:

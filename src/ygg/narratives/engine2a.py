@@ -188,12 +188,15 @@ def narrate_learned(m: LearnedNarrativeModel, idf: CausalIDF, clusters: dict, to
         ids, shares, routed = m.membership(cl.centroid, w, t_h, idf, score=cid in new_cids)
         if routed is not None:
             m.route(cid, routed, cl.centroid, w, float(touched[cid]), t_h, t)
-        elif cl.n >= 2 and cid not in m.emerged_from and m.birth_evidence(cl.vsum, cl.n, cl.cnt) > 0:
-            nid = m.emerge(cid, cl.centroid, w, t_h, t, titles.get(cid, ""))
-            m.narratives[nid].mass_total += touched[cid]
-            ids, shares, routed = m.membership(cl.centroid, w, t_h, idf)
         else:
-            m.background_add(cid, cl.centroid, t_h)
+            nid = m.try_birth(cid, cl.centroid, w, clusters, t_h, t, titles) if cl.n >= 2 and cid not in m.emerged_from else None
+            if nid is not None:
+                m.narratives[nid].mass_total += touched[cid]
+                ids, shares, routed = m.membership(cl.centroid, w, t_h, idf)
+            else:
+                m.background_add(cid, cl.centroid, t_h)
+                if cl.n >= 2:
+                    m.pool_upsert(cid, cl.centroid, t_h)
         members[cid] = (ids, shares)
 
 

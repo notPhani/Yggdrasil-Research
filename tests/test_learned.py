@@ -40,20 +40,39 @@ def _cluster(d, n, spread, seed):
     return X, c
 
 
-def test_birth_needs_fewer_stories_when_tighter():
+def test_group_evidence_favours_related_events_over_unrelated_or_noise():
     d = 64
     m = _model(d, kappa_s=60.0, log_alpha=-12.0, temp=1.0)
+    X, _ = _cluster(d, 4, 0.08, "story")                    # four distinct events of one storyline
+    Y = np.stack([_cluster(d, 1, 0.0, f"u{i}")[0][0] for i in range(4)])   # four unrelated events
+    w_shared = [{"rare entity": 1.0}] * 4
+    w_none = [{}] * 4
+    related = m.group_evidence(X, w_shared)
+    assert related + m.cfg.log_alpha > 0
+    assert m.group_evidence(X[:2], w_none) < m.group_evidence(X, w_none)            # more events, more evidence
+    assert m.group_evidence(Y, w_none) < 0 < m.group_evidence(X, w_none)
+    assert m.group_evidence(X, w_shared) > m.group_evidence(X, w_none)              # a shared rare entity is evidence
 
-    def n_star(spread, ents=False):
-        for n in range(2, 200):
-            X, _ = _cluster(d, n, spread, f"c{spread}")
-            if m.birth_evidence(X.sum(0), n, {"rare entity": n} if ents else {}) > 0:
-                return n
-        return 10 ** 9
 
-    assert n_star(0.05) < n_star(0.25) < 200          # sharp stories nucleate earlier; vague ones still can
-    assert n_star(1.0) == 10 ** 9                      # isotropic noise never does
-    assert n_star(0.25, ents=True) < n_star(0.25)      # a shared rare entity is evidence too
+def test_birth_needs_two_events_and_moves_them_out_of_the_background():
+    d = 64
+    m = _model(d, kappa_s=60.0, log_alpha=-12.0, temp=1.0)
+    X, _ = _cluster(d, 3, 0.08, "story")
+
+    class Ev:
+        def __init__(self, cid, x):
+            self.cid, self.centroid, self.n, self.cnt = cid, x, 3, {"rare entity": 3}
+
+    clusters = {i: Ev(i, X[i]) for i in range(3)}
+    w = {"rare entity": 1.0}
+    assert m.try_birth(0, X[0], w, clusters, 1.0, 1, {}) is None                 # empty pool: one event alone never starts one
+    for i in (1, 2):
+        m.background_add(i, X[i], 1.0)
+        m.pool_upsert(i, X[i], 1.0)
+    n0 = m.N0
+    nid = m.try_birth(0, X[0], w, clusters, 1.0, 1, {})
+    assert nid is not None and len(m.narratives[nid].events) == 3
+    assert m.N0 < n0 and not m.pool
 
 
 def test_merge_evidence_sign():

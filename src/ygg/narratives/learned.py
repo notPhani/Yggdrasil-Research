@@ -15,12 +15,16 @@ A story's soft membership is the posterior over the top 3 gains plus the backgro
 The event's own statistics go to its MAP narrative once (routing = MAP; no tau_alive / tau_dormant).
 
 Structure (each narrative costs -log alpha nats, i.e. prior P(K) proportional to alpha^K):
-  birth   an unrouted event cluster becomes a narrative iff
-            log alpha + log Z_vMF(its stories) - log p_0(its stories) + (DM entity evidence)/T > 0
+  birth   a group G of >= 2 distinct events (an unrouted event plus its nearest recent background events)
+          becomes a narrative iff
+            log alpha + log Z_vMF(G) - sum_{e in G} log p_0(x_e) + (DM entity evidence of G)/T > 0
           with the exact conjugate evidence (vMF prior on the direction centred on the background):
             log Z_vMF(S, n) = n log C(kappa_s) + log C(kappa_0) - log C(|kappa_s S + kappa_0 mu_0|)
-          Unit: stories (n = stories in the cluster), so a sharp story starts a narrative with few stories
-          and a vague one needs many (the Occam term ~ ((d - 1) / 2) log n plays the role of m_emerge).
+          G is grown greedily from the 8 nearest pool events while the evidence rises (proposal only).
+          Unit: events. The first real run counted stories instead and was wrong: the stories of one event
+          are near-copies (median within-cluster cosine 0.83), each added ~65 nats, and 99.8% of the 11,906
+          multi-story events of Dec 18 would have started a narrative even at zero cost. Copies are one
+          observation, not many (pseudo-replication), so a narrative needs several events.
   merge   narratives a, b (each one's nearest neighbour is the proposal) merge iff
             log Z(a + b) - log Z(a) - log Z(b) - log alpha + (DM entity terms)/T > 0
   split   a deterministic 2-means proposal over the narrative's events of the last 7 days is accepted iff
@@ -146,6 +150,12 @@ class LearnedNarrativeModel:
         self.emerged_from: set = set()
         self.preq = {"sum": 0.0, "n": 0}
         self.df, self.df_vocab, self.df_total = {}, 0, 0.0
+        self.P = np.zeros((1024, self.dim), np.float32)     # birth pool: recent background events with >= 2 stories
+        self.P_cid = np.full(1024, -1, dtype=np.int64)
+        self.P_t = np.zeros(1024)
+        self.pool: dict = {}                                # cid -> slot
+        self.P_free: list[int] = []
+        self.P_next = 0
         self._lc_s = log_cd(self.cfg.kappa_s, self.dim)
         self._lc_0 = log_cd(self.kappa0, self.dim)
 
@@ -293,10 +303,85 @@ class LearnedNarrativeModel:
             out += float(gammaln(b * p0 + c) - gammaln(b * p0)) - c * math.log(p0)
         return out
 
-    def birth_evidence(self, vsum: np.ndarray, n_docs: int, cnt: dict) -> float:
-        """log alpha + log BF(the cluster's stories share a narrative direction vs the background)."""
-        bg = n_docs * self._lc_0 + self.kappa0 * float(self.mu0 @ vsum)
-        return self.cfg.log_alpha + self.log_z_vmf(vsum, n_docs) - bg + self.log_dm(cnt) / self.cfg.temp
+    def group_evidence(self, X: np.ndarray, W: list[dict]) -> float:
+        """log BF(these events share a narrative direction and entity profile vs the background), without alpha."""
+        S = X.sum(0)
+        bg = len(X) * self._lc_0 + self.kappa0 * float(self.mu0 @ S)
+        E = defaultdict(float)
+        for w in W:
+            for e, c in w.items():
+                E[e] += c
+        return self.log_z_vmf(S, len(X)) - bg + self.log_dm(dict(E)) / self.cfg.temp
+
+    # ------------------------------------------------------------ birth pool (recent background events)
+    def pool_upsert(self, cid: int, x: np.ndarray, t_h: float) -> None:
+        s = self.pool.get(cid)
+        if s is None:
+            if self.P_free:
+                s = self.P_free.pop()
+            else:
+                if self.P_next >= len(self.P):
+                    self.P = np.concatenate([self.P, np.zeros_like(self.P)])
+                    self.P_cid = np.concatenate([self.P_cid, np.full(len(self.P_cid), -1, dtype=np.int64)])
+                    self.P_t = np.concatenate([self.P_t, np.zeros_like(self.P_t)])
+                s = self.P_next
+                self.P_next += 1
+            self.pool[cid] = s
+            self.P_cid[s] = cid
+        self.P[s] = x
+        self.P_t[s] = t_h
+
+    def pool_remove(self, cid: int) -> None:
+        s = self.pool.pop(cid, None)
+        if s is not None:
+            self.P[s] = 0.0
+            self.P_cid[s] = -1
+            self.P_free.append(s)
+
+    def try_birth(self, cid: int, x: np.ndarray, w: dict, clusters: dict, t_h: float, window: int, titles: dict,
+                  k: int = 8, max_group: int = 8) -> str | None:
+        """Grow G from the event's nearest pool events while the evidence rises; start a narrative if
+        evidence + log alpha > 0. The pool is a proposal mechanism only; acceptance is the Bayes factor."""
+        if self.P_next == 0:
+            return None
+        cos = self.P[: self.P_next] @ x.astype(np.float32)
+        own = self.pool.get(cid)
+        if own is not None:
+            cos[own] = -2.0
+        cos[self.P_cid[: self.P_next] < 0] = -2.0
+        kk = min(k, self.P_next)
+        top = np.argpartition(-cos, kk - 1)[:kk]
+        top = [int(s) for s in sorted(top, key=lambda s: (-cos[s], int(self.P_cid[s]))) if cos[s] > -1.5]
+        nbrs = [(int(self.P_cid[s]), clusters[int(self.P_cid[s])]) for s in top if int(self.P_cid[s]) in clusters]
+        G, Wg, members = [x.astype(float)], [w], [cid]
+        best = -math.inf
+        for ncid, cl in nbrs:
+            if len(G) >= max_group:
+                break
+            wn = {e: c / cl.n for e, c in cl.cnt.items()}
+            ev = self.group_evidence(np.stack(G + [cl.centroid.astype(float)]), Wg + [wn])
+            if ev > best:
+                best = ev
+                G.append(cl.centroid.astype(float))
+                Wg.append(wn)
+                members.append(ncid)
+        if len(G) < 2 or best + self.cfg.log_alpha <= 0:
+            return None
+        lead = max(members, key=lambda c: (clusters[c].n if c in clusters else 1, -c))
+        nid = stable_hash("narrative", *map(str, sorted(members)), str(window))[:16]
+        n = LNarrative(nid, self._new_slot(), np.zeros(self.dim), 0.0, {}, 0.0, "alive", t_h, t_h, 0.0, titles.get(lead, ""))
+        self.narratives[nid] = n
+        self._active = None
+        for c, xg, wg in zip(members, G, Wg):
+            self._leave_background(c, xg)
+            self.pool_remove(c)
+            th = self.assigned.get(c, (None, t_h))[1]
+            self.assigned[c] = ("nar", th)
+            self._add(n, xg, wg, th)
+            n.events.append((th, c))
+            self.emerged_from.add(c)
+        self.lineage.append({"window": window, "kind": "emerge", "parents": [], "children": [nid], "shares": [1.0]})
+        return nid
 
     def _now(self, n: LNarrative, t_h: float) -> tuple[np.ndarray, float, dict]:
         s = 1.0 / self._u(t_h)
@@ -337,6 +422,7 @@ class LearnedNarrativeModel:
         prev = self.assigned.get(cid)
         if prev is None or prev[0] == "~bg":
             self._leave_background(cid, x)
+            self.pool_remove(cid)
             self.assigned[cid] = ("nar", t_h)
             self._add(n, x, w, t_h)
             n.events.append((t_h, cid))
@@ -417,6 +503,8 @@ class LearnedNarrativeModel:
             out += self._splits(now_h, window, clusters)
         for cid in [c for c, (_, th) in self.assigned.items() if th < now_h - 7 * 24.0]:
             del self.assigned[cid]
+        for cid in [c for c, s in self.pool.items() if self.P_t[s] < now_h - 7 * 24.0]:
+            self.pool_remove(cid)
         self.lineage += out
         return out
 
@@ -502,4 +590,5 @@ class LearnedNarrativeModel:
     def canon(self) -> tuple:
         nar = [(n.nid, n.S.tobytes(), n.N, sorted(n.ents.items()), n.E, n.state, n.born_h, n.t_last_h, n.mass_total, n.events)
                for n in sorted(self.narratives.values(), key=lambda n: n.nid)]
-        return (nar, self.S0.tobytes(), self.N0, sorted(self.assigned.items()), len(self.lineage), self.preq["n"], self.preq["sum"])
+        pool = sorted((c, self.P[s].tobytes(), self.P_t[s]) for c, s in self.pool.items())
+        return (nar, self.S0.tobytes(), self.N0, sorted(self.assigned.items()), len(self.lineage), self.preq["n"], self.preq["sum"], pool)
