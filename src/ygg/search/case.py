@@ -83,3 +83,34 @@ def explain(data_dir: Path, clock, t_snap: int, terminals: list[Terminal], cfg: 
             "used_narratives": sorted({ex.node_names[v] for (u, v) in best_edges if 0 < v <= len(ex.node_names) - len(group) - 1}),
         })
     return {"t_snap": t_snap, "groups": results, "sharing_across_groups_searched": len(groups) == 1}
+
+
+def run_placebos(data_dir: Path, clock, plan: dict, prices: list[dict], actions: list[dict], universe: dict, k: int,
+                 cfg: SearchConfig, real_cost: float) -> dict:
+    """Decision 5.13 (K = 20 in the cut): the identical search at quiet cutoffs, on instruments that did not move."""
+    from collections import Counter
+
+    from ygg.search.graph import build_terminals
+    from ygg.search.placebo import empirical_p, placebo_terminals
+
+    etfs = set(universe["etfs"])
+    costs, told, total, hubs, runs = [], 0, 0, Counter(), []
+    for t in plan["placebo_windows"]:
+        day = clock.start(t).strftime("%Y-%m-%d")
+        clusters = placebo_terminals(day, prices, actions, etfs, k, plan["cfg_hash"], t)
+        terms = build_terminals(clusters, universe)
+        if not terms:
+            continue
+        res = explain(data_dir, clock, t, terms, cfg)
+        for g in res["groups"]:
+            n_terms = len(g["terminals"])
+            abst = set(g["best"]["abstained_on"])
+            total += n_terms
+            told += n_terms - len(abst)
+            costs.append(g["best"]["cost_mnats"])
+            for n in g["used_narratives"]:
+                hubs[n] += 1
+        runs.append({"t": t, "day": day, "terminals": [x.name for x in terms], "explained": res["groups"][0]["best"]["abstained_on"]})
+    n_runs = max(len(costs), 1)
+    return {"k": len(costs), "fer": told / max(total, 1), "p_emp": empirical_p(real_cost, costs),
+            "hubs": sorted(((n, c / n_runs) for n, c in hubs.items()), key=lambda kv: -kv[1])[:10], "runs": runs}

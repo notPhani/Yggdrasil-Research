@@ -107,8 +107,16 @@ def cmd_case(args: argparse.Namespace) -> int:
     clock = WindowClock(parse_utc(cfg["replay"]["start"]), cfg["replay"]["window_seconds"], cfg["replay"]["ingest_lag_seconds"])
     t_snap = clock.window_of(parse_utc(case["tau_star"][:19])) - 1
     terminals = build_terminals(case["clusters"], u)
-    res = explain(data_dir, clock, t_snap, terminals, SearchConfig())
+    scfg = SearchConfig()
+    res = explain(data_dir, clock, t_snap, terminals, scfg)
     out = {"case": {k: v for k, v in case.items() if k != "stats"}, "search": res}
+    plan_path = data_dir / "cases" / "plan.json"
+    if not args.no_placebo and plan_path.exists():
+        from ygg.search.case import run_placebos
+
+        plan = json.loads(plan_path.read_text())
+        real = res["groups"][0]["best"]["cost_mnats"]
+        out["placebo"] = run_placebos(data_dir, clock, plan, prices, actions, u, len(terminals), scfg, real)
     path = data_dir / "cases" / f"{args.day}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out, indent=1, default=str))
@@ -175,6 +183,7 @@ def main(argv: list[str] | None = None) -> int:
 
     c = sub.add_parser("case", help="Engine 3a for one trading day: trigger, clusters, tau*, explanations")
     c.add_argument("day", help="YYYY-MM-DD")
+    c.add_argument("--no-placebo", action="store_true")
     c.add_argument("--data-dir", default=None)
     c.set_defaults(func=cmd_case)
 
