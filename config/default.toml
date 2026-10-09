@@ -4,9 +4,9 @@
 data_dir = "data"                    # gitignored; raw blobs, Parquet tables, snapshots
 
 [replay]
-start = "2024-12-16"                 # blind cold start begins (3.7)
-warmup_end = "2025-01-06"            # end of the 3-week cold start; replay proper from here
-end_exclusive = "2025-02-01"         # replay runs through 2025-01-31
+start = "2025-01-27"                 # single-day run for 2025-01-27 case
+warmup_end = "2025-01-27"            # end of cold start
+end_exclusive = "2025-01-28"         # runs through 2025-01-27
 window_seconds = 900                 # Delta = 15 min, fixed by GDELT
 ingest_lag_seconds = 900             # D1: ingested_time = observed_time + 15 min in replay
 
@@ -22,3 +22,7 @@ j0 = 0.5                             # names Jaccard for step 1 / A; tuned later
 theta_a = 0.9                        # title-embedding cosine for fallback A (requires matching entities or an amount too)
 logo_titles = 5                      # an image under >= 5 distinct titles from one source is a site logo (guard)
 embed_model = "minishlab/potion-base-8M"   # same-event AUC 0.832 vs 0.854 MiniLM; ~11k titles/s; bit-identical
+
+[narratives]
+m_emerge = 3                             # cold-start calibration for single-day replay (steady-state 47-day default is 25)
+

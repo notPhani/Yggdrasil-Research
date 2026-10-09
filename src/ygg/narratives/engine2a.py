@@ -27,6 +27,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from ygg.determinism import WindowClock
+from ygg.narratives.adaptive import AdaptiveConfig, AdaptiveEmergence
 from ygg.narratives.events import EventClusterer, EventConfig
 from ygg.narratives.features import CausalIDF, entities
 from ygg.narratives.narratives import NarrativeConfig, NarrativeModel
@@ -55,6 +56,7 @@ class Engine2a:
     def __post_init__(self):
         self.events = EventClusterer(self.dim, self.ev_cfg)
         self.model = NarrativeModel(self.dim, self.nr_cfg)
+        self.adaptive = AdaptiveEmergence()
         self.idf = CausalIDF()
         self.cluster_mass: Counter = Counter()
         self.cluster_title: dict[int, str] = {}
@@ -97,7 +99,7 @@ class Engine2a:
             ids, shares, routed = self.model.membership(cl.centroid, cl.ents, t_h)
             if routed is not None:
                 self.model.absorb(routed, cl.centroid, cl.ents, touched[cid], t_h, t)
-            elif self.cluster_mass[cid] >= self.nr_cfg.m_emerge and cid not in self.model.emerged_from:
+            elif self.adaptive.should_emerge(cid, self.cluster_mass[cid], t_h, len(self.model.narratives)) and cid not in self.model.emerged_from:
                 self.model.emerge(cid, cl.centroid, cl.ents, t_h, t, self.cluster_title.get(cid, ""))
                 ids, shares, routed = self.model.membership(cl.centroid, cl.ents, t_h)
             self.model.record(t_h, cid, cl.centroid, cl.ents, float(touched[cid]))
@@ -130,6 +132,7 @@ class Engine2a:
         if t % 96 == 0:
             for k in [k for k, (_, th) in self.root_cluster.items() if th < cutoff]:
                 del self.root_cluster[k]
+        self.adaptive.record_window(len(roots))
         self.idf.close_window(t, root_ents)
         lineage = self.model.lineage_check(t_h, t) if (t + 1) % self.nr_cfg.check_every_windows == 0 else []
         states = Counter(n.state for n in self.model.narratives.values())

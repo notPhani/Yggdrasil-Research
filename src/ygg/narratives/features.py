@@ -14,9 +14,10 @@ MISFILED_PERSONS = frozenset({"los angeles", "new york", "san francisco", "hong 
 
 
 def entities(doc: dict) -> frozenset[str]:
-    persons = {p for p in doc["persons"] if p not in MISFILED_PERSONS}
-    names = {n.casefold().strip() for n in doc["all_names"]}
-    return frozenset(x for x in persons | set(doc["orgs"]) | names if len(x) > 2)
+    persons = {p.casefold().strip() for p in (doc.get("persons") or []) if p.casefold().strip() not in MISFILED_PERSONS}
+    orgs = {o.casefold().strip() for o in (doc.get("orgs") or []) if o.casefold().strip() not in MISFILED_PERSONS}
+    names = {n.casefold().strip() for n in (doc.get("all_names") or []) if n.casefold().strip() not in MISFILED_PERSONS}
+    return frozenset(x for x in persons | orgs | names if len(x) > 2)
 
 
 class CausalIDF:

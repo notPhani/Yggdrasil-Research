@@ -9,7 +9,9 @@ import duckdb
 def connect(data_dir: Path) -> duckdb.DuckDBPyConnection:
     con = duckdb.connect()
     root = Path(data_dir) / "tables"
-    for d in sorted(p for p in root.iterdir() if p.is_dir()) if root.exists() else []:
-        if any(d.glob("day=*/*.parquet")):
-            con.execute(f"CREATE VIEW {d.name} AS SELECT * FROM read_parquet('{d}/day=*/*.parquet', hive_partitioning=true)")
+    if root.exists():
+        for d in sorted(p for p in root.iterdir() if p.is_dir()):
+            if any(d.glob("day=*/*.parquet")):
+                posix_path = (d / "day=*/*.parquet").as_posix()
+                con.execute(f'CREATE VIEW "{d.name}" AS SELECT * FROM read_parquet(\'{posix_path}\', hive_partitioning=true)')
     return con

@@ -1,6 +1,9 @@
 # build artifacts and local data
 .venv/
 data/
+out/
+scratch/
+universe/
 .env
 __pycache__/
 *.egg-info/

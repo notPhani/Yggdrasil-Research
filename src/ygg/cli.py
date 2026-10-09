@@ -81,8 +81,11 @@ def cmd_replay(args: argparse.Namespace) -> int:
         with log_path.open("a") as f:
             f.write(msg + "\n")
 
+    from ygg.narratives.narratives import NarrativeConfig
+
+    nr_cfg = NarrativeConfig(m_emerge=cfg.get("narratives", {}).get("m_emerge", 25))
     out = run_replay(data_dir, clock, cfg["replay"]["start"], args.end or cfg["replay"]["end_exclusive"], cfg["dedup"]["embed_model"],
-                     cfg_hash(cfg), snapshot_windows=snaps, log=log)
+                     cfg_hash(cfg), snapshot_windows=snaps, log=log, nr_cfg=nr_cfg)
     (data_dir / "tables" / "replay_summary.json").write_text(json.dumps(out, indent=1, default=str))
     log(f"replay done: {len(out['snapshots'])} snapshots")
     return 0
@@ -153,6 +156,17 @@ def cmd_verdict(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_tui(args: argparse.Namespace) -> int:
+    """Launch the Rich-powered Terminal User Interface (TUI) for a forensic case."""
+    from ygg.tui import ForensicsTUI
+
+    cfg = load_config(args.config)
+    data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
+    tui = ForensicsTUI(data_dir, day=args.day)
+    tui.render_full_dashboard()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="ygg", description="Yggdrasil: market event forensics")
     p.add_argument("--config", default=None, help="TOML config (default: config/default.toml)")
@@ -193,6 +207,11 @@ def main(argv: list[str] | None = None) -> int:
     v.add_argument("--fetch-top", type=int, default=6)
     v.add_argument("--data-dir", default=None)
     v.set_defaults(func=cmd_verdict)
+
+    t = sub.add_parser("tui", help="Rich Terminal User Interface (TUI): view explanation tree, evidence, and verdicts")
+    t.add_argument("day", nargs="?", default="2025-01-27", help="case day (YYYY-MM-DD, default: 2025-01-27)")
+    t.add_argument("--data-dir", default=None)
+    t.set_defaults(func=cmd_tui)
 
     args = p.parse_args(argv)
     return args.func(args)

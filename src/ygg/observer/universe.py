@@ -28,7 +28,7 @@ def fetch_revision(revid: int, cache_dir: Path) -> str:
                                      headers={"User-Agent": "yggdrasil-research/0.1"})
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(urllib.request.urlopen(req, timeout=60).read())
-    return path.read_text()
+    return path.read_text(encoding="utf-8")
 
 
 def parse_nasdaq100(text: str) -> list[tuple[str, str]]:
@@ -113,5 +113,5 @@ def load_universe(data_dir: Path) -> dict:
     path = Path(data_dir) / "universe" / "universe.json"
     if not path.exists():
         u = build_universe(path.parent)
-        path.write_text(json.dumps(u, indent=1, sort_keys=True))
-    return json.loads(path.read_text())
+        path.write_text(json.dumps(u, indent=1, sort_keys=True), encoding="utf-8")
+    return json.loads(path.read_text(encoding="utf-8"))
