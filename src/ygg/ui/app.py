@@ -285,14 +285,18 @@ class ControlPanel(Screen):
             return
         src, day = key.split(":", 1)
         app: YggApp = self.app
-        if src == "DEMO":
-            from ygg.ui.demo import demo_investigation
+        import json
 
-            inv = demo_investigation()
+        if src == "DEMO":
+            from ygg.ui.demo import demo_case
+
+            raw = demo_case()
+            inv = load_investigation(raw, source="DEMO")
         else:
-            inv = load_investigation(app.data_dir / "cases" / f"{day}.json")
+            raw = json.loads((app.data_dir / "cases" / f"{day}.json").read_text())
+            inv = load_investigation(raw)
         app.tape(f"OPEN       case {day} ({src})")
-        app.push_screen(InvestigationScreen(inv))
+        app.push_screen(InvestigationScreen(inv, raw))
 
 
 # ====================================================================================================== investigation
@@ -302,11 +306,13 @@ STEPS = ["trigger", "snapshot", "search", "placebos", "queries", "claims", "verd
 class InvestigationScreen(Screen):
     BINDINGS = [Binding("escape", "app.pop_screen", "back"), Binding("r", "toggle_replay", "replay (recorded)"),
                 Binding("plus,equals", "faster", "faster"), Binding("minus", "slower", "slower"),
-                Binding("h", "next_hyp", "next hypothesis"), Binding("q", "app.quit", "quit")]
+                Binding("h", "next_hyp", "next hypothesis"), Binding("g", "graph_focus", "graph: focus next node"),
+                Binding("q", "app.quit", "quit")]
 
-    def __init__(self, inv: Investigation):
+    def __init__(self, inv: Investigation, raw: dict | None = None):
         super().__init__()
-        self.inv = inv
+        self.inv, self.raw = inv, raw
+        self.focus_i = -1
         self.clock: datetime | None = None          # None: archive view (everything recorded is visible)
         self.speed = 8                              # windows (15 min) per tick
         self.revealed = len(STEPS)
@@ -359,6 +365,35 @@ class InvestigationScreen(Screen):
             _border(self.query_one(f"#{wid}"), title)
         self.render_all()
         self.set_interval(1.0, self.render_header)
+        from ygg.ui.graph_server import payload_for
+
+        app.graph.show(payload_for(self.inv, self.raw))
+        app.tape(f"GRAPH      showing case {self.inv.case_id} at {app.graph.url}")
+
+    def action_graph_focus(self) -> None:
+        order = []
+        for e in sorted(self.inv.explanations, key=lambda e: (e.rank == 0, e.rank)):
+            for x in e.edges:
+                for nid in (x.src, x.dst):
+                    if nid not in order:
+                        order.append(nid)
+        if not order:
+            return
+        self.focus_i = (self.focus_i + 1) % len(order)
+        nid = order[self.focus_i]
+        self.app.graph.focus(nid)
+        self.app.tape(f"GRAPH      focus {short('N', nid) if nid != 'BOT' and not nid.startswith('T') else nid}")
+
+    def graph_selected(self, nid: str) -> None:
+        for i, h in enumerate(self.inv.hypotheses):
+            if h.entry == nid:
+                self.hyp_i = i
+                self.query_one("#tabs", TabbedContent).active = "t_ev"
+                self.render_evidence()
+                self.notify(f"graph → {h.hid}: {h.label[:60]}", timeout=3)
+                return
+        lab = next((x.dst_label for e in self.inv.explanations for x in e.edges if x.dst == nid), nid)
+        self.notify(f"graph → {nid if nid in ('BOT',) or nid.startswith('T') else short('N', nid)}  {lab[:60]}", timeout=3)
 
     # ---------------------------------------------------------------- replay
     def action_toggle_replay(self) -> None:
@@ -697,6 +732,15 @@ class YggApp(App):
         self.seen_batches: set = set()
         self.serpapi = bool(os.environ.get("SERPAPI_API_KEY"))
         self._recorded = None
+        from ygg.ui.graph_server import GraphServer
+
+        self.graph = GraphServer(self.on_graph_select, port=int(os.environ.get("YGG_GRAPH_PORT", "8765")))
+
+    def on_graph_select(self, nid: str) -> None:
+        self.tape(f"GRAPH      selected {nid if nid == 'BOT' or nid.startswith('T') else short('N', nid)} in the graph window")
+        scr = self.screen
+        if isinstance(scr, InvestigationScreen):
+            scr.graph_selected(nid)
 
     def tape(self, msg: str) -> None:
         self.events.append((datetime.now(timezone.utc), msg))
@@ -730,8 +774,21 @@ class YggApp(App):
         age = time.time() - p.stat().st_mtime
         return f"replay engine: processed through {day}" + (" (running)" if age < 1200 else " (stalled?)")
 
-    def on_mount(self) -> None:
+    async def on_mount(self) -> None:
         self.tape("START      control panel; world feed = latest served GDELT batch")
+        try:
+            await self.graph.start()
+            self.tape(f"GRAPH      window at {self.graph.url} (open it next to the terminal)")
+            import os
+            import sys
+            import threading
+            import webbrowser
+
+            gui = sys.platform in ("win32", "darwin") or bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+            if gui and not os.environ.get("YGG_NO_BROWSER"):    # never launch a console browser into the terminal
+                threading.Thread(target=lambda: webbrowser.open(self.graph.url, new=1), daemon=True).start()
+        except OSError as e:
+            self.tape(f"GRAPH      could not bind {self.graph.url}: {e}")
         self.push_screen(ControlPanel())
 
 

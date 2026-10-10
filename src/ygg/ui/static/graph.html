@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yggdrasil Graph</title>
+<style>
+  :root { --bg:#0a0f13; --panel:#111a21; --rule:#26313a; --ink:#d7e0e6; --muted:#76828c; --cyan:#58c4dd; --yel:#f4d35e; --amber:#f4b942; --red:#fc6255; --green:#83c167; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font: 13px/1.45 "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; }
+  #bar { height:40px; display:flex; align-items:center; gap:16px; padding:0 12px; background:var(--panel); border-bottom:1px solid var(--rule); white-space:nowrap; overflow:hidden; }
+  #bar b { color:var(--cyan); font-weight:600; }
+  #title { color:var(--ink); }
+  #link { color:var(--muted); }
+  #link.on { color:var(--green); }
+  label { color:var(--muted); }
+  input[type=range] { width:120px; vertical-align:middle; }
+  #main { display:flex; height:calc(100% - 40px); }
+  #cy { flex:1; min-width:0; }
+  #side { width:360px; border-left:1px solid var(--rule); padding:12px; overflow:auto; background:var(--bg); }
+  #side h3 { margin:0 0 6px; font-size:13px; color:var(--cyan); font-weight:600; }
+  .muted { color:var(--muted); }
+  .row { display:flex; justify-content:space-between; gap:8px; border-bottom:1px solid var(--rule); padding:3px 0; }
+  .legend span { margin-right:12px; }
+  .sw { display:inline-block; width:18px; height:3px; vertical-align:middle; margin-right:5px; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <b>YGGDRASIL GRAPH</b><span id="title">loading…</span>
+  <label>edges p ≥ <span id="pv">0.10</span> <input id="p" type="range" min="0" max="0.5" step="0.01" value="0.10"></label>
+  <label><input id="trees" type="checkbox"> explanations only</label>
+  <span class="legend"><span><i class="sw" style="background:var(--yel)"></i>best</span><span><i class="sw" style="background:var(--amber)"></i>rival</span><span><i class="sw" style="background:var(--red)"></i>we don't know</span></span>
+  <span id="link">○ terminal link</span>
+</div>
+<div id="main"><div id="cy"></div><div id="side"><h3>SELECTION</h3><div class="muted">click a node; the terminal follows. press g in the terminal to focus here.</div></div></div>
+<script src="https://unpkg.com/cytoscape@3/dist/cytoscape.min.js"></script>
+<script>
+let data = /*__GRAPH__*/null, cy = null;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shortId = id => id === "BOT" ? "BOT" : (/^T\d+$/.test(id) ? id : "N:" + id.slice(0, 8));
+
+function treeTag(u, v) {
+  for (const [tag, es] of Object.entries(data.trees || {})) if (es.some(e => e[0] === u && e[1] === v)) return tag;
+  return "";
+}
+
+function build() {
+  const pmin = parseFloat(document.getElementById("p").value);
+  const only = document.getElementById("trees").checked;
+  const keep = new Set(["BOT"]);
+  const edges = [];
+  for (const e of data.edges) {
+    const tag = treeTag(e.u, e.v);
+    if (tag || (!only && e.p >= pmin)) { edges.push({ ...e, tag }); keep.add(e.u); keep.add(e.v); }
+  }
+  for (const [tag, es] of Object.entries(data.trees || {})) for (const [u, v] of es) {
+    keep.add(u); keep.add(v);
+    if (!edges.some(e => e.u === u && e.v === v)) edges.push({ u, v, p: 0, cost: 0, tag });
+  }
+  const els = [];
+  for (const n of data.nodes) if (keep.has(n.id))
+    els.push({ data: { id: n.id, kind: n.kind, label: n.kind === "narrative" ? (n.label || "").slice(0, 42) : (n.kind === "bot" ? "BOT · outside world" : n.label), full: n.label, state: n.state || "" } });
+  for (const e of edges) if (keep.has(e.u) && keep.has(e.v))
+    els.push({ data: { id: e.u + "→" + e.v, source: e.u, target: e.v, p: e.p, cost: e.cost, tag: e.tag, w: 0.6 + 6 * Math.min(1, e.p) } });
+  if (cy) cy.destroy();
+  cy = cytoscape({
+    container: document.getElementById("cy"), elements: els, wheelSensitivity: 0.25,
+    style: [
+      { selector: "node", style: { "background-color": "#58c4dd", "label": "data(label)", "color": "#d7e0e6", "font-size": 9, "text-valign": "bottom", "text-margin-y": 4, "width": 12, "height": 12, "text-wrap": "ellipsis", "text-max-width": 160 } },
+      { selector: "node[state = 'dormant']", style: { "background-color": "#4a5560" } },
+      { selector: "node[kind = 'bot']", style: { "background-color": "#f4d35e", "width": 22, "height": 22, "font-size": 11, "font-weight": 600 } },
+      { selector: "node[kind = 'terminal']", style: { "background-color": "#fc6255", "shape": "round-rectangle", "width": 26, "height": 16, "font-size": 10, "font-weight": 600 } },
+      { selector: "edge", style: { "width": "data(w)", "line-color": "#3a4650", "target-arrow-color": "#3a4650", "target-arrow-shape": "triangle", "arrow-scale": 0.6, "curve-style": "bezier", "opacity": 0.55 } },
+      { selector: "edge[tag = 'best']", style: { "line-color": "#f4d35e", "target-arrow-color": "#f4d35e", "width": 4, "opacity": 1, "z-index": 9 } },
+      { selector: "edge[tag ^= 'rival']", style: { "line-color": "#f4b942", "target-arrow-color": "#f4b942", "width": 3, "opacity": 0.9, "line-style": "dashed" } },
+      { selector: "edge[tag = 'abstain']", style: { "line-color": "#fc6255", "target-arrow-color": "#fc6255", "width": 2, "opacity": 0.9, "line-style": "dotted" } },
+      { selector: ":selected", style: { "border-width": 3, "border-color": "#ffffff" } },
+    ],
+    layout: { name: "preset", positions: layered(els), padding: 30, animate: false },
+  });
+  cy.on("tap", "node", ev => { show(ev.target); fetch("/select", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: ev.target.id() }) }); });
+  document.getElementById("title").textContent = data.title + (data.recorded_graph ? "" : "  · explanation trees only (no recorded graph)") + `  · ${cy.nodes().length} nodes · ${cy.edges().length} edges shown`;
+}
+
+function layered(els) {
+  // BOT on top, narratives by hop distance from BOT, every market terminal on the bottom row
+  const nodes = els.filter(e => !e.data.source), edges = els.filter(e => e.data.source);
+  const kind = Object.fromEntries(nodes.map(n => [n.data.id, n.data.kind]));
+  const depth = { BOT: 0 }, q = ["BOT"];
+  while (q.length) {
+    const u = q.shift();
+    for (const e of edges) if (e.data.source === u && kind[e.data.target] === "narrative" && depth[e.data.target] === undefined) {
+      depth[e.data.target] = depth[u] + 1; q.push(e.data.target);
+    }
+  }
+  let maxd = 1;
+  for (const n of nodes) if (n.data.kind === "narrative") { if (depth[n.data.id] === undefined) depth[n.data.id] = 1; maxd = Math.max(maxd, depth[n.data.id]); }
+  for (const n of nodes) if (n.data.kind === "terminal") depth[n.data.id] = maxd + 1;
+  const inTree = new Set(Object.values(data.trees || {}).flat(2));
+  const layers = {};
+  for (const n of nodes) (layers[depth[n.data.id]] ||= []).push(n.data.id);
+  const pos = {};
+  for (const [d, ids] of Object.entries(layers)) {
+    ids.sort((a, b) => (inTree.has(b) - inTree.has(a)) || a.localeCompare(b));
+    const w = 190;
+    ids.forEach((id, i) => { pos[id] = { x: (i - (ids.length - 1) / 2) * w, y: Number(d) * 170 }; });
+  }
+  return pos;
+}
+
+function show(n) {
+  const d = n.data();
+  const ins = n.incomers("edge").map(e => [e.source().id(), e.data("p"), e.data("tag")]).sort((a, b) => b[1] - a[1]).slice(0, 12);
+  const outs = n.outgoers("edge").map(e => [e.target().id(), e.data("p"), e.data("tag")]).sort((a, b) => b[1] - a[1]).slice(0, 12);
+  const row = ([id, p, tag]) => `<div class="row"><span>${esc(shortId(id))}</span><span class="muted">${tag || ""}</span><span>p ${Number(p).toFixed(3)}</span></div>`;
+  document.getElementById("side").innerHTML = `<h3>${esc(shortId(d.id))}</h3><div>${esc(d.full)}</div><div class="muted">${esc(d.kind)} ${esc(d.state)}</div>
+    <h3 style="margin-top:12px">attention came from</h3>${ins.map(row).join("") || '<div class="muted">—</div>'}
+    <h3 style="margin-top:12px">attention went to</h3>${outs.map(row).join("") || '<div class="muted">—</div>'}
+    <div class="muted" style="margin-top:12px">edges are Hawkes attribution shares (timing, not cause). BOT is new information entering from outside.</div>`;
+}
+
+async function load() { data = await (await fetch("/graph.json")).json(); build(); }
+document.getElementById("p").addEventListener("input", e => { document.getElementById("pv").textContent = Number(e.target.value).toFixed(2); build(); });
+document.getElementById("trees").addEventListener("change", build);
+const es = new EventSource("/events");
+es.onopen = () => { const l = document.getElementById("link"); l.textContent = "● terminal link"; l.className = "on"; };
+es.onerror = () => { const l = document.getElementById("link"); l.textContent = "○ terminal link lost"; l.className = ""; };
+es.onmessage = async m => {
+  const msg = JSON.parse(m.data);
+  if (msg.type === "reload") await load();
+  if (msg.type === "focus" && cy) { const n = cy.getElementById(msg.id); if (n && n.length) { cy.elements().unselect(); n.select(); cy.animate({ center: { eles: n }, zoom: 1.6 }, { duration: 400 }); show(n); } }
+};
+if (data) build(); else load();
+</script>
+</body>
+</html>

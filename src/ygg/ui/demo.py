@@ -62,8 +62,8 @@ def demo_case() -> dict:
                       "models": 1, "tight": True, "incoherent": False, "facts": 24, "diagnostic": {"h3": ["reported(r_demo00001, arxiv_org, x, b)."]}},
             "P_all": {"verdicts": {"h1": "SUPPORTED", "h3": "CONTRADICTED"}, "bits": {"h1": [1, 1, 0, 0], "h3": [0, 0, 1, 1]},
                       "models": 1, "tight": True, "incoherent": False, "facts": 31, "diagnostic": {}},
-            "hypotheses": [{"hid": "h1", "label": lab[n_r1], "event": "", "signature_ok": True, "burst": True, "surprise_ok": True, "reports": h1[1:3] + h1[3:]},
-                           {"hid": "h3", "label": "$5.6M was the full cost of V3 (DEMO)", "event": "", "signature_ok": True, "burst": True,
+            "hypotheses": [{"hid": "h1", "entry": n_r1, "label": lab[n_r1], "event": "", "signature_ok": True, "burst": True, "surprise_ok": True, "reports": h1[1:3] + h1[3:]},
+                           {"hid": "h3", "entry": "", "label": "$5.6M was the full cost of V3 (DEMO)", "event": "", "signature_ok": True, "burst": True,
                             "surprise_ok": False, "reports": h1[:3]}],
             "searches": [{"qid": "q_demo1", "hid": "h3", "query": '"DeepSeek" V3 training cost', "provider": "serpapi", "status": "UNAVAILABLE",
                           "note": "no SERPAPI_API_KEY: evidence from Engine 1 documents and Wayback pages only"}]}}

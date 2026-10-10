@@ -81,6 +81,14 @@ def explain(data_dir: Path, clock, t_snap: int, terminals: list[Terminal], cfg: 
             "rivals": [{"entry": label(r["entry"]), "cost_mnats": r["cost"], "odds_vs_best": math.exp((r["cost"] - best_cost) / 1000.0),
                         "tree": tree(set(r["edges"]))} for r in rv],
             "used_narratives": sorted({ex.node_names[v] for (u, v) in best_edges if 0 < v <= len(ex.node_names) - len(group) - 1}),
+            # the whole explanation graph as searched (for the graph viewer; recorded at case time, never rebuilt by the UI)
+            "graph": {"nodes": [{"id": n, "kind": "bot" if v == 0 else ("terminal" if v > len(ex.node_names) - len(group) - 1 else "narrative"),
+                                 "label": (snap["narratives"][n].label[:90] if n in snap["narratives"] else
+                                           ", ".join(group[v - (len(ex.node_names) - len(group))].members) if v > len(ex.node_names) - len(group) - 1 else n),
+                                 "state": getattr(snap["narratives"].get(n), "state", "") if n in snap["narratives"] else ""}
+                                for v, n in enumerate(ex.node_names)],
+                      "edges": [{"u": ex.node_names[u], "v": ex.node_names[v], "p": round(ex.p[(u, v)], 5), "cost": c}
+                                for (u, v), c in sorted(g.cost.items()) if (u, v) in ex.p]},
         })
     return {"t_snap": t_snap, "groups": results, "sharing_across_groups_searched": len(groups) == 1}
 
