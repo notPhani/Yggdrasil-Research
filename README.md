@@ -10,6 +10,35 @@ SerpApi India Hackathon 2026 · Open Innovation · SerpApi as the evidence senso
 - [Watch in the browser](https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@af0be399b54fd24cba1580a83eedbf8fbbf3e377/media/yggdrasil-demo.mp4)
 - [The file in this repo](media/yggdrasil-demo.mp4)
 
+
+## At a glance
+
+- **Insight.** Search engines know the future. Yggdrasil makes search evidence time-honest: every result carries the time it was first seen, and only evidence from before the move can say "this moved the price". Whether a story is true is asked separately.
+- **Originality.** It combines four things in one deterministic replay: Hawkes attention attribution, an exact Steiner-tree explanation search with an explicit "we do not know" candidate, placebo calibration, and logic-program verdicts over SerpApi evidence.
+- **Engineering.**
+  - 24.6 GB of GDELT, from 5.80M rows down to 4.01M stories.
+  - 300 live narratives and 8,734 attention edges.
+  - An exact search over 713 narratives and 3,116 edges.
+  - A replay that is bit-identical across hash seeds, and 86 tests.
+  - A terminal product.
+- **Usefulness.**
+  - **Market surveillance:** a move with no public explanation from before τ* is the case a surveillance team reviews.
+  - **Analysts and journalists** get dated evidence.
+  - **Quant researchers** get event labels free of look-ahead.
+- **SerpApi.** The only path from a hypothesis to open-web evidence: one confirming and two disconfirming searches per hypothesis, fenced at τ*, joined to GDELT for timing, and archived for replay. See [section 4](#4-how-serpapi-is-used).
+
+## Research findings and design decisions
+
+- **Research report.** [Yggdrasil attention model and search](reports/Yggdrasil%20attention%20model%20and%20search.md): the architecture as mathematics, with proofs and a ledger of every cited theorem. Each claim is labelled PROVEN, DERIVED, CONJECTURE, MEASURED or EMPIRICAL.
+- **Six research tracks:**
+  - [Attention point processes](research_notes/Yggdrasil%20attention%20model%20and%20search/attention_point_processes.md)
+  - [Conservation and flows](research_notes/Yggdrasil%20attention%20model%20and%20search/conservation_flows_crossfield.md)
+  - [Formal evidence reasoning](research_notes/Yggdrasil%20attention%20model%20and%20search/evidence_reasoning_formal.md)
+  - [Explanation search guarantees](research_notes/Yggdrasil%20attention%20model%20and%20search/explanation_search_guarantees.md)
+  - [Ingestion and event resolution](research_notes/Yggdrasil%20attention%20model%20and%20search/ingestion_event_resolution.md)
+  - [Market event attribution](research_notes/Yggdrasil%20attention%20model%20and%20search/market_event_attribution.md)
+- **Design decisions.** The [Blueprint](https://notphani.github.io/Yggdrasil-Research/blueprint/) holds the locked decision ledger. The code cites it directly, for example decision 0.4 for replay clocks and 5.13 for placebos.
+
 ---
 
 ## 1. Problem statement
