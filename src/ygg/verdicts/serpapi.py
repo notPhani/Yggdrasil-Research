@@ -9,7 +9,7 @@ canonical URL:
 Results are origin = targeted. They never enter Engine 2 counts or fits (the one-way valve, 0.5), and they are not
 witnesses that the trigger event occurred: they contribute claims only.
 
-The key is read from SERPAPI_API_KEY. Without it every query is recorded as UNAVAILABLE and the verdict runs on
+The key is read from SERPAPI_API_KEY, else from ~/.config/serpapi/key (outside the repository). Without it every query is recorded as UNAVAILABLE and the verdict runs on
 Engine 1 documents and Wayback pages alone; adding the key later and rerunning 'ygg verdict DAY' fills the gap
 without any replay, because nothing here feeds back into Engine 2.
 """
@@ -50,10 +50,18 @@ def queries(subject: str, label: str) -> list[tuple[str, str, bool]]:
             ("disconfirm", f"{core} excludes OR retracted OR correction OR overstated", False)]
 
 
+
+def _key_file() -> str | None:
+    f = Path.home() / ".config" / "serpapi" / "key"
+    try:
+        return f.read_text().strip() or None
+    except OSError:
+        return None
+
 class Sensor:
     def __init__(self, data_dir: Path, api_key: str | None = None, budget: int = BUDGET_PER_CASE):
         self.data_dir = Path(data_dir)
-        self.key = api_key if api_key is not None else os.environ.get("SERPAPI_API_KEY")
+        self.key = api_key if api_key is not None else (os.environ.get("SERPAPI_API_KEY") or _key_file())
         self.budget = budget
         self.cache = self.data_dir / "fetch" / "serpapi"
         self.cache.mkdir(parents=True, exist_ok=True)
