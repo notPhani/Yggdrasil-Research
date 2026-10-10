@@ -25,9 +25,18 @@ embed_model = "minishlab/potion-base-8M"   # near-duplicate step only; theta_a i
 
 [narratives]
 embed_model = "sentence-transformers/all-MiniLM-L6-v2"   # Engine 2a; same-event AUC 0.854 (potion 0.832); fp32 ONNX
-# Adaptive price of a narrative (2a-L, 2026-10-10). log_alpha, kappa_s and temp come from ygg fit-narratives.
-adaptive = true                      # false restores 2a-L exactly as locked 2026-10-07
-rho_vol = 1.0                        # price += rho * log(V_6h / V_7d): constant spurious-birth rate per window
-gamma_burst = 1.0                    # birth bonus gamma * log(v_G / 1 event/h)_+, capped at 3 nats; hand-set, disclosed
-k_soft = 200                         # alive narratives where the price starts rising ...
-k_max = 300                          # ... to double at k_max (locked target 100-300 alive)
+# 2a-L parameters (2026-10-10). kappa_s: the prequential score on Dec 16-17 rises monotonically over {60, 100, 150, 250}
+# (610 -> 636 nats/event) and the data-implied kappa is 280-310, so 250 stays. log_alpha and temp: defaults, not fitted.
+kappa_s = 250.0
+log_alpha = -15.0
+temp = 2.0
+checks_needed = 3                    # locked 3.5: splits and merges must win at 3 consecutive 6-hour checks
+# Adaptive emergence, in birth-rate units: each term is a log factor on the birth rate, times beta_tail nats.
+adaptive = true                      # false restores 2a-L exactly as locked 2026-10-07 (with hysteresis)
+beta_tail = 31.0                     # e-fold scale of the birth-evidence upper tail: mean exceedance over the 90th
+                                     # percentile, Dec 16-17 at kappa_s 250 (31.1 nats; 37.6 over the 95th)
+rho_vol = 1.0                        # births x (V_7d / V_6h): spurious births per window held constant
+gamma_burst = 1.0                    # births x (events per hour)^1 for a fast group, at most x20; hand-set, disclosed
+k_soft = 200                         # alive narratives where births start to be suppressed ...
+k_max = 300                          # ... by e^-3 (x0.05) at k_max (locked target 100-300 alive)
+cap_rate = 3.0

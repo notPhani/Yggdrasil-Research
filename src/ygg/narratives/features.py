@@ -34,7 +34,7 @@ class CausalIDF:
         return math.log((self.n_docs + 1.0) / (self.df.get(x, 0) + 1.0)) + 1.0
 
     def weights(self, ents: frozenset[str]) -> dict[str, float]:
-        return {e: self.idf(e) for e in ents}
+        return {e: self.idf(e) for e in sorted(ents)}      # D4: iteration order fixed, not set-hash order (PYTHONHASHSEED)
 
     def close_window(self, t: int, docs_entities: list[frozenset[str]]) -> None:
         c = Counter()

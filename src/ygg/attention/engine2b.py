@@ -127,13 +127,14 @@ class Engine2b:
             d.pop(nid, None)
 
     # ------------------------------------------------------------ prediction
-    def _features(self, nid: str, how: int, zmap: dict[str, np.ndarray]) -> np.ndarray:
-        f = fourier(np.array([how]))[0]
+    def _features(self, nid: str, how: int, zmap: dict[str, np.ndarray], f: np.ndarray | None = None) -> np.ndarray:
+        f = fourier(np.array([how]))[0] if f is None else f
         zs = [zmap.get(j, np.zeros(4)) for j in self.nbrs.get(nid, [nid])]
         return np.concatenate([[1.0], f, np.concatenate(zs)])
 
     def _predict(self, t_next: int) -> None:
         how = self._how(t_next)
+        f_how = fourier(np.array([how]))[0]
         lam_raw, parts = {}, {}
         for nid in self.ids:
             th = self.theta.get(nid)
@@ -141,7 +142,7 @@ class Engine2b:
                 mean = float(np.mean(self.hist[nid])) if len(self.hist[nid]) else 0.0
                 lam_raw[nid], parts[nid] = max(mean, 1e-3), (max(mean, 1e-3), {})
                 continue
-            x = self._features(nid, how, self.z)
+            x = self._features(nid, how, self.z, f_how)
             eta = float(x @ th)
             lam_raw[nid] = float(softplus(np.array([eta]), self.cfg.fit.s)[0])
             base = float(x[:N_BASE] @ th[:N_BASE])
@@ -179,19 +180,27 @@ class Engine2b:
                 self._add(nid, np.zeros(4), [0.0] * len(self.hist_t))
         self.ids = sorted(self.z)
         out_rows, alpha_rows = [], []
-        for nid in self.ids:
-            lam = self.lam_next.get(nid, 1e-3)
-            yv = y.get(nid, 0.0)
+        lams = [self.lam_next.get(nid, 1e-3) for nid in self.ids]
+        ys = [y.get(nid, 0.0) for nid in self.ids]
+        if not missing and self.ids:
+            # The NB2 CDFs and the normal quantiles for every narrative in one ufunc call each: elementwise the same
+            # functions as the former per-narrative scalar calls, so the values are bit-identical.
+            yi = np.array([int(round(v)) for v in ys], dtype=np.int64)
+            p = self.r / (self.r + np.array(lams))
+            hi = nbinom.cdf(yi, self.r, p)
+            lo = np.zeros(len(yi))
+            pos = yi > 0
+            if pos.any():
+                lo[pos] = nbinom.cdf(yi[pos] - 1, self.r, p[pos])
+            uu = np.array([keyed_rng(self.cfg.cfg_hash, "pit", nid, str(t)).random() for nid in self.ids])
+            us = np.clip(lo + uu * (hi - lo), 1e-9, 1 - 1e-9)
+            zs = norm.ppf(us)
+        for k, nid in enumerate(self.ids):
+            lam, yv = lams[k], ys[k]
             burst, u = False, None
             if not missing:
-                yi = int(round(yv))
-                p = self.r / (self.r + lam)
-                lo = nbinom.cdf(yi - 1, self.r, p) if yi > 0 else 0.0
-                hi = nbinom.cdf(yi, self.r, p)
-                uu = keyed_rng(self.cfg.cfg_hash, "pit", nid, str(t)).random()
-                u = float(np.clip(lo + uu * (hi - lo), 1e-9, 1 - 1e-9))
-                zsc = float(norm.ppf(u))
-                short, run_mean = self.bocpd[nid].update(zsc)
+                u = float(us[k])
+                short, run_mean = self.bocpd[nid].update(float(zs[k]))
                 burst = short > self.cfg.burst_post and run_mean > 0
                 alpha_rows += self._alpha(nid, t, yv, lam)
             out_rows.append({"narrative_id": nid, "window": t, "y": yv, "lam": lam, "pit": u, "burst": burst})

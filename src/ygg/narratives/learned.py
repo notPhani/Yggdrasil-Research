@@ -110,14 +110,18 @@ class LearnedConfig:
     # Adaptive price of a narrative (2026-10-10, from build-branch's AdaptiveEmergence, restated in nats so that
     # births, merges and splits all pay the same price; see log_alpha_now and burst_bonus).
     adaptive: bool = True
-    rho_vol: float = 1.0                # cost += rho * log(V_6h / V_7d): constant false-birth rate per window, not per event
-    vol_clip_nats: float = 2.0          # the volume term is clipped to [-clip, clip]
-    gamma_burst: float = 1.0            # birth bonus gamma * log(v_G / v_ref) for a group of events arriving faster than v_ref
+    # The adaptive terms act on the birth RATE: each is a log rate factor, converted to nats by beta_tail, the
+    # e-folding scale of the upper tail of birth evidence (calibrated on the warmup, frozen; 1.0 = raw nats).
+    beta_tail: float = 1.0
+    rho_vol: float = 1.0                # births x (V_7d / V_6h)^rho: rho = 1 holds spurious births per window constant
+    vol_clip: float = 2.0               # |log(V_6h / V_7d)| clipped at 2 (a factor e^2)
+    gamma_burst: float = 1.0            # births x (v_G / v_ref)^gamma for a group of events arriving faster than v_ref
     v_ref_per_h: float = 1.0            # hand-set, disclosed: one event per hour is not a burst
-    burst_cap_nats: float = 3.0
-    k_soft: int = 200                   # alive narratives above which the price rises linearly ...
-    k_max: int = 300                    # ... reaching log_alpha + cap_nats at k_max (locked target: 100-300 alive)
-    cap_nats: float | None = None       # default -log_alpha: the price doubles at k_max
+    burst_cap: float = 3.0              # at most a factor e^3 (about 20)
+    k_soft: int = 200                   # alive narratives above which births are suppressed ...
+    k_max: int = 300                    # ... by a factor e^-cap_rate at k_max (locked target: 100-300 alive)
+    cap_rate: float = 3.0               # e^-3 = 0.05: at k_max a birth needs about 20x the usual evidence ratio
+    checks_needed: int = 3              # locked 3.5: a split or merge must win at 3 consecutive 6-hour checks
 
 
 def learned_config_from(cfg: dict) -> "LearnedConfig":
@@ -173,6 +177,11 @@ class LearnedNarrativeModel:
         self.emerged_from: set = set()
         self.preq = {"sum": 0.0, "n": 0}
         self.df, self.df_vocab, self.df_total = {}, 0, 0.0
+        self._phi0: dict = {}
+        self.trace: list | None = None                      # diagnostics only (calibration); never read by decisions
+        self.split_streak: dict = {}                        # nid -> consecutive checks at which its split won
+        self.merge_streak: dict = {}                        # (a, b) -> consecutive checks at which the merge won
+        self._MUa = np.zeros((0, self.dim), np.float32)     # MU rows of active() in id order (kept in step with MU)
         self.P = np.zeros((1024, self.dim), np.float32)     # birth pool: recent background events with >= 2 stories
         self.P_cid = np.full(1024, -1, dtype=np.int64)
         self.P_t = np.zeros(1024)
@@ -200,19 +209,18 @@ class LearnedNarrativeModel:
         v7 = sum(self.vol7) / len(self.vol7)
         if v6 <= 0 or v7 <= 0:
             return 0.0
-        c = self.cfg.vol_clip_nats
-        return min(max(self.cfg.rho_vol * math.log(v6 / v7), -c), c)
+        c = self.cfg.vol_clip
+        return self.cfg.beta_tail * self.cfg.rho_vol * min(max(math.log(v6 / v7), -c), c)
 
     def cap_term(self, k_alive: int | None = None) -> float:
         """Extra price per narrative, 0 below k_soft and cap_nats at k_max (linear ramp): a soft ceiling on the
         alive count. Merges earn it back, so at capacity the model prefers consolidation to birth."""
         if not self.cfg.adaptive:
             return 0.0
-        k = len(self._ids(("alive",))) if k_alive is None else k_alive
+        k = sum(1 for v in self.narratives.values() if v.state == "alive") if k_alive is None else k_alive
         if k <= self.cfg.k_soft:
             return 0.0
-        cap = -self.cfg.log_alpha if self.cfg.cap_nats is None else self.cfg.cap_nats
-        return cap * min((k - self.cfg.k_soft) / max(self.cfg.k_max - self.cfg.k_soft, 1), 1.0)
+        return self.cfg.beta_tail * self.cfg.cap_rate * min((k - self.cfg.k_soft) / max(self.cfg.k_max - self.cfg.k_soft, 1), 1.0)
 
     def log_alpha_now(self, k_alive: int | None = None) -> float:
         """log alpha minus the volume and capacity terms: the current price of one narrative, paid by births and
@@ -226,7 +234,7 @@ class LearnedNarrativeModel:
         if not self.cfg.adaptive or self.cfg.gamma_burst <= 0 or n_events < 2:
             return 0.0
         v = (n_events - 1) / max(span_h, 0.25)
-        return min(self.cfg.gamma_burst * max(0.0, math.log(v / self.cfg.v_ref_per_h)), self.cfg.burst_cap_nats)
+        return self.cfg.beta_tail * min(self.cfg.gamma_burst * max(0.0, math.log(v / self.cfg.v_ref_per_h)), self.cfg.burst_cap)
 
     # ------------------------------------------------------------ helpers
     @property
@@ -239,9 +247,15 @@ class LearnedNarrativeModel:
 
     def set_background_counts(self, df: dict, n_vocab: int, total: float) -> None:
         self.df, self.df_vocab, self.df_total = df, n_vocab, total
+        self._phi0 = {}
 
     def phi0(self, e: str) -> float:
-        return (self.df.get(e, 0) + 0.5) / (self.df_total + 0.5 * (self.df_vocab + 1))
+        """Memoized until the counts can change: set_background_counts (each window) and lineage_check (which runs
+        after the window's IDF close) both clear the memo, so values equal the unmemoized formula exactly."""
+        v = self._phi0.get(e)
+        if v is None:
+            v = self._phi0[e] = (self.df.get(e, 0) + 0.5) / (self.df_total + 0.5 * (self.df_vocab + 1))
+        return v
 
     def _ids(self, states=("alive", "dormant")) -> list[str]:
         return sorted(n for n, v in self.narratives.items() if v.state in states)
@@ -251,6 +265,7 @@ class LearnedNarrativeModel:
             ids = sorted(self.narratives)
             self._active = (ids, np.array([self.narratives[n].slot for n in ids], dtype=np.int64),
                             {n: i for i, n in enumerate(ids)})
+            self._MUa = self.MU[self._active[1]]
         return self._active
 
     def _refresh_bg(self) -> None:
@@ -266,6 +281,10 @@ class LearnedNarrativeModel:
             self.MU = np.concatenate([self.MU, np.zeros_like(self.MU)])
             self.Nv, self.Ev, self.Tv = (np.concatenate([a, np.zeros_like(a)]) for a in (self.Nv, self.Ev, self.Tv))
         self.MU[n.slot] = n.mu
+        if self._active is not None:
+            i = self._active[2].get(n.nid)
+            if i is not None:
+                self._MUa[i] = self.MU[n.slot]
         self.Nv[n.slot], self.Ev[n.slot], self.Tv[n.slot] = n.N, n.E, n.t_last_h
 
     def _new_slot(self) -> int:
@@ -285,7 +304,7 @@ class LearnedNarrativeModel:
               for n in self.narratives.values() if n.N / u >= 3]
         return {"kappa_s": self.cfg.kappa_s, "kappa_implied_median": float(np.median(ks)) if ks else None,
                 "kappa0": self.kappa0, "pi0": math.exp(self._log_pi0()), "alive": len(self._ids(("alive",))),
-                "dormant": len(self._ids(("dormant",))), "preq_mean": self.preq["sum"] / max(self.preq["n"], 1),
+                "dormant": len(self._ids(("dormant",))), "preq_mean": self.preq["sum"] / max(self.preq["n"], 1), "preq_n": self.preq["n"], "preq_sum": self.preq["sum"],
                 "log_alpha_now": self.log_alpha_now(), "vol_term": self.vol_term(), "cap_term": self.cap_term()}
 
     # ------------------------------------------------------------ scoring
@@ -295,7 +314,7 @@ class LearnedNarrativeModel:
         ids, slots, pos = self.active()
         if not ids:
             return ([], np.zeros(0), np.zeros(0)) if with_cos else ([], np.zeros(0))
-        cos_all = self.MU[slots] @ x.astype(np.float32)
+        cos_all = self._MUa @ x.astype(np.float32)             # == self.MU[slots] @ x, without the per-call gather
         k = min(self.cfg.n_cand, len(ids))
         cand = set(np.argpartition(-cos_all, k - 1)[:k].tolist()) if k < len(ids) else set(range(len(ids)))
         if idf is not None:
@@ -314,26 +333,28 @@ class LearnedNarrativeModel:
              + sum(w.values()) * (math.log(b) - np.log(self.Ev[sl] / u_now + b)) / T
              - dt * dt / (2.0 * self.cfg.sigma_h ** 2))
         cand_ids = [ids[i] for i in ci]
+        narr, by_entity, log = self.narratives, self.by_entity, math.log
+        cand_ents = [narr[nid].ents for nid in cand_ids]
+        n_c = len(cand_ids)
         where = None
         for e, we in w.items():
-            owners = self.by_entity.get(e)
+            owners = by_entity.get(e)
             if not owners:
                 continue
-            p0 = self.phi0(e)
-            bp0 = b * p0
-            lb = math.log(bp0)
-            if len(owners) > len(cand_ids):               # common entity: scan the candidates instead
-                for j, nid in enumerate(cand_ids):
-                    c = self.narratives[nid].ents.get(e)
+            bp0 = b * self.phi0(e)
+            lb = log(bp0)
+            if len(owners) > n_c:                         # common entity: scan the candidates instead
+                for j in range(n_c):
+                    c = cand_ents[j].get(e)
                     if c:
-                        g[j] += we * (math.log(c / u_now + bp0) - lb) / T
+                        g[j] += we * (log(c / u_now + bp0) - lb) / T
             else:
                 if where is None:
-                    where = {int(c): j for j, c in enumerate(ci)}
+                    where = {nid: j for j, nid in enumerate(cand_ids)}
                 for o in owners:
-                    j = where.get(pos[o])
+                    j = where.get(o)
                     if j is not None:
-                        g[j] += we * (math.log(self.narratives[o].ents[e] / u_now + bp0) - lb) / T
+                        g[j] += we * (log(narr[o].ents[e] / u_now + bp0) - lb) / T
         if with_cos:
             return cand_ids, g, cos_all[ci].astype(float)
         return cand_ids, g
@@ -445,7 +466,10 @@ class LearnedNarrativeModel:
                 members.append(ncid)
         times = [self.assigned.get(c, (None, t_h))[1] for c in members]
         bonus = self.burst_bonus(len(G), max(times) - min(times))
-        if len(G) < 2 or best + self.log_alpha_now() + bonus <= 0:
+        accept = len(G) >= 2 and best + self.log_alpha_now() + bonus > 0
+        if self.trace is not None and len(G) >= 2:
+            self.trace.append(("birth", t_h, len(G), best, bonus, self.log_alpha_now(), accept))
+        if not accept:
             return None
         lead = max(members, key=lambda c: (clusters[c].n if c in clusters else 1, -c))
         nid = stable_hash("narrative", *map(str, sorted(members)), str(window))[:16]
@@ -571,6 +595,7 @@ class LearnedNarrativeModel:
 
     # ------------------------------------------------------------ 6-hourly structure checks
     def lineage_check(self, now_h: float, window: int, clusters: dict | None = None) -> list[dict]:
+        self._phi0 = {}
         out = []
         for nid in self._ids(("alive",)):
             n = self.narratives[nid]
@@ -597,10 +622,19 @@ class LearnedNarrativeModel:
         np.fill_diagonal(C, -2.0)
         nn = np.argmax(C, axis=1)
         props = sorted({(min(i, int(j)), max(i, int(j))) for i, j in enumerate(nn)}, key=lambda p: (-float(C[p]), p))
-        out, used = [], set()
+        out, used, streak = [], set(), {}
         for i, j in props:
             a, b = ids[i], ids[j]
-            if a in used or b in used or self.merge_evidence(self.narratives[a], self.narratives[b], now_h) <= 0:
+            if a in used or b in used:
+                continue
+            ev = self.merge_evidence(self.narratives[a], self.narratives[b], now_h)
+            if self.trace is not None:
+                self.trace.append(("merge", now_h, 2, ev + self.log_alpha_now(), 0.0, self.log_alpha_now(), ev > 0))
+            if ev <= 0:
+                continue
+            k = self.merge_streak.get((a, b), 0) + 1
+            if k < self.cfg.checks_needed:                  # hysteresis (3.5): not yet 3 consecutive wins
+                streak[(a, b)] = k
                 continue
             used |= {a, b}
             na, nb = self._drop(a), self._drop(b)
@@ -612,10 +646,11 @@ class LearnedNarrativeModel:
             self._make(nid, na.S + nb.S, na.N + nb.N, ents, na.E + nb.E, "alive", min(na.born_h, nb.born_h),
                        max(na.t_last_h, nb.t_last_h), na.mass_total + nb.mass_total, heavier.label, sorted(na.events + nb.events))
             out.append({"window": window, "kind": "merge", "parents": [a, b], "children": [nid], "shares": [1.0]})
+        self.merge_streak = streak
         return out
 
     def _splits(self, now_h: float, window: int, clusters: dict) -> list[dict]:
-        out = []
+        out, streak = [], {}
         u_now = self._u(now_h)
         for nid in self._ids(("alive",)):
             n = self.narratives[nid]
@@ -652,7 +687,13 @@ class LearnedNarrativeModel:
                 Eab[e] = Eab.get(e, 0.0) + c
             ev = (self.log_z_vmf(Sa, Na) + self.log_z_vmf(Sb, Nb) - self.log_z_vmf(Sa + Sb, Na + Nb)
                   + (self.log_dm(Ea) + self.log_dm(Eb) - self.log_dm(Eab)) / self.cfg.temp + self.log_alpha_now())
+            if self.trace is not None:
+                self.trace.append(("split", now_h, len(evs), ev - self.log_alpha_now(), 0.0, self.log_alpha_now(), ev > 0))
             if ev <= 0:
+                continue
+            k = self.split_streak.get(nid, 0) + 1
+            if k < self.cfg.checks_needed:                  # hysteresis (3.5): not yet 3 consecutive wins
+                streak[nid] = k
                 continue
             parent = self._drop(nid)
             share = Na / (Na + Nb)
@@ -664,6 +705,7 @@ class LearnedNarrativeModel:
                            now_h, now_h, parent.mass_total * q, parent.label, [(evs[i][0], evs[i][1]) for i in idx])
                 kids.append(kid)
             out.append({"window": window, "kind": "split", "parents": [nid], "children": kids, "shares": [float(share), float(1 - share)]})
+        self.split_streak = streak
         return out
 
     # ------------------------------------------------------------ canonical state (digest material)
@@ -672,4 +714,4 @@ class LearnedNarrativeModel:
                for n in sorted(self.narratives.values(), key=lambda n: n.nid)]
         pool = sorted((c, self.P[s].tobytes(), self.P_t[s]) for c, s in self.pool.items())
         return (nar, self.S0.tobytes(), self.N0, sorted(self.assigned.items()), len(self.lineage), self.preq["n"], self.preq["sum"], pool,
-                tuple(self.vol7), tuple(self.vol6))
+                tuple(self.vol7), tuple(self.vol6), sorted(self.split_streak.items()), sorted(self.merge_streak.items()))

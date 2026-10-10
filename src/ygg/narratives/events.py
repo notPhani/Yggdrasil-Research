@@ -9,7 +9,6 @@ The LSH hyperplanes come from a keyed Philox stream (D2), so buckets are identic
 from __future__ import annotations
 
 import bisect
-import heapq
 import math
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
@@ -107,7 +106,7 @@ class EventClusterer:
                 cand.update(self.by_entity.get(e, ()))
         best, best_s = None, -1.0
         if cand:
-            ids = sorted(heapq.nlargest(self.cfg.max_candidates, cand)) if len(cand) > self.cfg.max_candidates else sorted(cand)
+            ids = sorted(cand)[-self.cfg.max_candidates:]       # unique ids: the k largest, ascending (== sorted(nlargest))
             cos = self.C[[self.clusters[c].slot for c in ids]] @ v
             top = set(np.argsort(-cos, kind="stable")[: self.cfg.ent_top].tolist())
             w_sum = sum(w.values())
