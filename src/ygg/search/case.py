@@ -151,5 +151,5 @@ def run_placebos(data_dir: Path, clock, plan: dict, prices: list[dict], actions:
                 hubs[n] += 1
         runs.append({"t": t, "day": rec["day"], "terminals": rec["terminals"], "explained": rec["groups"][0]["abstained_on"]})
     n_runs = max(len(costs), 1)
-    return {"k": len(costs), "fer": told / max(total, 1), "p_emp": empirical_p(real_cost, costs),
+    return {"k": len(costs), "fer": told / max(total, 1), "p_emp": empirical_p(real_cost, costs), "costs": costs,
             "hubs": sorted(((n, c / n_runs) for n, c in hubs.items()), key=lambda kv: -kv[1])[:10], "runs": runs}
