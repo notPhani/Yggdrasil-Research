@@ -158,7 +158,7 @@ def cmd_replay(args: argparse.Namespace) -> int:
 
     from ygg.narratives.learned import learned_config_from
 
-    start, state = cfg["replay"]["start"], {}
+    start, state = cfg["replay"].get("process_start", cfg["replay"]["start"]), {}
     ck = data_dir / "checkpoint" / "latest.pkl"
     if args.resume and ck.exists():                 # T1: full-state resume from the last checkpoint (bit-identical)
         import pickle
