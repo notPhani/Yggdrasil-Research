@@ -20,7 +20,7 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/pytest -q                  # 85 tests: determinism, contracts, red-team cases, engines, SerpApi sensor, adaptive emergence
 ```
 
-- **SerpApi key.** Engine 3b reads `SERPAPI_API_KEY`. Without it every query is recorded as UNAVAILABLE and the verdict uses Engine 1 documents and Wayback pages only. Adding the key later and rerunning `ygg verdict DAY` fills in the evidence without a replay: targeted results never feed back into Engine 2 (the one-way valve).
+- **SerpApi key.** Engine 3b reads `SERPAPI_API_KEY`, else `~/.config/serpapi/key`. Without it every query is recorded as UNAVAILABLE and the verdict uses Engine 1 documents and Wayback pages only. Adding the key later and rerunning `ygg verdict DAY` fills in the evidence without a replay: targeted results never feed back into Engine 2 (the one-way valve).
 - **Replay window.** The clock origin is 2024-12-16; processing runs 2024-12-30 .. 2025-01-28 (a 3-week blind cold start before R1 on 20 January), chosen for the deadline. Threads are pinned (`OMP_NUM_THREADS=2`) and `PYTHONHASHSEED` is irrelevant to the result (verified across seeds).
 - **Graph window.** `ygg ui` serves the investigation's recorded explanation graph on 127.0.0.1:8765. On a remote machine forward the port: `ssh -L 8765:localhost:8765 host`.
 - **Narratives (2a-L).** κ_s = 250 (the prequential score rises monotonically to 250; data-implied κ 280-310); log α = -15 and T = 2 are defaults, not fitted; splits and merges need 3 consecutive winning checks; at 300 alive narratives the system is full (splits pause, a birth sends the least-recently-active narrative dormant).
@@ -52,7 +52,8 @@ Measured on the replay (2024-12-16 .. 2025-01-31):
 - **Open models.** sentence-transformers/all-MiniLM-L6-v2 (narrative embeddings, computed on a local GPU and verified against CPU), minishlab/potion-base-8M (near-duplicate step), an NLI cross-encoder and GLiNER in the evidence verifier.
 - **Data.** GDELT 2.0 (public), Yahoo chart API (unofficial endpoint, responses archived), Wayback Machine snapshots for evidence pages, SerpApi for targeted evidence (optional key).
 - **Not fitted, disclosed.** log α = -15 and the entity temperature T = 2 are defaults; κ_s = 250 is supported by the prequential score and the data-implied κ; the adaptive-emergence terms are calibrated on two warmup days; the 300-narrative ceiling enforces the locked capacity.
-- **Scope cut.** Lean certification (stretch) and the live intraday trigger are not implemented; without a SerpApi key, evidence comes from GDELT documents and Wayback pages only.
+- **Scope cut.** Lean certification (stretch) and the live intraday trigger are not implemented.
+- **SerpApi use in the recorded cases.** 30 searches on the free plan, 15 per case (the cap), every response archived under `data/fetch/serpapi` so reruns spend nothing. Jan 13: 15 sent, 9 skipped by the cap, 6 results matched an earlier GDELT sighting, 83 did not (truth only). Jan 27: 15 sent, 2 skipped, 1 timed out, 3 matched, 66 did not.
 - **Prior work.** The design and research in this repository's `blueprint/`, `brief/` and `reports/`.
 
 ## Contents
