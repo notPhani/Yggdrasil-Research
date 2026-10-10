@@ -93,32 +93,63 @@ def explain(data_dir: Path, clock, t_snap: int, terminals: list[Terminal], cfg: 
     return {"t_snap": t_snap, "groups": results, "sharing_across_groups_searched": len(groups) == 1}
 
 
+def placebo_key(data_dir: Path, t: int, terms: list[Terminal], cfg: SearchConfig) -> str:
+    """Identity of one placebo search: the snapshot it reads (its recorded id), the terminals and the search config.
+    explain() reads only windows <= t, so this fixes its result even while the replay keeps appending later windows."""
+    import hashlib
+    import json
+
+    snap_id = json.loads((Path(data_dir) / "snapshots" / f"t={t}" / "manifest.json").read_text())["snapshot_id"]
+    return hashlib.sha256(repr((snap_id, t, [repr(x) for x in terms], repr(cfg))).encode()).hexdigest()
+
+
+def placebo_one(data_dir: Path, clock, t: int, prices: list[dict], actions: list[dict], universe: dict, k: int,
+                cfg: SearchConfig, cfg_hash: str, cache: bool = True) -> dict | None:
+    """One placebo search at quiet cutoff t, memoised under data/cases/placebo_cache/<placebo_key>.json."""
+    import json
+
+    from ygg.search.graph import build_terminals
+    from ygg.search.placebo import placebo_terminals
+
+    day = clock.start(t).strftime("%Y-%m-%d")
+    terms = build_terminals(placebo_terminals(day, prices, actions, set(universe["etfs"]), k, cfg_hash, t), universe)
+    if not terms:
+        return None
+    path = Path(data_dir) / "cases" / "placebo_cache" / f"{placebo_key(data_dir, t, terms, cfg)}.json"
+    if cache and path.exists():
+        return json.loads(path.read_text())
+    res = explain(data_dir, clock, t, terms, cfg)
+    rec = {"t": t, "day": day, "terminals": [x.name for x in terms],
+           "groups": [{"n_terminals": len(g["terminals"]), "cost_mnats": g["best"]["cost_mnats"],
+                       "abstained_on": g["best"]["abstained_on"], "used_narratives": g["used_narratives"]} for g in res["groups"]]}
+    if cache:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(rec))
+        tmp.replace(path)
+    return rec
+
+
 def run_placebos(data_dir: Path, clock, plan: dict, prices: list[dict], actions: list[dict], universe: dict, k: int,
-                 cfg: SearchConfig, real_cost: float) -> dict:
+                 cfg: SearchConfig, real_cost: float, cache: bool = True) -> dict:
     """Decision 5.13 (K = 20 in the cut): the identical search at quiet cutoffs, on instruments that did not move."""
     from collections import Counter
 
-    from ygg.search.graph import build_terminals
-    from ygg.search.placebo import empirical_p, placebo_terminals
+    from ygg.search.placebo import empirical_p
 
-    etfs = set(universe["etfs"])
     costs, told, total, hubs, runs = [], 0, 0, Counter(), []
     for t in plan["placebo_windows"]:
-        day = clock.start(t).strftime("%Y-%m-%d")
-        clusters = placebo_terminals(day, prices, actions, etfs, k, plan["cfg_hash"], t)
-        terms = build_terminals(clusters, universe)
-        if not terms:
+        rec = placebo_one(data_dir, clock, t, prices, actions, universe, k, cfg, plan["cfg_hash"], cache)
+        if rec is None:
             continue
-        res = explain(data_dir, clock, t, terms, cfg)
-        for g in res["groups"]:
-            n_terms = len(g["terminals"])
-            abst = set(g["best"]["abstained_on"])
-            total += n_terms
-            told += n_terms - len(abst)
-            costs.append(g["best"]["cost_mnats"])
+        for g in rec["groups"]:
+            abst = set(g["abstained_on"])
+            total += g["n_terminals"]
+            told += g["n_terminals"] - len(abst)
+            costs.append(g["cost_mnats"])
             for n in g["used_narratives"]:
                 hubs[n] += 1
-        runs.append({"t": t, "day": day, "terminals": [x.name for x in terms], "explained": res["groups"][0]["best"]["abstained_on"]})
+        runs.append({"t": t, "day": rec["day"], "terminals": rec["terminals"], "explained": rec["groups"][0]["abstained_on"]})
     n_runs = max(len(costs), 1)
     return {"k": len(costs), "fer": told / max(total, 1), "p_emp": empirical_p(real_cost, costs),
             "hubs": sorted(((n, c / n_runs) for n, c in hubs.items()), key=lambda kv: -kv[1])[:10], "runs": runs}
