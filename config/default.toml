@@ -25,3 +25,9 @@ embed_model = "minishlab/potion-base-8M"   # near-duplicate step only; theta_a i
 
 [narratives]
 embed_model = "sentence-transformers/all-MiniLM-L6-v2"   # Engine 2a; same-event AUC 0.854 (potion 0.832); fp32 ONNX
+# Adaptive price of a narrative (2a-L, 2026-10-10). log_alpha, kappa_s and temp come from ygg fit-narratives.
+adaptive = true                      # false restores 2a-L exactly as locked 2026-10-07
+rho_vol = 1.0                        # price += rho * log(V_6h / V_7d): constant spurious-birth rate per window
+gamma_burst = 1.0                    # birth bonus gamma * log(v_G / 1 event/h)_+, capped at 3 nats; hand-set, disclosed
+k_soft = 200                         # alive narratives where the price starts rising ...
+k_max = 300                          # ... to double at k_max (locked target 100-300 alive)

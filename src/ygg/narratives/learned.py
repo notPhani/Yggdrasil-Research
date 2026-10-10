@@ -32,6 +32,11 @@ Structure (each narrative costs -log alpha nats, i.e. prior P(K) proportional to
           Unit for merge and split: events, so kappa_s (the spread of event directions inside a narrative)
           sets the scale at which narratives live.
 Statistics decay with the locked narrative time scale sigma (336 h), stored in exp(t / sigma) units.
+Adaptive price (2026-10-10). log alpha is replaced everywhere by log_alpha_now = log alpha - rho log(V_6h/V_7d)
+  - cap(K_alive): more volume means more birth proposals, so the price rises with volume (constant spurious-birth
+  rate per window); above k_soft alive narratives the price ramps to double at k_max. Births additionally earn
+  gamma log(v_G / v_ref)_+ for a group of events arriving faster than v_ref (burst tilt). All three terms are
+  computed from the previous windows only. Turn off with adaptive = false (then 2a-L as locked 2026-10-07).
 
 Fitted, not set: alpha, kappa_s, T (prequential score on the warmup only; ygg.narratives.fit).
 Hand-set and disclosed: beta, dormancy after 7 days, sigma = 336 h, the event clusterer (proposals only).
@@ -44,8 +49,8 @@ events only: narratives that are just yesterday's events do not help predict new
 from __future__ import annotations
 
 import math
-from collections import defaultdict
-from dataclasses import dataclass, field
+from collections import defaultdict, deque
+from dataclasses import dataclass, field, fields
 
 import numpy as np
 from scipy.special import gammaln, ive
@@ -102,6 +107,24 @@ class LearnedConfig:
     check_every_windows: int = 24       # merge / split / dormancy checks every 6 hours
     split_min_events: int = 4
     rbar_max: float = 0.98
+    # Adaptive price of a narrative (2026-10-10, from build-branch's AdaptiveEmergence, restated in nats so that
+    # births, merges and splits all pay the same price; see log_alpha_now and burst_bonus).
+    adaptive: bool = True
+    rho_vol: float = 1.0                # cost += rho * log(V_6h / V_7d): constant false-birth rate per window, not per event
+    vol_clip_nats: float = 2.0          # the volume term is clipped to [-clip, clip]
+    gamma_burst: float = 1.0            # birth bonus gamma * log(v_G / v_ref) for a group of events arriving faster than v_ref
+    v_ref_per_h: float = 1.0            # hand-set, disclosed: one event per hour is not a burst
+    burst_cap_nats: float = 3.0
+    k_soft: int = 200                   # alive narratives above which the price rises linearly ...
+    k_max: int = 300                    # ... reaching log_alpha + cap_nats at k_max (locked target: 100-300 alive)
+    cap_nats: float | None = None       # default -log_alpha: the price doubles at k_max
+
+
+def learned_config_from(cfg: dict) -> "LearnedConfig":
+    """LearnedConfig from the TOML [narratives] table: keys that name a field are taken, the rest (embed_model) ignored."""
+    tab = cfg.get("narratives", {}) if isinstance(cfg, dict) else {}
+    names = {f.name for f in fields(LearnedConfig)}
+    return LearnedConfig(**{k: v for k, v in tab.items() if k in names})
 
 
 @dataclass
@@ -158,6 +181,52 @@ class LearnedNarrativeModel:
         self.P_next = 0
         self._lc_s = log_cd(self.cfg.kappa_s, self.dim)
         self._lc_0 = log_cd(self.kappa0, self.dim)
+        self.vol7: deque = deque(maxlen=672)                # root stories per window, trailing 7 days (predictable)
+        self.vol6: deque = deque(maxlen=24)                 # trailing 6 hours
+
+    # ------------------------------------------------------------ adaptive price of a narrative (nats)
+    def record_volume(self, n_roots: int) -> None:
+        """Called once per window after its decisions, so every term below is F[t-1]-measurable."""
+        self.vol7.append(int(n_roots))
+        self.vol6.append(int(n_roots))
+
+    def vol_term(self) -> float:
+        """rho * log(V_6h / V_7d), clipped. Births are proposals from events, and the number of proposals scales
+        with volume; charging log(volume ratio) keeps the expected number of spurious births per window constant
+        across the diurnal and weekly cycle (a multiple-comparisons correction in nats). Zero until a 6 h history."""
+        if not self.cfg.adaptive or len(self.vol6) < self.vol6.maxlen or not self.vol7:
+            return 0.0
+        v6 = sum(self.vol6) / len(self.vol6)
+        v7 = sum(self.vol7) / len(self.vol7)
+        if v6 <= 0 or v7 <= 0:
+            return 0.0
+        c = self.cfg.vol_clip_nats
+        return min(max(self.cfg.rho_vol * math.log(v6 / v7), -c), c)
+
+    def cap_term(self, k_alive: int | None = None) -> float:
+        """Extra price per narrative, 0 below k_soft and cap_nats at k_max (linear ramp): a soft ceiling on the
+        alive count. Merges earn it back, so at capacity the model prefers consolidation to birth."""
+        if not self.cfg.adaptive:
+            return 0.0
+        k = len(self._ids(("alive",))) if k_alive is None else k_alive
+        if k <= self.cfg.k_soft:
+            return 0.0
+        cap = -self.cfg.log_alpha if self.cfg.cap_nats is None else self.cfg.cap_nats
+        return cap * min((k - self.cfg.k_soft) / max(self.cfg.k_max - self.cfg.k_soft, 1), 1.0)
+
+    def log_alpha_now(self, k_alive: int | None = None) -> float:
+        """log alpha minus the volume and capacity terms: the current price of one narrative, paid by births and
+        splits and refunded by merges, so the three decisions stay mutually consistent."""
+        return self.cfg.log_alpha - self.vol_term() - self.cap_term(k_alive)
+
+    def burst_bonus(self, n_events: int, span_h: float) -> float:
+        """gamma * log(v_G / v_ref)_+ for a birth group whose n events arrived within span_h hours: an exponential
+        tilt of the birth prior toward bursts, the same device as the edge-surprise tilt of the search (5.12).
+        Hand-set, disclosed; off with gamma_burst = 0."""
+        if not self.cfg.adaptive or self.cfg.gamma_burst <= 0 or n_events < 2:
+            return 0.0
+        v = (n_events - 1) / max(span_h, 0.25)
+        return min(self.cfg.gamma_burst * max(0.0, math.log(v / self.cfg.v_ref_per_h)), self.cfg.burst_cap_nats)
 
     # ------------------------------------------------------------ helpers
     @property
@@ -216,7 +285,8 @@ class LearnedNarrativeModel:
               for n in self.narratives.values() if n.N / u >= 3]
         return {"kappa_s": self.cfg.kappa_s, "kappa_implied_median": float(np.median(ks)) if ks else None,
                 "kappa0": self.kappa0, "pi0": math.exp(self._log_pi0()), "alive": len(self._ids(("alive",))),
-                "dormant": len(self._ids(("dormant",))), "preq_mean": self.preq["sum"] / max(self.preq["n"], 1)}
+                "dormant": len(self._ids(("dormant",))), "preq_mean": self.preq["sum"] / max(self.preq["n"], 1),
+                "log_alpha_now": self.log_alpha_now(), "vol_term": self.vol_term(), "cap_term": self.cap_term()}
 
     # ------------------------------------------------------------ scoring
     def gains(self, x: np.ndarray, w: dict, t_h: float, idf=None, with_cos: bool = False):
@@ -373,7 +443,9 @@ class LearnedNarrativeModel:
                 G.append(cl.centroid.astype(float))
                 Wg.append(wn)
                 members.append(ncid)
-        if len(G) < 2 or best + self.cfg.log_alpha <= 0:
+        times = [self.assigned.get(c, (None, t_h))[1] for c in members]
+        bonus = self.burst_bonus(len(G), max(times) - min(times))
+        if len(G) < 2 or best + self.log_alpha_now() + bonus <= 0:
             return None
         lead = max(members, key=lambda c: (clusters[c].n if c in clusters else 1, -c))
         nid = stable_hash("narrative", *map(str, sorted(members)), str(window))[:16]
@@ -403,7 +475,7 @@ class LearnedNarrativeModel:
             Eab[e] = Eab.get(e, 0.0) + c
         v = self.log_z_vmf(Sa + Sb, Na + Nb) - self.log_z_vmf(Sa, Na) - self.log_z_vmf(Sb, Nb)
         ent = self.log_dm(Eab) - self.log_dm(Ea) - self.log_dm(Eb)
-        return v + ent / self.cfg.temp - self.cfg.log_alpha
+        return v + ent / self.cfg.temp - self.log_alpha_now()
 
     # ------------------------------------------------------------ updates
     def background_add(self, cid: int, x: np.ndarray, t_h: float) -> None:
@@ -579,7 +651,7 @@ class LearnedNarrativeModel:
             for e, c in Eb.items():
                 Eab[e] = Eab.get(e, 0.0) + c
             ev = (self.log_z_vmf(Sa, Na) + self.log_z_vmf(Sb, Nb) - self.log_z_vmf(Sa + Sb, Na + Nb)
-                  + (self.log_dm(Ea) + self.log_dm(Eb) - self.log_dm(Eab)) / self.cfg.temp + self.cfg.log_alpha)
+                  + (self.log_dm(Ea) + self.log_dm(Eb) - self.log_dm(Eab)) / self.cfg.temp + self.log_alpha_now())
             if ev <= 0:
                 continue
             parent = self._drop(nid)
@@ -599,4 +671,5 @@ class LearnedNarrativeModel:
         nar = [(n.nid, n.S.tobytes(), n.N, sorted(n.ents.items()), n.E, n.state, n.born_h, n.t_last_h, n.mass_total, n.events)
                for n in sorted(self.narratives.values(), key=lambda n: n.nid)]
         pool = sorted((c, self.P[s].tobytes(), self.P_t[s]) for c, s in self.pool.items())
-        return (nar, self.S0.tobytes(), self.N0, sorted(self.assigned.items()), len(self.lineage), self.preq["n"], self.preq["sum"], pool)
+        return (nar, self.S0.tobytes(), self.N0, sorted(self.assigned.items()), len(self.lineage), self.preq["n"], self.preq["sum"], pool,
+                tuple(self.vol7), tuple(self.vol6))

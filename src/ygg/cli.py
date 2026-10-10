@@ -131,8 +131,10 @@ def cmd_fit_narratives(args: argparse.Namespace) -> int:
         build_cache(data_dir, clock, cfg["replay"]["start"], end, model, log=log)
     if args.grid:
         f = lambda s, typ: [typ(x) for x in s.split(",")]
+        from ygg.narratives.learned import learned_config_from
+
         grid(data_dir, clock, _days(cfg["replay"]["start"], end), args.burn_in, emb.cached_dim(data_dir, model),
-             f(args.kappas, float), f(args.log_alphas, float), f(args.temps, float), log=log)
+             f(args.kappas, float), f(args.log_alphas, float), f(args.temps, float), log=log, base=learned_config_from(cfg))
     return 0
 
 
@@ -154,8 +156,10 @@ def cmd_replay(args: argparse.Namespace) -> int:
         with log_path.open("a") as f:
             f.write(msg + "\n")
 
+    from ygg.narratives.learned import learned_config_from
+
     out = run_replay(data_dir, clock, cfg["replay"]["start"], args.end or cfg["replay"]["end_exclusive"], cfg["narratives"]["embed_model"],
-                     cfg_hash(cfg), snapshot_windows=snaps, log=log)
+                     cfg_hash(cfg), snapshot_windows=snaps, log=log, lr_cfg=learned_config_from(cfg))
     (data_dir / "tables" / "replay_summary.json").write_text(json.dumps(out, indent=1, default=str))
     log(f"replay done: {len(out['snapshots'])} snapshots")
     return 0

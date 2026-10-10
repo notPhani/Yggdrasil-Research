@@ -198,6 +198,7 @@ def narrate_learned(m: LearnedNarrativeModel, idf: CausalIDF, clusters: dict, to
                 if cl.n >= 2:
                     m.pool_upsert(cid, cl.centroid, t_h)
         members[cid] = (ids, shares)
+    m.record_volume(sum(touched.values()))                # after the decisions: the price terms stay predictable
 
 
 def read_day(data_dir: Path, day: str, model: str) -> tuple[dict[int, list[dict]], dict[str, np.ndarray]]:

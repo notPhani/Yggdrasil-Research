@@ -17,7 +17,7 @@ import json
 import pickle
 import time
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -137,7 +137,8 @@ def run_setting(data_dir: Path, clock, days: list[str], burn_in_days: int, cfg, 
             "lineage": dict(kinds), "per_day": per_day, "seconds": round(time.monotonic() - t_start, 1)}
 
 
-def grid(data_dir: Path, clock, days: list[str], burn_in_days: int, dim: int, kappas, log_alphas, temps, log=print) -> list[dict]:
+def grid(data_dir: Path, clock, days: list[str], burn_in_days: int, dim: int, kappas, log_alphas, temps, log=print,
+         base: "LearnedConfig | None" = None) -> list[dict]:
     from ygg.narratives.learned import LearnedConfig
 
     out_path = Path(data_dir) / "narratives_fit" / "results.jsonl"
@@ -152,7 +153,7 @@ def grid(data_dir: Path, clock, days: list[str], burn_in_days: int, dim: int, ka
             for T in temps:
                 if (k, a, T) in done:
                     continue
-                r = run_setting(data_dir, clock, days, burn_in_days, LearnedConfig(kappa_s=k, log_alpha=a, temp=T), dim)
+                r = run_setting(data_dir, clock, days, burn_in_days, replace(base or LearnedConfig(), kappa_s=k, log_alpha=a, temp=T), dim)
                 with out_path.open("a") as f:
                     f.write(json.dumps(r) + "\n")
                 last = r["per_day"][-1]

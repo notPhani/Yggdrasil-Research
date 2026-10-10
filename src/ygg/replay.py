@@ -23,6 +23,7 @@ from ygg.attention.engine2b import B2Config, Engine2b
 from ygg.contracts import SnapshotManifest
 from ygg.determinism import WindowClock, stable_hash
 from ygg.observation import embed as emb
+from ygg.narratives.learned import LearnedConfig
 from ygg.narratives.engine2a import (LEDGER_SCHEMA, LINEAGE_SCHEMA, MEMBERSHIP_SCHEMA, SERIES_SCHEMA, Engine2a, read_day)
 
 E2B_SERIES = pa.schema([("narrative_id", pa.string()), ("window", pa.int32()), ("y", pa.float64()), ("lam", pa.float64()),
@@ -55,10 +56,10 @@ def snapshot(data_dir: Path, t: int, cfg_hash: str, e2a: Engine2a, e2b: Engine2b
 
 def run_replay(data_dir: Path, clock: WindowClock, start_day: str, end_day: str, embed_model: str, cfg_hash: str,
                snapshot_windows: set[int] = frozenset(), log=print, e2a: Engine2a | None = None,
-               e2b: Engine2b | None = None) -> dict:
+               e2b: Engine2b | None = None, lr_cfg: LearnedConfig | None = None) -> dict:
     data_dir = Path(data_dir)
     root = data_dir / "tables"
-    e2a = e2a or Engine2a(clock, emb.cached_dim(data_dir, embed_model))
+    e2a = e2a or Engine2a(clock, emb.cached_dim(data_dir, embed_model), lr_cfg=lr_cfg or LearnedConfig())
     e2b = e2b or Engine2b(clock, B2Config(cfg_hash=cfg_hash))
     led_tab = pq.read_table(root / "window_ledger").to_pylist() if (root / "window_ledger").exists() else []
     missing = {r["window"]: r["missing_batch"] for r in led_tab}
