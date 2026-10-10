@@ -1,8 +1,10 @@
 # Yggdrasil
 
-**Market event forensics with a look-ahead fence.** Yggdrasil keeps a deterministic, replayable world model of news attention. When a stock moves abnormally, it searches that model for competing explanations. It then tests each one against evidence retrieved through **SerpApi** and fenced at the moment of the move, and it answers "we do not know" when the evidence doesn't support a story.
+**Search engines know the future. Yggdrasil makes search evidence time-honest.**
 
-SerpApi India Hackathon 2026 · Open Innovation · SerpApi as the evidence sensor · deterministic replay · 86 tests · Python 3.12
+Yggdrasil is a market event forensics engine. When a stock moves abnormally, it reconstructs which public information plausibly moved it, **using only what was public before the move**. It weighs that explanation against an explicit "we do not know", checks it against the open web through **SerpApi**, and replays every step deterministically.
+
+SerpApi India Hackathon 2026 · Open Innovation · Python 3.12 · 86 tests · deterministic replay
 
 [![Yggdrasil demo video, 2:43](media/yggdrasil-demo-poster.png)](https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@af0be399b54fd24cba1580a83eedbf8fbbf3e377/media/yggdrasil-demo.mp4)
 
@@ -10,100 +12,72 @@ SerpApi India Hackathon 2026 · Open Innovation · SerpApi as the evidence senso
 - [Watch in the browser](https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@af0be399b54fd24cba1580a83eedbf8fbbf3e377/media/yggdrasil-demo.mp4)
 - [The file in this repo](media/yggdrasil-demo.mp4)
 
-
-## At a glance
-
-- **Insight.** Search engines know the future. Yggdrasil makes search evidence time-honest: every result carries the time it was first seen, and only evidence from before the move can say "this moved the price". Whether a story is true is asked separately.
-- **Originality.** It combines four things in one deterministic replay: Hawkes attention attribution, an exact Steiner-tree explanation search with an explicit "we do not know" candidate, placebo calibration, and logic-program verdicts over SerpApi evidence.
-- **Engineering.**
-  - 24.6 GB of GDELT, from 5.80M rows down to 4.01M stories.
-  - 300 live narratives and 8,734 attention edges.
-  - An exact search over 713 narratives and 3,116 edges.
-  - A replay that is bit-identical across hash seeds, and 86 tests.
-  - A terminal product.
-- **Usefulness.**
-  - **Market surveillance:** a move with no public explanation from before τ* is the case a surveillance team reviews.
-  - **Analysts and journalists** get dated evidence.
-  - **Quant researchers** get event labels free of look-ahead.
-- **SerpApi.** The only path from a hypothesis to open-web evidence: one confirming and two disconfirming searches per hypothesis, fenced at τ*, joined to GDELT for timing, and archived for replay. See [section 4](#4-how-serpapi-is-used).
-
-## Research findings and design decisions
-
-- **Research report.** [Yggdrasil attention model and search](reports/Yggdrasil%20attention%20model%20and%20search.md): the architecture as mathematics, with proofs and a ledger of every cited theorem. Each claim is labelled PROVEN, DERIVED, CONJECTURE, MEASURED or EMPIRICAL.
-- **Six research tracks:**
-  - [Attention point processes](research_notes/Yggdrasil%20attention%20model%20and%20search/attention_point_processes.md)
-  - [Conservation and flows](research_notes/Yggdrasil%20attention%20model%20and%20search/conservation_flows_crossfield.md)
-  - [Formal evidence reasoning](research_notes/Yggdrasil%20attention%20model%20and%20search/evidence_reasoning_formal.md)
-  - [Explanation search guarantees](research_notes/Yggdrasil%20attention%20model%20and%20search/explanation_search_guarantees.md)
-  - [Ingestion and event resolution](research_notes/Yggdrasil%20attention%20model%20and%20search/ingestion_event_resolution.md)
-  - [Market event attribution](research_notes/Yggdrasil%20attention%20model%20and%20search/market_event_attribution.md)
-- **Design decisions.** The [Blueprint](https://notphani.github.io/Yggdrasil-Research/blueprint/) holds the locked decision ledger. The code cites it directly, for example decision 0.4 for replay clocks and 5.13 for placebos.
-
 ---
 
-## 1. Problem statement
+## The insight
 
-When a stock breaks, the explanation arrives after the fact. Analysts, news blurbs and search-and-summarize agents all read today's internet, and **today's index already knows what happened**. That makes it easy to explain a move with a story that only became prominent after the price moved.
+Every "why did this stock move" answer is written after the move, against an internet that already contains the outcome. If you search today for why Edison International fell on 13 January 2025, you get lawsuits filed weeks later. They are true, but they were not public when the price moved.
 
-The question Yggdrasil answers is narrower and testable:
+Yggdrasil separates two questions that everyone else merges:
 
-> Which publicly available information, first seen **before** the move (τ*), plausibly explains an abnormal price move? How strong is that explanation compared with "we do not know"?
+| Question | Evidence allowed | Verdict |
+|---|---|---|
+| **Could it have moved the price?** | Only what Yggdrasil saw **before τ***, the first abnormal print | P_pre |
+| **Is it true?** | Everything, up to report time | P_all |
 
-## 2. Existing approaches
+It also refuses to force a story. "We do not know" is a candidate in every search, with a computed cost, and it wins when the evidence is thin.
 
-| Approach | What it misses |
+## Who it is for
+
+| User | What they get |
 |---|---|
-| "Why is it moving" news blurbs | Written after the move; no timing provenance for the evidence |
-| Event studies | Measure the abnormal return, but don't say which story caused it |
-| LLM search-and-summarize agents | Query a live index, so they leak look-ahead; no calibration; rarely abstain |
+| **Market surveillance and compliance** | A move with **no** public explanation from before τ* is exactly the case a surveillance team reviews. Yggdrasil says "we do not know" with numbers attached instead of inventing a story. |
+| **Analysts and risk desks** | A ranked set of competing explanations, each with dated evidence and the item its verdict hinges on, not one confident paragraph. |
+| **Financial journalists** | Which sources had the story first, and when, with copies and syndication folded together. |
+| **Quant researchers** | Event explanations free of look-ahead, usable as labels without leaking the future into a backtest. |
 
-## 3. Yggdrasil's solution
+## What is new
 
-Each part links to its design document and its code.
+| | Dated evidence | Abstains | Calibrated | Replayable | Uses search |
+|---|---|---|---|---|---|
+| "Why is it moving" blurbs | no | no | no | no | indirectly |
+| Event studies | n/a | n/a | yes, for the return only | yes | no |
+| LLM search-and-summarize agents | no, live index | rarely | no | no | yes, unfenced |
+| **Yggdrasil** | **yes, first_seen per item** | **yes, a costed candidate** | **yes, 20 placebos** | **yes, bit for bit** | **yes, SerpApi fenced at τ*** |
 
-- **An always-on world model, replayable bit for bit.** GDELT 2.0 is read in 15-minute windows and turned into narratives and the attention each one gets. The replay is deterministic: state hashes are identical across Python hash seeds, and the replay checkpoints and resumes. Recorded investigations replay with nothing recomputed. [Blueprint](https://notphani.github.io/Yggdrasil-Research/blueprint/) · [`src/ygg/replay.py`](src/ygg/replay.py)
-- **Narratives, Engine 2a.** A von Mises–Fisher mixture over MiniLM title embeddings, combined with a Dirichlet entity mixture. Births, merges and splits are closed-form Bayes-factor decisions, with adaptive emergence and a 300-narrative ceiling. [Report](reports/Yggdrasil%20attention%20model%20and%20search.md) · [`src/ygg/narratives/learned.py`](src/ygg/narratives/learned.py)
-- **Attention, Engine 2b.** A discrete softplus Hawkes process with divisive competition (ω). Each window's attention is attributed to parent narratives, and the unexplained remainder goes to **BOT**, meaning new information from outside. Those attribution shares are the graph's edges. [Brief](https://notphani.github.io/Yggdrasil-Research/brief/) · [`src/ygg/attention/engine2b.py`](src/ygg/attention/engine2b.py)
-- **Observer.** A market-only abnormal-return gate, then clustering by residual correlation. τ* is the first abnormal print. [`src/ygg/observer/trigger.py`](src/ygg/observer/trigger.py)
-- **Explanation search, Engine 3a.**
-  - An exact node-weighted Steiner tree (DPBF) from BOT to the moved clusters, on the snapshot frozen at τ*.
-  - Each edge costs −ln p + 0.3.
-  - "We do not know" is always a candidate, and rivals within 20 : 1 are reported.
-  - The same search runs on 20 placebo cutoffs to measure how often equally cheap chains appear on quiet days.
+Each piece below exists in the literature. The combination does not, as far as we know:
+- Hawkes-process attention attribution.
+- Exact Steiner-tree explanation search with an abstention candidate.
+- Placebo calibration.
+- Logic-program verdicts over time-fenced search evidence.
+- One deterministic replay that ties all four together.
 
-  [`src/ygg/search/`](src/ygg/search/)
-- **SerpApi evidence and verdicts, Engine 3b.** SerpApi supplies targeted evidence for every hypothesis, fenced at τ* as described in section 4. clingo then enumerates every consistent reading of the evidence and returns four verdict bits for two questions: could this have moved the price (P_pre), and is it true (P_all)? [`src/ygg/verdicts/serpapi.py`](src/ygg/verdicts/serpapi.py) · [`src/ygg/verdicts/engine3b.py`](src/ygg/verdicts/engine3b.py)
-- **The terminal product, `ygg ui`.**
-  - A live control panel: watchlist, one-minute bars, quote, live GDELT feed, world model and engine status.
-  - An investigation workspace with seven tabs: overview, story, evidence, logic, placebo, **SerpApi trace** and audit. Each explanation has a click-through brief.
-  - A recorded replay of every investigation.
-  - A graph window in the browser, linked live to the terminal.
-  - A presenter mode for demos.
+## How SerpApi powers it
 
-## 4. How SerpApi is used
+SerpApi is Yggdrasil's **targeted evidence sensor**. The GDELT stream says what the world was paying attention to. SerpApi says what the open web holds about each specific hypothesis. Without it, the verdicts rest on the broad stream alone.
 
-SerpApi is the system's **targeted evidence sensor**. The broad GDELT stream tells Yggdrasil what the world was paying attention to. SerpApi answers a different question: for this hypothesis, what does the open web say, and when did Yggdrasil first see it?
+![SerpApi trace: every query, its canonical-URL matches and its truth-only results](media/screens/serpapi-trace.png)
 
 | Step | What happens |
 |---|---|
-| Queries | Per hypothesis, three Google queries through SerpApi, built from its central subject: **1 confirming and 2 disconfirming**. The disconfirming ones look for what would break the story. |
-| Look-ahead fence | Two of the three are date-bounded with `tbs=cdr` to [τ* − 14 d, τ*]. |
-| Timing provenance | Each result is joined to Engine 1 by canonical URL. A match **inherits GDELT's first_seen**, and only evidence first seen before τ* can support "this moved the price" (P_pre). Unmatched results support "is it true" (P_all) only. |
-| One-way valve | SerpApi results never feed back into the narrative or attention models, so search can't contaminate the world model. |
-| Archive and replay | Every response is stored in a content-addressed blob store; no archived file contains the API key (checked). Reruns, replays and the terminal read the archive and spend zero searches. |
-| Budget | At most 15 searches per case, best explanation and top rivals first; skipped queries are recorded as such. |
-| In the product | The **F6 trace** tab shows every query, its status, its canonical-URL matches and its truth-only results. The **F3 evidence** tab draws the τ* wall through them. |
+| **Confirm and disconfirm** | Per hypothesis, three Google queries through SerpApi, built from its central subject: **one confirming and two disconfirming**, written to break the story. |
+| **Look-ahead fence** | Two of the three are date-bounded with `tbs=cdr` to [τ* − 14 d, τ*]. |
+| **Timing provenance** | Each result is joined to the GDELT stream by canonical URL and **inherits the time Yggdrasil first saw it**. Only evidence first seen before τ* can enter P_pre. Unmatched results support P_all only. |
+| **One-way valve** | Search results never feed back into the narrative or attention models, so targeted search cannot contaminate the world model. |
+| **Archive and replay** | Every response is stored in a content-addressed blob store, and no archived file contains the API key (checked). Reruns, replays and the terminal read the archive and spend zero searches. |
+| **Budget** | At most 15 searches per case, best explanation and top rivals first. Skipped queries are recorded, not hidden. |
+| **In the product** | The **F6 trace** tab shows every query and its matches. The **F3 evidence** tab draws the τ* wall through the results. |
 
-Measured on the two recorded cases, using the free plan's 250 searches a month:
+![Evidence tab: the τ* wall, with pre-τ*, post-τ* and unmatched bands](media/screens/evidence-tau-wall.png)
+
+Measured on the recorded cases, using the free plan's 250 searches a month:
 
 | Case | Searches sent | Skipped by the cap | Matched an earlier GDELT sighting | Truth only |
 |---|---|---|---|---|
 | 13 Jan 2025, EIX + PCG | 15 | 9 | 6 | 83 |
 | 27 Jan 2025, DeepSeek day | 15 | 2 | 3 | 66 |
 
-That is 30 searches in total, and every rerun since has come from the archive.
-
-## 5. Architecture
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -123,23 +97,125 @@ flowchart LR
   SA -. one-way valve: never enters .-> E2a
 ```
 
-The replay runs every engine window by window over GDELT from 30 Dec 2024 to 27 Jan 2025, on a clock that starts 16 Dec. It writes checkpoints every 3 days and snapshots at the windows the cases and placebos need. Investigations and the graph window read only recorded state, so every number on screen traces back to a file. The live parts of the control panel, the GDELT feed and the quotes, are labelled live.
+| Engine | What it does | Code |
+|---|---|---|
+| **E1 observe** | GDELT 2.0 GKG in 15-minute batches. Canonical URLs, exact dedup, syndicated copies folded into copy groups, and a `first_seen` on every document. | [`src/ygg/observation/`](src/ygg/observation/) |
+| **E2a narratives** | A von Mises–Fisher mixture over MiniLM title embeddings, combined with a Dirichlet entity mixture. Births, merges and splits are closed-form Bayes-factor decisions with 3-check hysteresis, an adaptive birth price and a 300-narrative ceiling. | [`src/ygg/narratives/`](src/ygg/narratives/) |
+| **E2b attention** | A discrete softplus Hawkes process with memory traces and divisive competition ω. Attribution shares become edges, and unexplained attention goes to BOT, meaning new information. | [`src/ygg/attention/`](src/ygg/attention/) |
+| **Observer** | A market-only abnormal-return gate, clusters by residual correlation, and τ* as the first abnormal print. | [`src/ygg/observer/`](src/ygg/observer/) |
+| **E3a search** | An exact node-weighted Steiner tree (DPBF) from BOT to the moved clusters. Each edge costs −ln p + 0.3. Rivals within 20 : 1 are reported, the abstention candidate is always present, and 20 placebos are run. | [`src/ygg/search/`](src/ygg/search/) |
+| **E3b verdicts** | Hypotheses, then SerpApi evidence, claims and clingo stable models, giving four verdict bits for P_pre and P_all and a dossier. | [`src/ygg/verdicts/`](src/ygg/verdicts/) |
+| **Terminal** | `ygg ui`: a live control panel, an investigation workspace, a recorded replay, a browser graph window and presenter mode. | [`src/ygg/ui/`](src/ygg/ui/) |
 
-## 6. Results
+## Engineering
 
-- **13 Jan 2025, Edison International and PG&E.**
-  - Best chain: "Eaton Fire death toll rises" into the EIX + PCG cluster, at **4.2 : 1 against "we do not know"**, with seven rivals within 20 : 1.
-  - P_pre and P_all are both SUPPORTED. The verdict hinges on a yahoo.com item ("Investigators probe Eaton Canyon electrical tower area…") first seen **14.5 hours before τ***.
-  - Placebos: 20 quiet cutoffs, empirical p = 0.43, false-explanation rate 1.0. The graph cost alone is not diagnostic here, and the dated evidence carries the verdict.
-- **27 Jan 2025, DeepSeek-R1.**
-  - The trigger fired on 13 instruments in four clusters: chips, power producers, ASM International and Coherent. τ* is 08:00 UTC, the Amsterdam open.
-  - The cheapest chain is not credible: a dormant "Pulsar Helium" narrative links to three clusters at p = 0.95.
-  - The safeguards hold. Placebo p = 0.33, and both hypotheses are CONSISTENT-BUT-UNPROVEN.
-  - A DeepSeek narrative existed from 20 Jan, hours after the R1 release, with 70 DeepSeek-titled articles before τ*. It did not win the cluster links.
-- **Known failure, disclosed and not patched after the fact.** The link score adds an unbounded robust z of a narrative's last-day attention to log-lift. A narrative whose earlier attention was near zero has a tiny MAD, so when it revives it can take nearly all the link mass. This is the likely cause on 27 Jan, from reading the code, not yet measured. Bounding the z term is the fix. It was not applied, because it would be tuned on the test case.
-- **One open question.** One Jan 27 hypothesis, "What the papers say – December 30", is SUPPORTED, and it has not been examined.
+| Measure | Value |
+|---|---|
+| GDELT ingested | 13,533 files, 24.6 GB, md5-verified |
+| Engine 1 | 5.80M rows → 5.77M unique → **4.01M stories**, after folding 1.76M syndicated copies |
+| World model on 27 Jan | **300** live narratives, 746 dormant, **8,734** attention edges, BOT share 52% |
+| Jan 13 search graph | **713** narratives, **3,116** edges; 227 can reach the moved cluster |
+| Jan 27 search graph | 1,038 nodes, 8,173 edges |
+| 2024 acceptance run | Cases on 122 of 252 trading days; search terminals k ≤ 8 on 251 of 252 days |
+| Tests | 86: determinism, contracts, red-team cases, engines, SerpApi sensor, placebo memo |
 
-## 7. Run it
+**Engineering highlights:**
+- **Deterministic replay.** Entity weights were being summed in set order, which made results depend on `PYTHONHASHSEED`. They are now summed in sorted order, and state hashes are verified identical across seeds. Snapshots are hash-chained, and the replay checkpoints every 3 days and resumes under a supervisor.
+- **Memory.** Hashing the snapshot state built a roughly 5 GB string and got the replay killed for running out of memory. It is now a streamed hash with an identical digest.
+- **Faithful speedup.** A profiled day went from 528 s to 214 s, about 2.5x, with every output table identical. The gains came from vectorized negative-binomial and normal transforms across narratives, cached rows and a contiguous parameter matrix.
+- **Placebo memo.** Each placebo search is memoised under its snapshot id, terminals and search config. Placebos run while the replay is still writing later days, and cached results equal uncached ones.
+- **Verdict pipeline.** Evidence pages are prefetched from the Wayback Machine concurrently, which cut a verdict from over 15 minutes to 4.5 minutes.
+
+## The product
+
+![Live control panel](media/screens/control-panel.png)
+
+**The live control panel:**
+- A watchlist with one-minute bars and a quote.
+- The live GDELT feed, with its lag shown honestly.
+- The world model.
+- The investigations list.
+- Engine status, with `F4` switching to the event tape.
+
+![Investigation workspace with the explanation brief open](media/screens/investigation-brief.png)
+
+**The investigation workspace:**
+- The verdict, the cluster price chart, ranked explanations, hypotheses and evidence.
+- Click any explanation for its **brief**: the claim, why this path (every recorded edge with its p), what it was tested against, the verdict, the evidence it hinges on, what would change it, and its limits.
+- `F1`–`F7` switch between overview, story, evidence, logic, placebo, SerpApi trace and audit.
+- `R` replays the case from recorded state; nothing is recomputed.
+
+![Graph window: best tree, rivals and abstention](media/screens/graph-window.png)
+
+**The graph window** at http://127.0.0.1:8765/ is linked live to the terminal. It has three views: explanations, neighborhood and the full graph.
+
+## Results
+
+**13 Jan 2025, Edison International and PG&E.**
+- Best chain: "Eaton Fire death toll rises" into the EIX + PCG cluster, at **4.2 : 1 against "we do not know"**, with seven rivals within 20 : 1.
+- P_pre and P_all are both SUPPORTED. The verdict hinges on a yahoo.com item ("Investigators probe Eaton Canyon electrical tower area…") first seen **14.5 hours before τ***.
+
+**27 Jan 2025, DeepSeek-R1.**
+- The trigger fired on 13 instruments in four clusters: chips, power producers, ASM International and Coherent. τ* is 08:00 UTC, the Amsterdam open.
+- The cheapest chain is not credible: a dormant "Pulsar Helium" narrative links to three clusters at p = 0.95.
+- The safeguards hold. Placebo p = 0.33, and the hypotheses are CONSISTENT-BUT-UNPROVEN, so the system does not endorse it.
+
+![Placebo histogram for 13 January](media/screens/placebo-jan13.png)
+
+**What the placebos say, measured honestly.**
+- On 13 Jan, chains as cheap as the best one appear on 43% of quiet cutoffs (p = 0.43), with a false-explanation rate of 1.0.
+- So the graph cost alone is not diagnostic yet. The time-fenced evidence is what carries the verdict.
+
+**Known failure, disclosed and not patched after the fact.**
+- The link score adds an unbounded robust z of a narrative's last-day attention to log-lift. A narrative whose earlier attention was near zero has a tiny MAD, so when it revives it can take nearly all the link mass.
+- This is the likely cause on 27 Jan, from reading the code, not yet measured. A DeepSeek narrative existed from 20 Jan with 70 DeepSeek-titled articles, but lost the links.
+- Bounding the z term is the fix. It was not applied, because it would be tuned on the test case.
+
+## Design decisions
+
+The full locked ledger is in the [Blueprint](https://notphani.github.io/Yggdrasil-Research/blueprint/), and the code cites it by number, for example decision 0.4 for replay clocks and 5.13 for placebos. The decisions that shape the system:
+
+| Decision | Why |
+|---|---|
+| "We do not know" is a search candidate, costing −ln p0 + λ per cluster | Abstention becomes measurable odds, not a fallback |
+| Separate P_pre from P_all, fenced by `first_seen` | The search index knows the future; this is the only honest way to use it |
+| The one-way valve: SerpApi never enters Engine 2 | Targeted search must not shape the world model it is testing |
+| Exact search (DPBF, k ≤ 8) instead of heuristics | The research overturned MCTS/PUCT as the search core; exactness makes rivals and odds meaningful |
+| 20 placebos on quiet cutoffs | Every explanation gets a false-positive rate, not just a score |
+| Divisive competition ω instead of subtractive | The research overturned subtractive competition |
+| Bayes-factor narrative lifecycle, 3-check hysteresis, 300 ceiling | Diagnosed a split cascade, with 2,091 narratives alive by day 2, and bounded it |
+| Archive every search response, 15 per case | Replayable offline at zero repeat cost |
+| The investigation UI shows recorded state only | What you see is what the engines produced, at the time they produced it |
+| The 27 Jan failure is not patched after the fact | Tuning on the test case would invalidate the result |
+
+## Research findings
+
+The design came out of a research phase. It is written up as a [report](reports/Yggdrasil%20attention%20model%20and%20search.md) with proofs and a ledger of cited theorems, plus six research tracks:
+- [Attention point processes](research_notes/Yggdrasil%20attention%20model%20and%20search/attention_point_processes.md)
+- [Conservation and flows](research_notes/Yggdrasil%20attention%20model%20and%20search/conservation_flows_crossfield.md)
+- [Formal evidence reasoning](research_notes/Yggdrasil%20attention%20model%20and%20search/evidence_reasoning_formal.md)
+- [Explanation search guarantees](research_notes/Yggdrasil%20attention%20model%20and%20search/explanation_search_guarantees.md)
+- [Ingestion and event resolution](research_notes/Yggdrasil%20attention%20model%20and%20search/ingestion_event_resolution.md)
+- [Market event attribution](research_notes/Yggdrasil%20attention%20model%20and%20search/market_event_attribution.md)
+
+Every claim in them is labelled PROVEN (cited theorem), DERIVED (proved in the report), CONJECTURE, MEASURED or EMPIRICAL.
+
+**Key findings:**
+- **Attention model.** A discrete-time multivariate softplus Hawkes process on 15-minute windows, with memory traces at 1 h, 6 h, 1 day and 1 week. Divisive competition `(B / (B + S_raw)) ** ω`, with ω fitted in [0, 1].
+- **Conservation is built into the measurement.** Soft memberships sum to one, so tracked attention plus a null narrative equals ingested volume exactly. "Semi-conservation" reduces to how strongly narratives compete, which ω measures.
+- **BOT.** The exogenous source node takes unexplained mass. It is the root of every explanation and the "we do not know" answer.
+- **Search.** Exact dynamic programming (Dreyfus–Wagner / DPBF) on a local subgraph. The design adds a push-style personalized-PageRank certificate and Levin tree search for larger graphs; those are not in this build.
+- **Verdicts.** Evidence becomes a tight normal logic program with defeasible acceptance of each report. Four brave and cautious stable-model queries give the verdict; this build runs it with clingo. Lean 4 certification is designed but was not run.
+- **What the research overturned:**
+  - Subtractive competition.
+  - Gaussian-prior MAP.
+  - MCTS/PUCT as the search core.
+  - The original EC2 bound.
+  - Classical entailment over conflicting sources.
+
+The **[Blueprint](https://notphani.github.io/Yggdrasil-Research/blueprint/)** is the final architecture document: every formula, parameter sensitivity, stability proofs, extreme cases and terminal mockups. The **[research brief](https://notphani.github.io/Yggdrasil-Research/brief/)** presents the findings with Manim animations.
+
+## Run it
 
 ```
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
@@ -150,46 +226,28 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/ygg case 2025-01-13        # observer + Engine 3a: clusters, tau*, explanation trees, rivals, abstention, 20 placebos (memoised)
 .venv/bin/ygg verdict 2025-01-13     # Engine 3b: hypotheses, SerpApi evidence, claims, clingo verdicts, dossier
 .venv/bin/ygg ui [--present steps.json]   # terminal product; graph window at http://127.0.0.1:8765/
-.venv/bin/pytest -q                  # 86 tests: determinism, contracts, red-team cases, engines, SerpApi sensor, placebo memo
+.venv/bin/pytest -q                  # 86 tests
 ```
 
 - **SerpApi key.** Set `SERPAPI_API_KEY`, or put the key in `~/.config/serpapi/key`. Without a key every query is recorded as UNAVAILABLE. Adding the key later and rerunning `ygg verdict DAY` fills in the evidence without a replay, because of the one-way valve.
-- **Determinism.** Threads are pinned (`OMP_NUM_THREADS=2`). Entity weights are summed in sorted order, so results don't depend on `PYTHONHASHSEED`; this was verified across seeds. Snapshots are hash-chained.
-- **Graph window on a remote machine.** Forward the port: `ssh -L 8765:localhost:8765 host`.
+- **Determinism.** Threads are pinned (`OMP_NUM_THREADS=2`), results don't depend on `PYTHONHASHSEED` (verified across seeds), and snapshots are hash-chained.
+- **Remote machine.** Forward the graph window: `ssh -L 8765:localhost:8765 host`.
 
-## 8. Future development
+## Future development
 
-1. **Live intraday trigger.** Minute bars open cases while the move is happening, and the SerpApi sensor runs within the same window.
+1. **Live intraday trigger.** Minute bars open cases while the move happens, with the SerpApi sensor running in the same window.
 2. **A wider SerpApi sensor array.** The Google News engine for fresher targeted retrieval, plus per-source date filters and the source-tier registry applied to search results.
-3. **Bounded link score.** Fix the Jan 27 failure with a bounded attention z, evaluated on held-out days with pre-registered placebo targets.
-4. **Lean certification of verdicts.** The design is in the blueprint; it was not run in this build.
-5. **Larger graphs.** A push-style certificate and Levin tree search for cases beyond 8 terminals, with multilingual GDELT.
-
-## 9. Research and design documents
-
-| Document | What it is |
-|---|---|
-| [Blueprint](https://notphani.github.io/Yggdrasil-Research/blueprint/) (`blueprint/`) | The final architecture document: every engine's formulas, parameter sensitivity, stability proofs, extreme cases, terminal mockups, build plan, measured facts and sources |
-| [Research brief](https://notphani.github.io/Yggdrasil-Research/brief/) (`brief/`) | Key findings, the math, and Manim animations, including a 13-chapter film of the pipeline |
-| [Report](reports/Yggdrasil%20attention%20model%20and%20search.md) | The architecture from ingestion to search, written as mathematics, with proofs and a ledger of cited theorems |
-| [Research notes](research_notes/) | The six research tracks behind the report |
-
-Claim labels used in the documents:
-- **PROVEN:** a cited theorem.
-- **DERIVED:** proved in the report.
-- **CONJECTURE:** to be tested.
-- **MEASURED:** from GDELT 2.0 data.
-- **EMPIRICAL:** from the literature.
-
-The documents describe the full design. Section 8 lists what this build does not implement yet.
+3. **Bounded link score.** Fix the 27 Jan failure, evaluated on held-out days against pre-registered placebo targets.
+4. **Lean certification of verdicts**, as designed in the blueprint.
+5. **Larger graphs.** A push-style certificate and Levin tree search beyond 8 terminals, with multilingual GDELT.
 
 ## Disclosures
 
-- **AI tools.** Claude (Anthropic) was used for design, code and documentation.
+- **AI tools.** Claude (Anthropic), through Claude Code, was used as a research and engineering partner for literature review, implementation, profiling, testing and red-teaming. The author directed the research and made the architecture decisions.
 - **Open models.**
-  - sentence-transformers/all-MiniLM-L6-v2 for narrative embeddings, computed on a local GPU and verified against CPU.
-  - minishlab/potion-base-8M for the near-duplicate step.
-  - An NLI cross-encoder and GLiNER in the evidence verifier.
+  - all-MiniLM-L6-v2 for narrative embeddings, computed on a local GPU and verified against CPU.
+  - potion-base-8M for near-duplicate detection.
+  - GLiNER and an NLI cross-encoder in the evidence verifier.
 - **Data.**
   - GDELT 2.0 (public).
   - The Yahoo chart API, an unofficial endpoint, with responses archived.
@@ -197,12 +255,12 @@ The documents describe the full design. Section 8 lists what this build does not
   - **SerpApi** for targeted evidence: 30 searches on the free plan, all archived.
 - **Not fitted.** These values were chosen, not fitted, and are disclosed:
   - log α = −15 and the entity temperature T = 2 are defaults.
-  - κ_s = 250 is supported by the prequential score and the data-implied κ.
+  - κ_s = 250 is supported by the prequential score.
   - The adaptive-emergence terms are calibrated on two warmup days.
   - The 300-narrative ceiling enforces the locked capacity.
 - **Replay scope.** The replay covers 30 Dec 2024 to 27 Jan 2025; 28 Jan was not replayed. Equity prices are daily bars.
 - **Not implemented.** Lean certification and the live intraday trigger.
-- **Prior work.** The design and research in `blueprint/`, `brief/`, `reports/` and `research_notes/` came before the build. The code in `src/` was written for this hackathon.
+- **Prior work.** The design and research documents in `blueprint/`, `brief/`, `reports/` and `research_notes/` came before the build. The code in `src/` was written for this hackathon.
 
 ## License
 
