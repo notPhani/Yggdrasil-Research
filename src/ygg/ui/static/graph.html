@@ -48,6 +48,8 @@
   .muted { color:var(--dim); }
   .idc { color:var(--id); }
   #foot { height:22px; display:flex; align-items:center; gap:18px; padding:0 10px; background:var(--bar); color:var(--dim); font-size:12px; white-space:nowrap; overflow:hidden; }
+  #cap { position: fixed; left: 0; right: 380px; bottom: 22px; padding: 14px 40px; background: rgba(0,0,0,.92); color: #fff;
+         border-top: 3px solid var(--amber); font-size: 22px; font-weight: 700; text-align: center; display: none; z-index: 10; }
   #foot i { display:inline-block; width:18px; height:0; border-top:3px solid; vertical-align:middle; margin-right:6px; }
 </style>
 </head>
@@ -63,6 +65,7 @@
   <span id="link">○ terminal</span>
 </div>
 <div id="main"><div id="cy"></div><div id="side"></div></div>
+<div id="cap"></div>
 <div id="foot">
   <span><i style="border-color:var(--amber-hi)"></i>best explanation</span>
   <span><i style="border-color:var(--amber);border-top-style:dashed"></i>rival within ln 20</span>
@@ -297,7 +300,8 @@ function boot() {
 }
 
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => setView(t.dataset.view));
-document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; if (e.key === "1") setView("expl"); if (e.key === "2") setView("hood"); if (e.key === "3") setView("full"); });
+const present = d => fetch("/present", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ d }) }).catch(() => {});
+document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; if (e.key === "]") present(1); if (e.key === "[") present(-1); if (e.key === "\\") present(0); if (e.key === "1") setView("expl"); if (e.key === "2") setView("hood"); if (e.key === "3") setView("full"); });
 $("p").addEventListener("input", e => { $("pv").textContent = Number(e.target.value).toFixed(2); if (view === "full") render(); });
 const es = new EventSource("/events");
 es.onopen = () => { $("link").textContent = "● terminal"; $("link").className = "on"; };
@@ -305,6 +309,8 @@ es.onerror = () => { $("link").textContent = "○ terminal lost"; $("link").clas
 es.onmessage = async m => {
   const msg = JSON.parse(m.data);
   if (msg.type === "reload") { selected = null; focusTag = "best"; await load(); }
+  if (msg.type === "caption") { $("cap").textContent = msg.text || ""; $("cap").style.display = msg.text ? "block" : "none"; }
+  if (msg.type === "view" && ["expl", "hood", "full"].includes(msg.view)) setView(msg.view);
   if (msg.type === "focus" && cy) {
     selected = msg.id;
     const n = cy.getElementById(msg.id);

@@ -267,7 +267,7 @@ def cmd_ui(args: argparse.Namespace) -> int:
     from ygg.ui.app import run
 
     cfg = load_config(args.config)
-    run(Path(args.data_dir or cfg["paths"]["data_dir"]), cfg, demo=args.demo)
+    run(Path(args.data_dir or cfg["paths"]["data_dir"]), cfg, demo=args.demo, present=args.present)
     return 0
 
 
@@ -351,6 +351,7 @@ def main(argv: list[str] | None = None) -> int:
     ui = sub.add_parser("ui", help="terminal UI: live control panel, investigations, recorded replay")
     ui.add_argument("--demo", action="store_true", help="add the DEMO investigation fixture (labelled MODE: DEMO)")
     ui.add_argument("--data-dir", default=None)
+    ui.add_argument("--present", default=None, help="presenter steps (JSON list of {focus, caption}); ] next, [ back, \\ off")
     ui.set_defaults(func=cmd_ui)
 
     t = sub.add_parser("tui", help="Rich Terminal User Interface (TUI): view explanation tree, evidence, and verdicts")

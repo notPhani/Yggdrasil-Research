@@ -69,6 +69,10 @@ CSS = THEME_CSS + """
 #att { height: 18; }
 #spill { height: 10; }
 #plach { height: 16; }
+.pdim { opacity: 22%; text-opacity: 35%; }
+DataTable.pdim > .datatable--header, DataTable.pdim > .datatable--cursor { text-opacity: 35%; }
+#caption { dock: bottom; height: 4; padding: 0 4; background: #000000; color: #ffffff; text-style: bold;
+           content-align: center middle; border-top: heavy #fa7900; }
 """
 
 
@@ -1042,9 +1046,13 @@ class InvestigationScreen(Screen):
 class YggApp(App):
     CSS = CSS
     TITLE = "Yggdrasil"
+    BINDINGS = [Binding("right_square_bracket", "present(1)", show=False, priority=True),
+                Binding("left_square_bracket", "present(-1)", show=False, priority=True),
+                Binding("backslash", "present_off", show=False, priority=True)]
 
-    def __init__(self, data_dir: Path, cfg: dict, demo: bool = False):
+    def __init__(self, data_dir: Path, cfg: dict, demo: bool = False, present: list | None = None):
         super().__init__()
+        self.present, self.pi = list(present or []), -1        # presenter steps: {"focus": [selectors], "caption": str}
         import os
         from collections import deque
 
@@ -1059,7 +1067,52 @@ class YggApp(App):
         self.seen_batches: set = set()
         self.serpapi = bool(os.environ.get("SERPAPI_API_KEY"))
         self._recorded = None
-        self.graph = GraphServer(self.on_graph_select, port=int(os.environ.get("YGG_GRAPH_PORT", "8765")))
+        self.graph = GraphServer(self.on_graph_select, port=int(os.environ.get("YGG_GRAPH_PORT", "8765")),
+                                 on_present=lambda d: (self.action_present_off() if d == 0 else self.action_present(d)))
+
+    # ---- presenter mode: dim everything but the panel being explained, caption at the bottom (for the demo video)
+    def action_present(self, d: int) -> None:
+        if not self.present:
+            return
+        self.pi = max(0, min(len(self.present) - 1, self.pi + d))
+        self._apply_present(self.present[self.pi])
+
+    def action_present_off(self) -> None:
+        self.pi = -1
+        self._apply_present({"focus": [], "caption": ""})
+
+    def _apply_present(self, step: dict) -> None:
+        scr = self.screen
+        sels = step.get("focus") or []
+        sels = [sels] if isinstance(sels, str) else sels
+        keep = set()
+        for sel in sels:
+            try:
+                nodes = list(scr.query(sel))
+            except Exception:
+                nodes = []
+            for n in nodes:
+                keep.add(n)
+                keep.update(n.query("*"))
+                par = n.parent
+                if par is not None:
+                    sib = list(par.children)
+                    i = sib.index(n)
+                    if i > 0 and isinstance(sib[i - 1], Bar):     # the panel's numbered title bar stays lit
+                        keep.add(sib[i - 1])
+        for w in scr.query("Bar, .panel, DataTable, #ihdr, #top, #keys, #ikeys, #status, #brand, #cmd"):
+            w.set_class(bool(keep) and w not in keep, "pdim")       # nothing matched on this screen: dim nothing
+        cap = step.get("caption", "")
+        try:
+            box = scr.query_one("#caption", Static)
+        except Exception:
+            box = Static(id="caption")
+            scr.mount(box)
+        box.update(Text(cap, style="bold #ffffff", justify="center"))
+        box.display = bool(cap)
+        self.graph.publish({"type": "caption", "text": cap})            # the graph window shows the same caption
+        if step.get("graph_view"):
+            self.graph.publish({"type": "view", "view": step["graph_view"]})
 
     def on_graph_select(self, nid: str) -> None:
         self.tape(f"GRAPH      selected {_sid(nid)} in the graph window")
@@ -1116,5 +1169,8 @@ class YggApp(App):
         self.push_screen(ControlPanel())
 
 
-def run(data_dir: Path, cfg: dict, demo: bool = False) -> None:
-    YggApp(data_dir, cfg, demo).run()
+def run(data_dir: Path, cfg: dict, demo: bool = False, present: Path | None = None) -> None:
+    import json
+
+    steps = json.loads(Path(present).read_text()) if present else None
+    YggApp(data_dir, cfg, demo, steps).run()

@@ -18,8 +18,8 @@ STATIC = Path(__file__).parent / "static" / "graph.html"
 
 
 class GraphServer:
-    def __init__(self, on_select, host: str = "127.0.0.1", port: int = 8765):
-        self.on_select, self.host, self.port = on_select, host, port
+    def __init__(self, on_select, host: str = "127.0.0.1", port: int = 8765, on_present=None):
+        self.on_select, self.host, self.port, self.on_present = on_select, host, port, on_present
         self.payload: dict = {"title": "no investigation open", "nodes": [], "edges": [], "trees": {}}
         self.subs: list[asyncio.Queue] = []
         self.server = None
@@ -61,6 +61,12 @@ class GraphServer:
             elif method == "GET" and path.startswith("/events"):
                 await self._events(writer)
                 return
+            elif method == "POST" and path.startswith("/present"):
+                n = int(headers.get("content-length", "0") or 0)
+                body = json.loads((await reader.readexactly(n)).decode() or "{}") if n else {}
+                if self.on_present is not None:
+                    self.on_present(int(body.get("d", 1)))
+                await self._send(writer, 204, b"", "text/plain")
             elif method == "POST" and path.startswith("/select"):
                 n = int(headers.get("content-length", "0") or 0)
                 body = json.loads((await reader.readexactly(n)).decode() or "{}") if n else {}
