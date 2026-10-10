@@ -122,6 +122,8 @@ class LearnedConfig:
     k_max: int = 300                    # ... by a factor e^-cap_rate at k_max (locked target: 100-300 alive)
     cap_rate: float = 3.0               # e^-3 = 0.05: at k_max a birth needs about 20x the usual evidence ratio
     checks_needed: int = 3              # locked 3.5: a split or merge must win at 3 consecutive 6-hour checks
+    hard_cap: bool = True               # k_max alive is a ceiling: at capacity splits pause, and a birth or a reactivation
+                                        # sends the least-recently-active alive narrative dormant (it can come back)
 
 
 def learned_config_from(cfg: dict) -> "LearnedConfig":
@@ -217,10 +219,28 @@ class LearnedNarrativeModel:
         alive count. Merges earn it back, so at capacity the model prefers consolidation to birth."""
         if not self.cfg.adaptive:
             return 0.0
-        k = sum(1 for v in self.narratives.values() if v.state == "alive") if k_alive is None else k_alive
+        k = self.n_alive() if k_alive is None else k_alive
         if k <= self.cfg.k_soft:
             return 0.0
         return self.cfg.beta_tail * self.cfg.cap_rate * min((k - self.cfg.k_soft) / max(self.cfg.k_max - self.cfg.k_soft, 1), 1.0)
+
+    def n_alive(self) -> int:
+        return sum(1 for v in self.narratives.values() if v.state == "alive")
+
+    def at_capacity(self) -> bool:
+        return self.cfg.adaptive and self.cfg.hard_cap and self.n_alive() >= self.cfg.k_max
+
+    def evict(self, window: int, keep: str | None = None) -> str | None:
+        """Hard ceiling: the alive narrative with the oldest last activity (ties: smallest id) goes dormant. Dormancy
+        is not deletion: its statistics stay and routing can reactivate it."""
+        alive = [(n.t_last_h, nid) for nid, n in self.narratives.items() if n.state == "alive" and nid != keep]
+        if not alive:
+            return None
+        _, nid = min(alive)
+        self.narratives[nid].state = "dormant"
+        self.lineage.append({"window": window, "kind": "dormant", "parents": [nid], "children": [nid], "shares": [1.0],
+                             "reason": "capacity"})
+        return nid
 
     def log_alpha_now(self, k_alive: int | None = None) -> float:
         """log alpha minus the volume and capacity terms: the current price of one narrative, paid by births and
@@ -471,6 +491,8 @@ class LearnedNarrativeModel:
             self.trace.append(("birth", t_h, len(G), best, bonus, self.log_alpha_now(), accept))
         if not accept:
             return None
+        if self.at_capacity():
+            self.evict(window)
         lead = max(members, key=lambda c: (clusters[c].n if c in clusters else 1, -c))
         nid = stable_hash("narrative", *map(str, sorted(members)), str(window))[:16]
         n = LNarrative(nid, self._new_slot(), np.zeros(self.dim), 0.0, {}, 0.0, "alive", t_h, t_h, 0.0, titles.get(lead, ""))
@@ -521,6 +543,8 @@ class LearnedNarrativeModel:
     def route(self, cid: int, nid: str, x: np.ndarray, w: dict, mass: float, t_h: float, window: int) -> None:
         n = self.narratives[nid]
         if n.state == "dormant":
+            if self.at_capacity():
+                self.evict(window, keep=nid)
             n.state = "alive"
             self.lineage.append({"window": window, "kind": "reactivate", "parents": [nid], "children": [nid], "shares": [1.0]})
         prev = self.assigned.get(cid)
@@ -653,6 +677,8 @@ class LearnedNarrativeModel:
         out, streak = [], {}
         u_now = self._u(now_h)
         for nid in self._ids(("alive",)):
+            if self.at_capacity():                          # hard ceiling: no new ids while full; streaks restart
+                break
             n = self.narratives[nid]
             evs = [(t, c, clusters[c]) for t, c in n.events if c in clusters]
             if len(evs) < self.cfg.split_min_events:

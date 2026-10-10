@@ -40,3 +40,4 @@ gamma_burst = 1.0                    # births x (events per hour)^1 for a fast g
 k_soft = 200                         # alive narratives where births start to be suppressed ...
 k_max = 300                          # ... by e^-3 (x0.05) at k_max (locked target 100-300 alive)
 cap_rate = 3.0
+hard_cap = true                      # at 300 alive: splits pause; a birth or reactivation sends the least-recently-active alive narrative dormant

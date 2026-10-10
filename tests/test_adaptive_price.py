@@ -94,3 +94,22 @@ def test_split_needs_three_consecutive_winning_checks():
     for check in range(3):
         kinds.append([ev["kind"] for ev in m._splits(3.0 + check * 6, 10 + check, clusters)])
     assert kinds[0] == [] and kinds[1] == [] and kinds[2] == ["split"]
+
+
+def test_hard_ceiling_evicts_least_recently_active_and_pauses_splits():
+    d = 16
+    m = _model(d, k_max=3, k_soft=2)
+    rng = keyed_rng("cap")
+    ids = []
+    for i in range(3):
+        v = rng.standard_normal(d); v /= np.linalg.norm(v)
+        ids.append(m.emerge(100 + i, v, {f"e{i}": 1.0}, float(i), i, f"n{i}"))
+    assert m.n_alive() == 3 and m.at_capacity()
+    out = m.evict(window=9)                                   # oldest last activity: the first one
+    assert out == ids[0] and m.narratives[ids[0]].state == "dormant" and m.n_alive() == 2
+    v = rng.standard_normal(d); v /= np.linalg.norm(v)
+    m.emerge(200, v, {"x": 1.0}, 5.0, 5, "n3")                # full again
+    m.route(300, ids[0], v, {"x": 1.0}, 1.0, 6.0, 6)          # reactivation at capacity evicts the next oldest
+    assert m.narratives[ids[0]].state == "alive" and m.narratives[ids[1]].state == "dormant" and m.n_alive() == 3
+    assert m._splits(7.0, 7, {}) == []                        # at capacity: no splits
+    assert any(ev.get("reason") == "capacity" for ev in m.lineage)
