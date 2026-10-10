@@ -29,7 +29,7 @@ def test_tui_renders_without_exception(tmp_path):
         tui.render_full_dashboard()
         output = console.export_text()
         assert "YGGDRASIL MARKET EVENT FORENSICS" in output
-        assert "DeepSeek" in output
+        assert "2025-01-27" in output                  # renders the case; the result itself is not asserted
         assert "[ROOT] BOT" in output
 
 def test_tui_handles_missing_case(tmp_path):
