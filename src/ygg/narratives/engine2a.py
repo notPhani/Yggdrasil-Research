@@ -169,18 +169,52 @@ class Engine2a:
     def state_hash(self) -> str:
         """Canonical digest of the full state (sorted, so set/dict insertion order cannot leak in). The learned
         path hashes repr(), not pickle bytes: pickle memoizes shared objects, so equal states could differ."""
-        evs = [(c.cid, c.vsum.tobytes(), c.n, c.t_mean, c.t_last, sorted(c.ents.items()), sorted(c.cnt.items()))
-               for c in sorted(self.events.clusters.values(), key=lambda c: c.cid)]
+        evs = ((c.cid, c.vsum.tobytes(), c.n, c.t_mean, c.t_last, sorted(c.ents.items()), sorted(c.cnt.items()))
+               for c in sorted(self.events.clusters.values(), key=lambda c: c.cid))
         if self.learned:
-            canon = (self.model.canon(), evs, sorted(self.idf.df.items()), self.idf.n_docs, sorted(self.root_cluster.items()),
+            # Streamed: the same bytes as sha256(repr(canon)) with the event list fed one cluster at a time. Building
+            # repr(canon) in one string took ~5 GB at 500k live event clusters (the replay was OOM-killed on Jan 13).
+            h = hashlib.sha256()
+            parts = (self.model.canon(), _Seq(evs, "[]"), sorted(self.idf.df.items()), self.idf.n_docs, sorted(self.root_cluster.items()),
                      sorted(self.cluster_mass.items()), self.events.next_id)
-            return hashlib.sha256(repr(canon).encode()).hexdigest()
+            _feed_repr(h, parts)
+            return h.hexdigest()
+        evs = list(evs)
         nar = [(n.nid, n.mu.tobytes(), n.state, n.born_h, n.t_last_h, n.mass_total, sorted(n.ents.items()))
                for n in sorted(self.model.narratives.values(), key=lambda n: n.nid)]
         canon = (nar, evs, self.model.kappa, sorted(self.model.log_pi.items()), self.model.log_pi0,
                  sorted(self.idf.df.items()), self.idf.n_docs, sorted(self.root_cluster.items()),
                  sorted(self.cluster_mass.items()), self.events.next_id, len(self.model.lineage))
         return hashlib.sha256(pickle.dumps(canon, protocol=5)).hexdigest()
+
+
+class _Seq:
+    """A lazily produced list or tuple for _feed_repr."""
+
+    def __init__(self, it, brackets: str):
+        self.it, self.brackets = it, brackets
+
+
+def _feed_repr(h, x) -> None:
+    """Feed repr(x) into hash h piece by piece, for nested tuples and lists, without building the string.
+    repr(list) = '[' + ', '.join(reprs) + ']' and repr(tuple) the same with '(' ')' and a trailing comma for one item."""
+    if isinstance(x, _Seq) or type(x) in (list, tuple):
+        if isinstance(x, _Seq):
+            items, (lo, hi) = x.it, x.brackets
+        else:
+            items, (lo, hi) = x, ("[]" if type(x) is list else "()")
+        h.update(lo.encode())
+        n = 0
+        for item in items:
+            if n:
+                h.update(b", ")
+            _feed_repr(h, item)
+            n += 1
+        if hi == ")" and n == 1:
+            h.update(b",")
+        h.update(hi.encode())
+    else:
+        h.update(repr(x).encode())
 
 
 def narrate_learned(m: LearnedNarrativeModel, idf: CausalIDF, clusters: dict, touched: dict, new_cids: set, titles: dict,
