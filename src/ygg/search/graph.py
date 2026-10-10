@@ -169,6 +169,7 @@ def build_graph(t_star: int, narratives: dict, alpha_rows: list[dict], y_rows: l
     # terminal links
     k0 = len(active) + 1
     for xi, term in enumerate(terminals):
+        p[("BOT", f"T{xi}")] = cfg.p0
         A_u, A_ux, A, A_x = defaultdict(float), defaultdict(float), 0.0, 0.0
         for o in objects:
             wt = w(o["window"])
@@ -198,7 +199,6 @@ def build_graph(t_star: int, narratives: dict, alpha_rows: list[dict], y_rows: l
             pl = (1 - cfg.p0) * math.exp(scores[n] - m) / zsum
             if pl >= cfg.p_floor:
                 p[(n, f"T{xi}")] = pl
-        p[("BOT", f"T{xi}")] = cfg.p0
     names = ["BOT"] + active + [t.name for t in terminals]
     node = {"BOT": 0, **idx, **{f"T{xi}": k0 + xi for xi in range(len(terminals))}}
     cost = {}

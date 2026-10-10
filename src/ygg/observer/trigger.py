@@ -18,9 +18,17 @@ import numpy as np
 
 from ygg.observer.prices import adjusted_closes
 
+import zoneinfo
+
 MAD_K = 0.6745
-SESSION_FIRST_PRINT_UTC = {"AS": (8, 0), "US": (9, 0)}     # Euronext open; US pre-market 04:00 ET in winter
-REGULAR_OPEN_UTC = {"AS": (8, 0), "US": (14, 30)}
+ET = zoneinfo.ZoneInfo("America/New_York")
+
+def get_market_times_utc(day_str: str) -> tuple[tuple[int, int], tuple[int, int]]:
+    """Returns ((pre_h, pre_m), (open_h, open_m)) in UTC for the given YYYY-MM-DD date."""
+    d = datetime.fromisoformat(f"{day_str}T00:00:00").replace(tzinfo=ET)
+    pre = d.replace(hour=4, minute=0).astimezone(timezone.utc)
+    reg = d.replace(hour=9, minute=30).astimezone(timezone.utc)
+    return (pre.hour, pre.minute), (reg.hour, reg.minute)
 
 
 @dataclass(frozen=True)
@@ -136,8 +144,12 @@ def venue(sym: str) -> str:
 
 
 def first_abnormal_utc(st: dict, day: str, th: Thresholds) -> datetime:
+    (pre_h, pre_m), (reg_h, reg_m) = get_market_times_utc(day)
     v = venue(st["symbol"])
-    h, mnt = SESSION_FIRST_PRINT_UTC[v] if abs(st["Mg"]) >= th.mg else REGULAR_OPEN_UTC[v]
+    if v == "AS":
+        h, mnt = 8, 0
+    else:
+        h, mnt = (pre_h, pre_m) if abs(st["Mg"]) >= th.mg else (reg_h, reg_m)
     d = datetime.strptime(day, "%Y-%m-%d")
     return datetime(d.year, d.month, d.day, h, mnt, tzinfo=timezone.utc)
 

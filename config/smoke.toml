@@ -1,0 +1,35 @@
+# Smoke configuration (from build-branch, 2026-10-09): a one-day run of 2025-01-27 that exercises every engine in
+# minutes. It is NOT the replay: there is no 3-week blind cold start (3.7), the Hawkes fit sees 96 windows, and the
+# 14-day horizon prior p_H has one day to average over. Use it to check that the pipeline runs end to end;
+# use config/default.toml for any result that is reported.      ygg --config config/smoke.toml replay
+
+[paths]
+data_dir = "data"
+
+[replay]
+start = "2025-01-27"
+warmup_end = "2025-01-27"
+end_exclusive = "2025-01-28"
+window_seconds = 900
+ingest_lag_seconds = 900
+
+[fetch]
+workers = 8
+
+[determinism]
+tie_key = ["observed_time", "source_rank", "url_key", "record_id"]
+
+[dedup]
+horizon_h = 72.0
+j0 = 0.5
+theta_a = 0.9
+logo_titles = 5
+embed_model = "minishlab/potion-base-8M"
+
+[narratives]
+embed_model = "sentence-transformers/all-MiniLM-L6-v2"
+adaptive = true
+rho_vol = 1.0
+gamma_burst = 1.0
+k_soft = 200
+k_max = 300
