@@ -39,6 +39,13 @@ Measured on the replay (2024-12-16 .. 2025-01-31):
 - **Graph window.** http://127.0.0.1:8765/ shows the explanation graph exactly as `ygg case` recorded it, in three views: explanations (BOT, the best tree, rivals, abstention and the candidate stories that reach the cluster, with p on each step), neighborhood (a node with its strongest sources and targets) and full graph (every narrative that can reach the cluster, in rows by hops). `G` in the terminal focuses a node there; clicking a node there selects its hypothesis here.
 - The UI never recomputes a result and never moves τ*. The brief is assembled from the recorded case only; no language model writes it.
 
+## Results of the replay (option C, recorded 10 Oct 2026)
+
+- **2025-01-13, Edison International and PG&E.** Best chain: "Eaton Fire death toll rises" into the EIX+PCG cluster, 4.2 : 1 against "we do not know", seven rivals within 20 : 1. P_pre and P_all are SUPPORTED. The verdict hinges on a yahoo.com item ("Investigators probe Eaton Canyon electrical tower area...") first seen 14.5 hours before τ*. Placebos: 20 quiet cutoffs, empirical p = 0.43, false-explanation rate 1.0, so the graph cost alone is not diagnostic here and the dated evidence carries the verdict.
+- **2025-01-27, DeepSeek-R1.** 13 instruments fired in four clusters (chips, power producers, ASM International, Coherent); τ* = 08:00 UTC, the Amsterdam open. The cheapest chain is not credible: a dormant "Pulsar Helium" narrative links to three clusters at p = 0.95 and a "Zebrafish protein" narrative to ASM. The safeguards hold: placebo empirical p = 0.33 (false-explanation rate 1.0) and both hypotheses are CONSISTENT-BUT-UNPROVEN. A DeepSeek narrative existed from 20 Jan (hours after the R1 release) with 70 DeepSeek-titled articles before τ*, but it did not win the cluster links.
+- **Known failure, not fixed before submission.** The link score adds a robust z of a narrative's last-day attention to log-lift with no bound; for a narrative whose earlier daily attention was near zero the MAD is tiny, so a revived dormant narrative can take almost all link mass for every cluster. This is the likely cause on 27 Jan, from reading the code, not yet measured. A bounded z (MAD floor or clip) is the fix; it was not applied tonight because it would be tuned on the test case.
+- One Jan 27 hypothesis, "What the papers say – December 30", is SUPPORTED with a positive signature. It has not been examined yet.
+
 ## Disclosures
 
 - **AI tools.** Claude (Anthropic) was used for design, code and documentation.
