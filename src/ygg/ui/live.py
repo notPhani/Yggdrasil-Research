@@ -16,9 +16,9 @@ from ygg.ui.domain import Candle, FeedItem
 
 UA = {"User-Agent": "Mozilla/5.0 (yggdrasil-research terminal)"}
 LASTUPDATE = "http://data.gdeltproject.org/gdeltv2/lastupdate.txt"
-CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{sym}?range={rng}&interval=5m&includePrePost=true"
-WATCH = ["BTC-USD", "NVDA", "AVGO", "TSM", "ASML", "SMH", "VST", "CEG", "NRG", "MSFT", "SPY"]
-DEMO_EXTRA = {"BTC-USD"}            # 24/7 instrument outside the equity universe, flagged in the UI
+CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{sym}?range={rng}&interval={iv}&includePrePost=true"
+WATCH = ["BTC-USD", "ETH-USD", "NVDA", "AVGO", "TSM", "ASML", "MU", "AMD", "SMH", "XLK", "VST", "CEG", "NRG", "XLU", "MSFT", "GOOGL", "META", "SPY", "QQQ"]
+DEMO_EXTRA = {"BTC-USD", "ETH-USD"}            # 24/7 instrument outside the equity universe, flagged in the UI
 
 
 def _get(url: str, timeout: float = 20.0) -> bytes:
@@ -100,9 +100,10 @@ class Quote:
         return self.last / self.prev_close - 1.0
 
 
-def quote(sym: str, rng: str = "2d") -> Quote:
+def quote(sym: str, rng: str = "1d", iv: str = "1m") -> Quote:
+    """1-minute bars (Yahoo keeps 7 days of them); for a closed market the last session's bars are returned."""
     try:
-        j = json.loads(_get(CHART.format(sym=sym, rng=rng)))
+        j = json.loads(_get(CHART.format(sym=sym, rng=rng, iv=iv)))
         r = j["chart"]["result"][0]
         ts = r.get("timestamp") or []
         q = r["indicators"]["quote"][0]
@@ -112,7 +113,7 @@ def quote(sym: str, rng: str = "2d") -> Quote:
         meta = r.get("meta", {})
         last = cs[-1].c if cs else meta.get("regularMarketPrice")
         prev = meta.get("chartPreviousClose") or meta.get("previousClose")
-        fresh = bool(cs) and datetime.now(timezone.utc) - cs[-1].t < timedelta(minutes=20)
+        fresh = bool(cs) and datetime.now(timezone.utc) - cs[-1].t < timedelta(minutes=10)
         return Quote(sym, cs, last, prev, "OPEN" if fresh else "CLOSED", fetched=time.time())
     except Exception as e:
         return Quote(sym, [], None, None, "UNAVAILABLE", str(e)[:80], time.time())
@@ -121,3 +122,28 @@ def quote(sym: str, rng: str = "2d") -> Quote:
 def world_clock(now: datetime | None = None) -> datetime:
     """Live world time: GDELT publishes 15-minute batches, so the world is observed at now - 15 min."""
     return (now or datetime.now(timezone.utc)) - timedelta(minutes=15)
+
+
+def params(q: "Quote") -> dict:
+    """Descriptive statistics of the bars on screen (not the trigger): session OHLC, VWAP, realized volatility of
+    1-minute log returns, and robust z-scores of the last return and the last volume against the bars shown."""
+    import math
+    import statistics
+
+    cs = q.candles
+    if len(cs) < 5:
+        return {}
+    day = [c for c in cs if c.t.date() == cs[-1].t.date()] or cs
+    vol = sum(c.v for c in day)
+    vwap = sum((c.h + c.l + c.c) / 3 * c.v for c in day) / vol if vol else None
+    rets = [math.log(b.c / a.c) for a, b in zip(cs, cs[1:]) if a.c > 0 and b.c > 0]
+    def rz(xs, x):
+        med = statistics.median(xs)
+        mad = statistics.median(abs(v - med) for v in xs) or 1e-12
+        return 0.6745 * (x - med) / mad
+    vols = [c.v for c in cs[:-1] if c.v > 0]
+    return {"open": day[0].o, "high": max(c.h for c in day), "low": min(c.l for c in day), "vwap": vwap, "volume": vol,
+            "bars": len(day), "rv_ann": statistics.pstdev(rets) * math.sqrt(525600) if len(rets) > 2 else None,
+            "z_ret": rz(rets[:-1], rets[-1]) if len(rets) > 10 else None,
+            "z_vol": rz(vols, cs[-1].v) if len(vols) > 10 and cs[-1].v > 0 else None,
+            "first": cs[0].t, "last": cs[-1].t}
