@@ -61,6 +61,10 @@ CSS = THEME_CSS + """
 #ev { height: 1fr; }
 #ichart { height: 1fr; }
 #paths { height: 1fr; }
+#p3sw { height: 1fr; }
+#p3list { height: 1fr; }
+#expl { height: auto; max-height: 12; }
+#p3brief { height: 1fr; }
 .half { width: 1fr; }
 #att { height: 18; }
 #spill { height: 10; }
@@ -512,7 +516,7 @@ VIEWS = [("f1", "v_over", "OVERVIEW"), ("f2", "v_story", "STORY"), ("f3", "v_ev"
 class InvestigationScreen(Screen):
     BINDINGS = [Binding("escape", "app.pop_screen", show=False), Binding("r", "toggle_replay", show=False),
                 Binding("plus,equals", "faster", show=False), Binding("minus", "slower", show=False),
-                Binding("g", "graph_focus", show=False), Binding("q", "app.quit", show=False)] + \
+                Binding("g", "graph_focus", show=False), Binding("b", "brief_back", show=False), Binding("q", "app.quit", show=False)] + \
                [Binding(k, f"view('{v}')", show=False) for k, v, _ in VIEWS]
 
     def __init__(self, inv: Investigation, raw: dict | None = None):
@@ -534,9 +538,14 @@ class InvestigationScreen(Screen):
                     with Vertical(classes="half"):
                         yield Bar(2, "Price", "cluster leads · % from the close before τ* · orange line = τ* day")
                         yield HeroChart(id="ichart", classes="panel")
-                    with Vertical(classes="half"):
-                        yield Bar(3, "Explanations", "ranked · every path BOT → narratives → market cluster")
-                        yield Static(id="paths", classes="panel")
+                    with Vertical(classes="half", id="p3col"):
+                        yield Bar(3, "Explanations", "click or Enter: brief · B: back to the list")
+                        with ContentSwitcher(initial="p3list", id="p3sw"):
+                            with Vertical(id="p3list"):
+                                yield DataTable(id="expl", cursor_type="row")
+                                yield Static(id="paths", classes="panel")
+                            with VerticalScroll(id="p3brief"):
+                                yield Static(id="brief", classes="panel")
                 with Horizontal(id="obot"):
                     with Vertical(classes="half"):
                         yield Bar(4, "Hypotheses", "↑↓ selects · evidence shows right")
@@ -586,6 +595,15 @@ class InvestigationScreen(Screen):
                       Text(VERDICT_SHORT.get(hy.verdict_all, hy.verdict_all), style=f"bold {VERDICT_STYLE.get(hy.verdict_all, DIM)}"),
                       Text(sig, style=UP if hy.signature_ok else DIM), str(n_pre), str(len(hy.evidence) - n_pre),
                       Text(str(sum(1 for e in hy.evidence if e.diagnostic)), style=AMBER_HI), key=str(k))
+        x = self.query_one("#expl", DataTable)
+        for col, wd in (("#", 2), ("", 14), ("NATS", 6), ("ODDS", 8), ("ENTRY STORY", 60)):
+            x.add_column(col, key=col or "tag", width=wd)
+        for k, e in enumerate(sorted(self.inv.explanations, key=lambda e: (e.rank == 0, e.rank))):
+            tag = "BEST" if e.rank == 1 else ("WE DON'T KNOW" if e.rank == 0 else f"RIVAL {e.rank}")
+            x.add_row(str(e.rank), Text(tag, style=f"bold {UP if e.rank == 1 else (AMBER_HI if e.rank == 0 else WHITE)}"),
+                      f"{e.cost_mnats / 1000:.2f}", _odds(e.odds_vs_best), Text(e.entry_label if e.entry != "BOT" else "no narrative chain", style=WHITE,
+                                                                               no_wrap=True, overflow="ellipsis"), key=str(k))
+        self.expl_order = sorted(self.inv.explanations, key=lambda e: (e.rank == 0, e.rank))
         self.render_all()
         self.set_interval(1.0, self.render_header)
         from ygg.ui.graph_server import payload_for
@@ -604,6 +622,29 @@ class InvestigationScreen(Screen):
         if ev.data_table.id == "hyps" and ev.row_key is not None:
             self.hyp_i = int(ev.row_key.value)
             self.render_evidence()
+
+    def on_data_table_row_selected(self, ev: DataTable.RowSelected) -> None:
+        if ev.data_table.id == "expl" and ev.row_key is not None:
+            self.show_brief(self.expl_order[int(ev.row_key.value)])
+
+    def action_brief_back(self) -> None:
+        self.query_one("#p3sw", ContentSwitcher).current = "p3list"
+        self.query_one("#p3col Bar", Bar).set("Explanations", "click or Enter: brief · B: back to the list")
+        self.query_one("#expl").focus()
+
+    def show_brief(self, e) -> None:
+        if not self.visible("search"):
+            return
+        from ygg.ui.brief import brief
+
+        tag = "BEST" if e.rank == 1 else ("WE DON'T KNOW" if e.rank == 0 else f"RIVAL {e.rank}")
+        self.query_one("#brief", Static).update(brief(self.inv, e, self._term_label, self.visible))
+        self.query_one("#p3col Bar", Bar).set(f"Explanation brief · {tag}", "B: back to the list · deterministic, from the recorded case")
+        self.query_one("#p3sw", ContentSwitcher).current = "p3brief"
+        if self.app.graph:
+            first = next((x.dst for x in e.edges if x.src == "BOT"), None)
+            if first:
+                self.app.graph.focus(first)
 
     def action_graph_focus(self) -> None:
         order = []

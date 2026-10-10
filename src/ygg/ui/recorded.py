@@ -37,7 +37,7 @@ def _edges(tree: list[dict]) -> tuple[Edge, ...]:
     for e in tree:
         s_id, s_lab = _node(e["from"])
         d_id, d_lab = _node(e["to"])
-        out.append(Edge(s_id, d_id, float(e.get("p", 0.0)), int(e.get("cost_mnats", 0)), s_lab, d_lab))
+        out.append(Edge(s_id, d_id, float(e.get("p", 0.0)), int(e.get("cost_mnats", 0)), s_lab, d_lab, e.get("sigma")))
     return tuple(out)
 
 

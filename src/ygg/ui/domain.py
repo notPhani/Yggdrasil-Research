@@ -43,6 +43,7 @@ class Edge:
     cost_mnats: int
     src_label: str = ""
     dst_label: str = ""
+    sigma: float | None = None          # spillover surprise (robust z of alpha just before tau*), narrative edges only
 
 
 @dataclass(frozen=True)
