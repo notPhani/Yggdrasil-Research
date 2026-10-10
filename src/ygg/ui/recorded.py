@@ -7,6 +7,8 @@ nothing with first_seen after the clock is ever returned.
 """
 from __future__ import annotations
 
+import re
+
 import json
 import math
 from datetime import datetime, timedelta, timezone
@@ -147,15 +149,18 @@ def load_investigation(path: Path | dict, source: str = "RECORDED") -> Investiga
 
 
 def list_cases(data_dir: Path) -> list[CaseRow]:
-    rows = []
+    rows, seen = [], set()
     for p in sorted((Path(data_dir) / "cases").glob("*.json"), reverse=True):
-        if p.stem in SKIP or p.stem.endswith("_certificates"):
-            continue
+        if p.stem in SKIP or p.stem.endswith("_certificates") or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.stem):
+            continue                                      # only <trading day>.json is a case file (backups, plans are not)
         try:
             inv = load_investigation(p)
         except Exception as e:                            # a broken file is shown as broken, never hidden
             rows.append(CaseRow(p.stem, "ARCHIVED", "UNREADABLE", str(e)[:40], None, "—", None, None))
             continue
+        if inv.case_id in seen:                           # one row per case id: the table keys rows by it
+            continue
+        seen.add(inv.case_id)
         b = inv.best
         last = [ph for ph, st in inv.phases if st == "DONE"]
         sars = [abs(i.SAR) for i in inv.instruments if i.SAR is not None and i.fired]
