@@ -2,9 +2,9 @@
 
 Research and design for **Yggdrasil**, a market event forensics system. Yggdrasil continuously builds a graph of news narratives and the attention each one receives, without regard to any particular stock. When a stock moves abnormally, it searches that graph for competing explanations, labels each one against the evidence (supported, contradicted, consistent but unproven, or unresolved), and certifies the verdicts in Lean 4. It never forecasts prices, and "we do not know" is always an allowed answer.
 
-**Status: research and design only. Nothing is implemented yet.**
+**Status: hackathon build (SerpApi India Hackathon 2026, Open Innovation). All engines run end to end on a replay of the DeepSeek-R1 / NVIDIA event (27 January 2025), with a live control panel.**
 
-## Code (hackathon build, in progress)
+## Code
 
 The implementation lives in `src/ygg/`, a Python 3.12 package with a `ygg` command. Config: `config/default.toml`.
 
@@ -12,11 +12,18 @@ The implementation lives in `src/ygg/`, a Python 3.12 package with a `ygg` comma
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/ygg fetch                  # GDELT 2.0 English stream, 2024-12-16 .. 2025-01-31: 13,533 files, 24.6 GB, md5-verified, resumable
 .venv/bin/ygg ingest                 # Engine 1: parse, canonical URLs, exact + semantic dedup, clocks, missing-batch flag
-.venv/bin/ygg replay                 # Engines 2a + 2b window by window; snapshots at every case and placebo cutoff
-.venv/bin/ygg case 2025-01-27        # stock observer + Engine 3a: clusters, tau*, explanation trees, rivals, abstention
-.venv/bin/ygg verdict 2025-01-27     # Engine 3b: hypotheses, evidence, claims, four-bit verdicts, dossier
-.venv/bin/pytest -q                  # 60 tests: determinism D1-D7, contracts, red-team E1/E2/A4/A6, engines
+.venv/bin/ygg embed-import DIR --release embeddings-minilm-v1   # MiniLM title vectors computed on a GPU (sha256, id order, CPU parity checked)
+.venv/bin/ygg replay                 # Engines 2a + 2b window by window (checkpoint every 3 days; --resume after a crash)
+.venv/bin/ygg case 2025-01-27        # stock observer + Engine 3a: clusters, tau*, explanation trees, rivals, abstention, 20 placebos
+.venv/bin/ygg verdict 2025-01-27     # Engine 3b: hypotheses, SerpApi evidence (C4), claims, four-bit verdicts, dossier
+.venv/bin/ygg ui [--demo]            # terminal: live control panel + investigations; graph window at http://127.0.0.1:8765/
+.venv/bin/pytest -q                  # 85 tests: determinism, contracts, red-team cases, engines, SerpApi sensor, adaptive emergence
 ```
+
+- **SerpApi key.** Engine 3b reads `SERPAPI_API_KEY`. Without it every query is recorded as UNAVAILABLE and the verdict uses Engine 1 documents and Wayback pages only. Adding the key later and rerunning `ygg verdict DAY` fills in the evidence without a replay: targeted results never feed back into Engine 2 (the one-way valve).
+- **Replay window.** The clock origin is 2024-12-16; processing runs 2024-12-30 .. 2025-01-28 (a 3-week blind cold start before R1 on 20 January), chosen for the deadline. Threads are pinned (`OMP_NUM_THREADS=2`) and `PYTHONHASHSEED` is irrelevant to the result (verified across seeds).
+- **Graph window.** `ygg ui` serves the investigation's recorded explanation graph on 127.0.0.1:8765. On a remote machine forward the port: `ssh -L 8765:localhost:8765 host`.
+- **Narratives (2a-L).** κ_s = 250 (the prequential score rises monotonically to 250; data-implied κ 280-310); log α = -15 and T = 2 are defaults, not fitted; splits and merges need 3 consecutive winning checks; at 300 alive narratives the system is full (splits pause, a birth sends the least-recently-active narrative dormant).
 
 Measured on the replay (2024-12-16 .. 2025-01-31):
 - Engine 1: 5.80M GKG rows -> 5.77M unique objects (exact dedup) -> 4.01M stories after merging 1.76M syndicated copies (L2); 1 missing GDELT batch, flagged and masked
