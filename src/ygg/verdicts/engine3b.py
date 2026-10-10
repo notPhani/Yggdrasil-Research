@@ -116,13 +116,15 @@ def facts_for(hyps: list[Hypothesis], reps_by_h: dict, tau: datetime, pre_only: 
         e = f"ev{h.event}" if h.event is not None else "ev_none"
         lines.append(f"trigger({h.hid}, {e}).")
         reps = [r for r in reps_by_h[h.hid] if r["pre"] or not pre_only]
-        if reps and min(r["first_seen"] for r in reps) < tau.isoformat():
+        seen_at = [r["first_seen"] for r in reps if r.get("first_seen") and r.get("witness", True)]
+        if seen_at and min(seen_at) < tau.isoformat():
             lines.append(f"before({e}, move).")
         if h.signature_ok:
             lines.append(f"signature_ok({h.hid}).")
         for r in reps:
             src = atom(r["source"])
-            lines.append(f"reported({r['id']}, {src}, occurred({e}), d).")
+            if r.get("witness", True):                    # targeted search results add claims, not witnesses of e
+                lines.append(f"reported({r['id']}, {src}, occurred({e}), d).")
             if r["copy"]:
                 lines.append(f"copy_of({r['id']}, {atom(r['group'])}).")
             lines.append(f"group({r['id']}, g_{atom(r['group'])}).")

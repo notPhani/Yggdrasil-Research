@@ -196,7 +196,7 @@ def cmd_case(args: argparse.Namespace) -> int:
     terminals = build_terminals(case["clusters"], u)
     scfg = SearchConfig()
     res = explain(data_dir, clock, t_snap, terminals, scfg)
-    out = {"case": {k: v for k, v in case.items() if k != "stats"}, "search": res}
+    out = {"case": case, "search": res}            # stats kept: the UI shows R, SAR, Mz, Mv, Mg per instrument
     plan_path = data_dir / "cases" / "plan.json"
     if not args.no_placebo and plan_path.exists():
         from ygg.search.case import run_placebos
@@ -228,11 +228,17 @@ def cmd_verdict(args: argparse.Namespace) -> int:
     hyps = build_hypotheses(con, d["search"], d["search"]["t_snap"])
     fetcher = None if args.no_fetch else PageFetcher(data_dir)
     reps = {h.hid: evidence(h, tau, fetcher, fetch_top=args.fetch_top) for h in hyps}
+    from ygg.verdicts.engine3b import _subject
+    from ygg.verdicts.serpapi import Sensor
+
+    searches, extra = Sensor(data_dir).run_case(hyps, tau, con, reps, _subject)     # C4; one-way: never enters Engine 2
+    for hid, rs in extra.items():
+        reps[hid] += rs
     v = judge(hyps, reps, tau)
-    d["verdicts"] = {**v, "hypotheses": [{"hid": h.hid, "label": h.entry_label, "event": h.event, "signature_ok": h.signature_ok,
+    d["verdicts"] = {**v, "hypotheses": [{"hid": h.hid, "entry": h.entry, "label": h.entry_label, "event": h.event, "signature_ok": h.signature_ok,
                                           "burst": h.burst, "surprise_ok": h.edges_surprise_ok,
                                           "reports": [{k: (x if k != "claims" else [c.__dict__ for c in x]) for k, x in r.items()} for r in reps[h.hid]]}
-                                         for h in hyps]}
+                                         for h in hyps], "searches": searches}
     (data_dir / "cases" / f"{args.day}.json").write_text(json.dumps(d, indent=1, default=str))
     md = render_markdown(d)
     (data_dir / "cases" / f"{args.day}.md").write_text(md)
@@ -248,6 +254,15 @@ def cmd_tui(args: argparse.Namespace) -> int:
     data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
     tui = ForensicsTUI(data_dir, day=args.day)
     tui.render_full_dashboard()
+    return 0
+
+
+def cmd_ui(args: argparse.Namespace) -> int:
+    """Textual terminal: live control panel and investigation workspace."""
+    from ygg.ui.app import run
+
+    cfg = load_config(args.config)
+    run(Path(args.data_dir or cfg["paths"]["data_dir"]), cfg, demo=args.demo)
     return 0
 
 
@@ -327,6 +342,11 @@ def main(argv: list[str] | None = None) -> int:
     v.add_argument("--fetch-top", type=int, default=6)
     v.add_argument("--data-dir", default=None)
     v.set_defaults(func=cmd_verdict)
+
+    ui = sub.add_parser("ui", help="terminal UI: live control panel, investigations, recorded replay")
+    ui.add_argument("--demo", action="store_true", help="add the DEMO investigation fixture (labelled MODE: DEMO)")
+    ui.add_argument("--data-dir", default=None)
+    ui.set_defaults(func=cmd_ui)
 
     t = sub.add_parser("tui", help="Rich Terminal User Interface (TUI): view explanation tree, evidence, and verdicts")
     t.add_argument("day", nargs="?", default="2025-01-27", help="case day (YYYY-MM-DD, default: 2025-01-27)")
