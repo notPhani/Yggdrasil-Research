@@ -139,6 +139,12 @@ class Engine2a:
         if t % 96 == 0:
             for k in [k for k, (_, th) in self.root_cluster.items() if th < cutoff]:
                 del self.root_cluster[k]
+            # memory: per-cluster side tables of clusters the clusterer has expired (7 days without an update) are never
+            # read again (copies resolve through root_cluster, 72 h; births use live pool clusters), so drop them
+            live = self.events.clusters
+            for d in (self.cluster_mass, self.cluster_title, self.cluster_members):
+                for k in [k for k in d if k not in live]:
+                    del d[k]
         self.idf.close_window(t, root_ents)
         every = self.lr_cfg.check_every_windows if self.learned else self.nr_cfg.check_every_windows
         if (t + 1) % every != 0:

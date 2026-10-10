@@ -158,8 +158,18 @@ def cmd_replay(args: argparse.Namespace) -> int:
 
     from ygg.narratives.learned import learned_config_from
 
-    out = run_replay(data_dir, clock, cfg["replay"]["start"], args.end or cfg["replay"]["end_exclusive"], cfg["narratives"]["embed_model"],
-                     cfg_hash(cfg), snapshot_windows=snaps, log=log, lr_cfg=learned_config_from(cfg))
+    start, state = cfg["replay"]["start"], {}
+    ck = data_dir / "checkpoint" / "latest.pkl"
+    if args.resume and ck.exists():                 # T1: full-state resume from the last checkpoint (bit-identical)
+        import pickle
+        from datetime import date, timedelta
+
+        state = pickle.loads(ck.read_bytes())
+        start = (date.fromisoformat(state["day"]) + timedelta(days=1)).isoformat()
+        log(f"resume after {state['day']} from {ck}")
+    out = run_replay(data_dir, clock, start, args.end or cfg["replay"]["end_exclusive"], cfg["narratives"]["embed_model"],
+                     cfg_hash(cfg), snapshot_windows=snaps, log=log, lr_cfg=learned_config_from(cfg), checkpoint_every=3,
+                     e2a=state.get("e2a"), e2b=state.get("e2b"), parent=state.get("parent", ""), made=state.get("made"))
     (data_dir / "tables" / "replay_summary.json").write_text(json.dumps(out, indent=1, default=str))
     log(f"replay done: {len(out['snapshots'])} snapshots")
     return 0
@@ -301,6 +311,7 @@ def main(argv: list[str] | None = None) -> int:
 
     r = sub.add_parser("replay", help="Engines 2a + 2b over the replay window (needs 'ygg ingest' first)")
     r.add_argument("--to", dest="end", help="end day, exclusive (default: replay end)")
+    r.add_argument("--resume", action="store_true", help="continue after the last full-state checkpoint (data/checkpoint)")
     r.add_argument("--data-dir", default=None)
     r.set_defaults(func=cmd_replay)
 

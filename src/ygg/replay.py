@@ -56,7 +56,8 @@ def snapshot(data_dir: Path, t: int, cfg_hash: str, e2a: Engine2a, e2b: Engine2b
 
 def run_replay(data_dir: Path, clock: WindowClock, start_day: str, end_day: str, embed_model: str, cfg_hash: str,
                snapshot_windows: set[int] = frozenset(), log=print, e2a: Engine2a | None = None,
-               e2b: Engine2b | None = None, lr_cfg: LearnedConfig | None = None) -> dict:
+               e2b: Engine2b | None = None, lr_cfg: LearnedConfig | None = None, checkpoint_every: int = 0,
+               parent: str = "", made: list | None = None) -> dict:
     data_dir = Path(data_dir)
     root = data_dir / "tables"
     e2a = e2a or Engine2a(clock, emb.cached_dim(data_dir, embed_model), lr_cfg=lr_cfg or LearnedConfig())
@@ -65,7 +66,7 @@ def run_replay(data_dir: Path, clock: WindowClock, start_day: str, end_day: str,
     missing = {r["window"]: r["missing_batch"] for r in led_tab}
     d0, d1 = datetime.fromisoformat(start_day), datetime.fromisoformat(end_day)
     days = [(d0 + timedelta(days=i)).strftime("%Y-%m-%d") for i in range((d1 - d0).days)]
-    parent, made, t_start = "", [], time.monotonic()
+    made, t_start = (made if made is not None else []), time.monotonic()
     for day in days:
         by_w, vecs = read_day(data_dir, day, embed_model)
         acc = defaultdict(list)
@@ -101,7 +102,14 @@ def run_replay(data_dir: Path, clock: WindowClock, start_day: str, end_day: str,
         led = acc["ledger"]
         roots = sum(x["roots"] for x in led)
         bursts = sum(1 for r in acc["e2b_series"] if r["burst"])
-        log(f"replay {day}: roots {roots}  alive {led[-1]['alive']}  dormant {led[-1]['dormant']}  "
+        rss_gb = int(open("/proc/self/statm").read().split()[1]) * 4096 / 1e9 if Path("/proc/self/statm").exists() else float("nan")
+        if checkpoint_every and (days.index(day) + 1) % checkpoint_every == 0:
+            ck = data_dir / "checkpoint"
+            ck.mkdir(exist_ok=True)
+            with open(ck / "latest.pkl.tmp", "wb") as f:
+                pickle.dump({"day": day, "e2a": e2a, "e2b": e2b, "parent": parent, "made": made}, f, protocol=5)
+            (ck / "latest.pkl.tmp").replace(ck / "latest.pkl")
+        log(f"replay {day}: roots {roots}  alive {led[-1]['alive']}  dormant {led[-1]['dormant']}  rss {rss_gb:.1f}GB  "
             f"none {sum(x['y0_255'] for x in led) / max(1, 255 * roots):.2f}  kappa {e2a.model.kappa:.0f}  "
             f"omega {e2b.omega}  burst-windows {bursts}  {time.monotonic() - t_start:.0f}s")
     return {"snapshots": made, "refits_2a": e2a.refits, "refits_2b": e2b.refits}
