@@ -5,133 +5,316 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Yggdrasil Graph</title>
 <style>
-  :root { --bg:#0a0f13; --panel:#111a21; --rule:#26313a; --ink:#d7e0e6; --muted:#76828c; --cyan:#58c4dd; --yel:#f4d35e; --amber:#f4b942; --red:#fc6255; --green:#83c167; }
+  :root { --bg:#000; --bar:#141414; --rule:#262626; --amber:#fa7900; --amber-hi:#ffb000; --ink:#e8e8e8; --dim:#7a7f87; --faint:#3a3a3a;
+          --up:#2fbf71; --down:#ff4d4d; --id:#5fb3c8; }
   * { box-sizing: border-box; }
-  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font: 13px/1.45 "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; }
-  #bar { height:40px; display:flex; align-items:center; gap:16px; padding:0 12px; background:var(--panel); border-bottom:1px solid var(--rule); white-space:nowrap; overflow:hidden; }
-  #bar b { color:var(--cyan); font-weight:600; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font: 13px/1.45 "IBM Plex Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; }
+  #bar { height:34px; display:flex; align-items:center; gap:14px; padding:0 10px; background:var(--bar); white-space:nowrap; overflow:hidden; }
+  #bar .brand { color:var(--bg); background:var(--amber); padding:2px 8px; font-weight:700; letter-spacing:.06em; }
   #title { color:var(--ink); }
-  #link { color:var(--muted); }
-  #link.on { color:var(--green); }
-  label { color:var(--muted); }
-  input[type=range] { width:120px; vertical-align:middle; }
-  #main { display:flex; height:calc(100% - 40px); }
-  #cy { flex:1; min-width:0; }
-  #side { width:360px; border-left:1px solid var(--rule); padding:12px; overflow:auto; background:var(--bg); }
-  #side h3 { margin:0 0 6px; font-size:13px; color:var(--cyan); font-weight:600; }
-  .muted { color:var(--muted); }
-  .row { display:flex; justify-content:space-between; gap:8px; border-bottom:1px solid var(--rule); padding:3px 0; }
-  .legend span { margin-right:12px; }
-  .sw { display:inline-block; width:18px; height:3px; vertical-align:middle; margin-right:5px; }
+  #stats { color:var(--dim); }
+  .tabs { display:flex; gap:2px; margin-left:auto; }
+  .tab { color:var(--amber); background:transparent; border:0; font:inherit; padding:3px 9px; cursor:pointer; }
+  .tab .k { color:var(--dim); margin-right:4px; }
+  .tab.on { color:var(--bg); background:var(--amber); }
+  .tab.on .k { color:#3b1d00; }
+  #pwrap { color:var(--dim); display:none; }
+  #pwrap.on { display:inline; }
+  input[type=range] { width:110px; vertical-align:middle; accent-color:var(--amber); }
+  #link { color:var(--dim); }
+  #link.on { color:var(--up); }
+  #main { display:flex; height:calc(100% - 34px - 22px); }
+  #cy { flex:1; min-width:0; background:var(--bg); }
+  #side { width:380px; padding:0 0 10px; overflow:auto; background:var(--bg); border-left:1px solid var(--rule); }
+  .h { background:var(--bar); color:var(--amber); padding:3px 10px; font-weight:700; margin-top:10px; }
+  .h:first-child { margin-top:0; }
+  .h .n { color:var(--bg); background:var(--amber); padding:0 5px; margin-right:6px; }
+  .pad { padding:6px 10px; }
+  .ex { display:grid; grid-template-columns: 22px 1fr auto; gap:6px; padding:4px 10px; cursor:pointer; border-left:3px solid transparent; }
+  .ex:hover { background:#0d0d0d; }
+  .ex.on { background:#1a1000; border-left-color:var(--amber-hi); }
+  .ex .r { color:var(--amber-hi); font-weight:700; }
+  .ex .l { color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ex .o { color:var(--dim); text-align:right; }
+  .ex.best .o { color:var(--up); }
+  .ex.abst .l { color:var(--down); }
+  .kv { display:flex; justify-content:space-between; gap:10px; padding:2px 10px; }
+  .kv .k { color:var(--amber); }
+  .row { display:grid; grid-template-columns: 1fr 64px; gap:8px; padding:2px 10px; cursor:pointer; }
+  .row:hover { background:#0d0d0d; }
+  .row .t { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .row .p { text-align:right; color:var(--amber-hi); }
+  .row.tree .t { color:var(--amber-hi); }
+  .muted { color:var(--dim); }
+  .idc { color:var(--id); }
+  #foot { height:22px; display:flex; align-items:center; gap:18px; padding:0 10px; background:var(--bar); color:var(--dim); font-size:12px; white-space:nowrap; overflow:hidden; }
+  #foot i { display:inline-block; width:18px; height:0; border-top:3px solid; vertical-align:middle; margin-right:6px; }
 </style>
 </head>
 <body>
 <div id="bar">
-  <b>YGGDRASIL GRAPH</b><span id="title">loading…</span>
-  <label>edges p ≥ <span id="pv">0.10</span> <input id="p" type="range" min="0" max="0.5" step="0.01" value="0.10"></label>
-  <label><input id="trees" type="checkbox"> explanations only</label>
-  <span class="legend"><span><i class="sw" style="background:var(--yel)"></i>best</span><span><i class="sw" style="background:var(--amber)"></i>rival</span><span><i class="sw" style="background:var(--red)"></i>we don't know</span></span>
-  <span id="link">○ terminal link</span>
+  <span class="brand">YGG GRAPH</span><span id="title">loading…</span><span id="stats"></span>
+  <span id="pwrap">edges p ≥ <span id="pv">0.25</span> <input id="p" type="range" min="0.05" max="0.9" step="0.05" value="0.25"></span>
+  <div class="tabs">
+    <button class="tab on" data-view="expl"><span class="k">1</span>EXPLANATIONS</button>
+    <button class="tab" data-view="hood"><span class="k">2</span>NEIGHBORHOOD</button>
+    <button class="tab" data-view="full"><span class="k">3</span>FULL GRAPH</button>
+  </div>
+  <span id="link">○ terminal</span>
 </div>
-<div id="main"><div id="cy"></div><div id="side"><h3>SELECTION</h3><div class="muted">click a node; the terminal follows. press g in the terminal to focus here.</div></div></div>
-<script src="https://unpkg.com/cytoscape@3/dist/cytoscape.min.js"></script>
+<div id="main"><div id="cy"></div><div id="side"></div></div>
+<div id="foot">
+  <span><i style="border-color:var(--amber-hi)"></i>best explanation</span>
+  <span><i style="border-color:var(--amber);border-top-style:dashed"></i>rival within ln 20</span>
+  <span><i style="border-color:var(--down);border-top-style:dotted"></i>we do not know</span>
+  <span><i style="border-color:#5a5a5a"></i>attention edge (Hawkes share p)</span>
+  <span>BOT = new information from outside · edges are timing, not cause</span>
+</div>
+<script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
 <script>
-let data = /*__GRAPH__*/null, cy = null;
+let data = /*__GRAPH__*/null, cy = null, view = "expl", focusTag = "best", selected = null;
+const C = { bg:"#000", amber:"#fa7900", hi:"#ffb000", ink:"#e8e8e8", dim:"#7a7f87", faint:"#2a2a2a", up:"#2fbf71", down:"#ff4d4d", id:"#5fb3c8" };
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const shortId = id => id === "BOT" ? "BOT" : (/^T\d+$/.test(id) ? id : "N:" + id.slice(0, 8));
+const $ = id => document.getElementById(id);
+let N = {}, OUT = {}, IN = {}, TREE_EDGES = {}, TREE_NODES = {};
 
-function treeTag(u, v) {
-  for (const [tag, es] of Object.entries(data.trees || {})) if (es.some(e => e[0] === u && e[1] === v)) return tag;
+function index() {
+  N = Object.fromEntries(data.nodes.map(n => [n.id, n]));
+  OUT = {}; IN = {};
+  for (const e of data.edges) { (OUT[e.u] ||= []).push(e); (IN[e.v] ||= []).push(e); }
+  TREE_EDGES = {}; TREE_NODES = {};
+  for (const [tag, es] of Object.entries(data.trees || {})) {
+    TREE_EDGES[tag] = new Set(es.map(([u, v]) => u + ">" + v));
+    TREE_NODES[tag] = new Set(es.flat());
+    for (const [u, v] of es) for (const id of [u, v]) if (!N[id]) N[id] = { id, kind: id === "BOT" ? "bot" : (isTerm(id) ? "terminal" : "narrative"), label: id, state: "" };
+  }
+}
+const isTerm = id => (N[id] && N[id].kind === "terminal") || /^T\d+$/.test(id);
+const tagOf = (u, v) => {
+  const k = u + ">" + v;
+  if (TREE_EDGES[focusTag] && TREE_EDGES[focusTag].has(k)) return focusTag === "best" ? "best" : (focusTag === "abstain" ? "abstain" : "rival");
+  if (TREE_EDGES.best && TREE_EDGES.best.has(k)) return "best";
+  for (const t of Object.keys(TREE_EDGES)) if (t.startsWith("rival") && TREE_EDGES[t].has(k)) return "rival";
+  if (TREE_EDGES.abstain && TREE_EDGES.abstain.has(k)) return "abstain";
   return "";
+};
+const pOf = (u, v) => { const e = (OUT[u] || []).find(e => e.v === v); if (e) return e.p; for (const x of data.expl || []) if (x.p && (u + ">" + v) in x.p) return x.p[u + ">" + v]; return 0; };
+function nodeLabel(id, long) {
+  const n = N[id] || { label: id };
+  if (id === "BOT") return "BOT · outside world";
+  if (isTerm(id)) return (data.terminal_names && data.terminal_names[id]) || n.label || id;
+  const lab = (n.label || id).replace(/^[0-9a-f]{16} :: /, "");
+  return long ? lab : (lab.length > 64 ? lab.slice(0, 62) + "…" : lab);
+}
+function el(id, extra = {}) {
+  const n = N[id] || {};
+  return { data: { id, kind: n.kind || "narrative", state: n.state || "", label: nodeLabel(id), ...extra } };
+}
+function edge(u, v, p, extra = {}) {
+  const tag = tagOf(u, v);
+  return { data: { id: u + ">" + v, source: u, target: v, p, tag, plabel: tag && tag !== "abstain" && u !== "BOT" ? "p " + Number(p).toFixed(2) : "", w: 0.6 + 3 * Math.min(1, p), ...extra } };
 }
 
-function build() {
-  const pmin = parseFloat(document.getElementById("p").value);
-  const only = document.getElementById("trees").checked;
-  const keep = new Set(["BOT"]);
-  const edges = [];
-  for (const e of data.edges) {
-    const tag = treeTag(e.u, e.v);
-    if (tag || (!only && e.p >= pmin)) { edges.push({ ...e, tag }); keep.add(e.u); keep.add(e.v); }
-  }
-  for (const [tag, es] of Object.entries(data.trees || {})) for (const [u, v] of es) {
-    keep.add(u); keep.add(v);
-    if (!edges.some(e => e.u === u && e.v === v)) edges.push({ u, v, p: 0, cost: 0, tag });
-  }
-  const els = [];
-  for (const n of data.nodes) if (keep.has(n.id))
-    els.push({ data: { id: n.id, kind: n.kind, label: n.kind === "narrative" ? (n.label || "").slice(0, 42) : (n.kind === "bot" ? "BOT · outside world" : n.label), full: n.label, state: n.state || "" } });
-  for (const e of edges) if (keep.has(e.u) && keep.has(e.v))
-    els.push({ data: { id: e.u + "→" + e.v, source: e.u, target: e.v, p: e.p, cost: e.cost, tag: e.tag, w: 0.6 + 6 * Math.min(1, e.p) } });
-  if (cy) cy.destroy();
-  cy = cytoscape({
-    container: document.getElementById("cy"), elements: els, wheelSensitivity: 0.25,
-    style: [
-      { selector: "node", style: { "background-color": "#58c4dd", "label": "data(label)", "color": "#d7e0e6", "font-size": 9, "text-valign": "bottom", "text-margin-y": 4, "width": 12, "height": 12, "text-wrap": "ellipsis", "text-max-width": 160 } },
-      { selector: "node[state = 'dormant']", style: { "background-color": "#4a5560" } },
-      { selector: "node[kind = 'bot']", style: { "background-color": "#f4d35e", "width": 22, "height": 22, "font-size": 11, "font-weight": 600 } },
-      { selector: "node[kind = 'terminal']", style: { "background-color": "#fc6255", "shape": "round-rectangle", "width": 26, "height": 16, "font-size": 10, "font-weight": 600 } },
-      { selector: "edge", style: { "width": "data(w)", "line-color": "#3a4650", "target-arrow-color": "#3a4650", "target-arrow-shape": "triangle", "arrow-scale": 0.6, "curve-style": "bezier", "opacity": 0.55 } },
-      { selector: "edge[tag = 'best']", style: { "line-color": "#f4d35e", "target-arrow-color": "#f4d35e", "width": 4, "opacity": 1, "z-index": 9 } },
-      { selector: "edge[tag ^= 'rival']", style: { "line-color": "#f4b942", "target-arrow-color": "#f4b942", "width": 3, "opacity": 0.9, "line-style": "dashed" } },
-      { selector: "edge[tag = 'abstain']", style: { "line-color": "#fc6255", "target-arrow-color": "#fc6255", "width": 2, "opacity": 0.9, "line-style": "dotted" } },
-      { selector: ":selected", style: { "border-width": 3, "border-color": "#ffffff" } },
-    ],
-    layout: { name: "preset", positions: layered(els), padding: 30, animate: false },
-  });
-  cy.on("tap", "node", ev => { show(ev.target); fetch("/select", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: ev.target.id() }) }); });
-  document.getElementById("title").textContent = data.title + (data.recorded_graph ? "" : "  · explanation trees only (no recorded graph)") + `  · ${cy.nodes().length} nodes · ${cy.edges().length} edges shown`;
-}
-
-function layered(els) {
-  // BOT on top, narratives by hop distance from BOT, every market terminal on the bottom row
-  const nodes = els.filter(e => !e.data.source), edges = els.filter(e => e.data.source);
-  const kind = Object.fromEntries(nodes.map(n => [n.data.id, n.data.kind]));
-  const depth = { BOT: 0 }, q = ["BOT"];
-  while (q.length) {
-    const u = q.shift();
-    for (const e of edges) if (e.data.source === u && kind[e.data.target] === "narrative" && depth[e.data.target] === undefined) {
-      depth[e.data.target] = depth[u] + 1; q.push(e.data.target);
-    }
-  }
+// ---- view 1: the explanations (best, rivals, abstention) and the candidate stories that reached the market cluster
+function viewExpl() {
+  const ids = new Set(["BOT"]), es = new Map();
+  for (const [tag, list] of Object.entries(data.trees || {})) for (const [u, v] of list) { ids.add(u); ids.add(v); es.set(u + ">" + v, [u, v]); }
+  const terms = [...ids].filter(isTerm);
+  const cands = new Set();
+  for (const t of terms) for (const e of IN[t] || []) if (e.u !== "BOT") { cands.add(e.u); ids.add(e.u); es.set(e.u + ">" + t, [e.u, t]); }
+  // longest path depth from BOT over the narrative part of the trees
+  const depth = { BOT: 0 }, narr = [...ids].filter(id => id !== "BOT" && !isTerm(id));
+  for (let it = 0; it < 8; it++) for (const [u, v] of es.values()) if (!isTerm(v) && v !== "BOT" && depth[u] !== undefined) depth[v] = Math.max(depth[v] || 0, depth[u] + 1);
   let maxd = 1;
-  for (const n of nodes) if (n.data.kind === "narrative") { if (depth[n.data.id] === undefined) depth[n.data.id] = 1; maxd = Math.max(maxd, depth[n.data.id]); }
-  for (const n of nodes) if (n.data.kind === "terminal") depth[n.data.id] = maxd + 1;
-  const inTree = new Set(Object.values(data.trees || {}).flat(2));
+  for (const id of narr) { if (depth[id] === undefined) depth[id] = 1; maxd = Math.max(maxd, depth[id]); }
+  for (const id of narr) if (!TREE_NODES.best?.has(id) && ![...Object.keys(TREE_NODES)].some(t => t !== "abstain" && TREE_NODES[t].has(id))) depth[id] = maxd;   // candidates sit just above the cluster
+  for (const t of terms) depth[t] = maxd + 1;
   const layers = {};
-  for (const n of nodes) (layers[depth[n.data.id]] ||= []).push(n.data.id);
-  const pos = {};
-  for (const [d, ids] of Object.entries(layers)) {
-    ids.sort((a, b) => (inTree.has(b) - inTree.has(a)) || a.localeCompare(b));
-    const w = 190;
-    ids.forEach((id, i) => { pos[id] = { x: (i - (ids.length - 1) / 2) * w, y: Number(d) * 170 }; });
+  for (const id of ids) (layers[depth[id]] ||= []).push(id);
+  const rankOf = id => TREE_NODES.best?.has(id) ? 0 : (Object.keys(TREE_NODES).some(t => t.startsWith("rival") && TREE_NODES[t].has(id)) ? 1 : 2);
+  const pos = {}, gapX = 225, gapY = 150;
+  const through = new Set();                           // layers a best-tree edge passes through: keep their centre free
+  for (const [u, v] of (data.trees.best || [])) for (let d = (depth[u] ?? 0) + 1; d < (depth[v] ?? 0); d++) through.add(d);
+  const order = Object.keys(layers).map(Number).sort((a, b) => a - b);
+  for (const d of order) {
+    const L = layers[d];
+    // barycentre of already-placed parents, best tree in the middle
+    const bc = id => { const ps = [...es.values()].filter(([u, v]) => v === id && pos[u]).map(([u]) => pos[u].x); return ps.length ? ps.reduce((a, b) => a + b, 0) / ps.length : 0; };
+    L.sort((a, b) => rankOf(a) - rankOf(b) || bc(a) - bc(b) || a.localeCompare(b));
+    const mid = [];                                     // alternate around the centre so rank 0 is central
+    L.forEach((id, i) => (i % 2 ? mid.push(id) : mid.unshift(id)));
+    const perRow = 6;
+    mid.forEach((id, i) => {
+      const row = Math.floor(i / perRow), inRow = Math.min(perRow, mid.length - row * perRow);
+      let j = i % perRow, slots = inRow;
+      if (through.has(d) && inRow % 2 === 1) { slots = inRow + 1; if (j > (inRow - 1) / 2) j += 1; }
+      pos[id] = { x: (j - (slots - 1) / 2) * gapX, y: d * gapY * 1.15 + row * 70 + (d === maxd + 1 ? 40 * Math.max(0, Math.ceil(mid.length / perRow) - 1) : 0) };
+    });
   }
-  return pos;
+  const els = [...ids].map(id => el(id, { role: rankOf(id) === 2 && cands.has(id) ? "cand" : "" }));
+  for (const [u, v] of es.values()) els.push(edge(u, v, pOf(u, v)));
+  return { els, layout: { name: "preset", positions: pos, fit: true, padding: 50 } };
 }
 
-function show(n) {
-  const d = n.data();
-  const ins = n.incomers("edge").map(e => [e.source().id(), e.data("p"), e.data("tag")]).sort((a, b) => b[1] - a[1]).slice(0, 12);
-  const outs = n.outgoers("edge").map(e => [e.target().id(), e.data("p"), e.data("tag")]).sort((a, b) => b[1] - a[1]).slice(0, 12);
-  const row = ([id, p, tag]) => `<div class="row"><span>${esc(shortId(id))}</span><span class="muted">${tag || ""}</span><span>p ${Number(p).toFixed(3)}</span></div>`;
-  document.getElementById("side").innerHTML = `<h3>${esc(shortId(d.id))}</h3><div>${esc(d.full)}</div><div class="muted">${esc(d.kind)} ${esc(d.state)}</div>
-    <h3 style="margin-top:12px">attention came from</h3>${ins.map(row).join("") || '<div class="muted">—</div>'}
-    <h3 style="margin-top:12px">attention went to</h3>${outs.map(row).join("") || '<div class="muted">—</div>'}
-    <div class="muted" style="margin-top:12px">edges are Hawkes attribution shares (timing, not cause). BOT is new information entering from outside.</div>`;
+// ---- view 2: one node, its strongest sources on the left and strongest targets on the right
+function viewHood() {
+  const c = selected || (data.expl && data.expl[0] && data.expl[0].entry) || "BOT";
+  const ins = (IN[c] || []).slice().sort((a, b) => b.p - a.p).slice(0, 14);
+  const outs = (OUT[c] || []).slice().sort((a, b) => b.p - a.p).slice(0, 14);
+  const pos = { [c]: { x: 0, y: 0 } }, els = [el(c)];
+  ins.forEach((e, i) => { if (!pos[e.u]) { pos[e.u] = { x: -520, y: (i - (ins.length - 1) / 2) * 62 }; els.push(el(e.u)); } els.push(edge(e.u, c, e.p)); });
+  outs.forEach((e, i) => { if (!pos[e.v]) { pos[e.v] = { x: 520, y: (i - (outs.length - 1) / 2) * 62 }; els.push(el(e.v)); } els.push(edge(c, e.v, e.p)); });
+  return { els, layout: { name: "preset", positions: pos, fit: true, padding: 40 }, center: c };
 }
 
-async function load() { data = await (await fetch("/graph.json")).json(); build(); }
-document.getElementById("p").addEventListener("input", e => { document.getElementById("pv").textContent = Number(e.target.value).toFixed(2); build(); });
-document.getElementById("trees").addEventListener("change", build);
+// ---- view 3: every narrative that can reach the market cluster, in rows by hops to it (cluster at the bottom), best tree lit
+function viewFull() {
+  const pmin = parseFloat($("p").value);
+  const all = Object.keys(N).filter(id => id !== "BOT");
+  const hop = {}, q = [];
+  for (const id of all) if (isTerm(id)) { hop[id] = 0; q.push(id); }
+  while (q.length) { const v = q.shift(); for (const e of IN[v] || []) if (e.u !== "BOT" && hop[e.u] === undefined) { hop[e.u] = hop[v] + 1; q.push(e.u); } }
+  const ids = all.filter(id => hop[id] !== undefined), unreach = all.length - ids.length;
+  const rows = {}; for (const id of ids) (rows[hop[id]] ||= []).push(id);
+  const H = Math.max(...Object.keys(rows).map(Number)), gapX = 44, gapY = 78;
+  const pos = {}, lit = new Set([...(TREE_NODES.best || []), ...(focusTag !== "abstain" ? TREE_NODES[focusTag] || [] : [])]);
+  let widest = 0;
+  for (let h = 0; h <= H; h++) {
+    const L = rows[h] || [];
+    const bc = id => { const xs = (OUT[id] || []).filter(e => pos[e.v] && hop[e.v] < h).map(e => pos[e.v].x); return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0; };
+    const key = Object.fromEntries(L.map(id => [id, bc(id)]));
+    L.sort((a, b) => key[a] - key[b] || a.localeCompare(b));
+    const gx = h === 0 ? 220 : h === 1 ? 125 : gapX;
+    L.forEach((id, i) => { pos[id] = { x: (i - (L.length - 1) / 2) * gx, y: (H - h + 1) * gapY }; });
+    widest = Math.max(widest, L.length * gx);
+  }
+  pos.BOT = { x: 0, y: 0 };
+  const els = [el("BOT"), ...ids.map(id => el(id, { lit: lit.has(id) || isTerm(id) ? 1 : 0, hop: hop[id] }))];
+  for (let h = 1; h <= H; h++) {                       // row captions
+    const id = "row" + h; pos[id] = { x: -widest / 2 - 150, y: (H - h + 1) * gapY };
+    els.push({ data: { id, kind: "caption", label: `${h} hop${h > 1 ? "s" : ""} · ${(rows[h] || []).length}` } });
+  }
+  pos.cap0 = { x: 0, y: (H + 1) * gapY + 70 };
+  els.push({ data: { id: "cap0", kind: "caption", label: `${ids.length - 1} narratives can reach the cluster · ${unreach} in the horizon cannot (not drawn)` } });
+  const have = new Set();
+  for (const e of data.edges) {
+    if (pos[e.u] === undefined || pos[e.v] === undefined) continue;
+    const k = e.u + ">" + e.v, on = (TREE_EDGES.best && TREE_EDGES.best.has(k)) || (TREE_EDGES[focusTag] && TREE_EDGES[focusTag].has(k));
+    if (on || (e.u !== "BOT" && e.p >= pmin)) { els.push(edge(e.u, e.v, e.p, on ? {} : { faint: 1, tag: "" })); have.add(k); }
+  }
+  for (const t of new Set(["best", focusTag])) if (t !== "abstain" && data.trees && data.trees[t]) for (const [u, v] of data.trees[t])
+    if (!have.has(u + ">" + v) && pos[u] !== undefined && pos[v] !== undefined) { have.add(u + ">" + v); els.push(edge(u, v, pOf(u, v))); }
+  return { els, layout: { name: "preset", positions: pos, fit: true, padding: 30 } };
+}
+
+const STYLE = [
+  { selector: "node", style: { "background-color": C.id, "label": "data(label)", "color": C.ink, "font-size": 12, "font-family": "IBM Plex Mono, ui-monospace, monospace",
+      "text-valign": "bottom", "text-margin-y": 5, "width": 12, "height": 12, "text-wrap": "wrap", "text-max-width": 210, "min-zoomed-font-size": 7,
+      "text-background-color": C.bg, "text-background-opacity": 0.85, "text-background-padding": 2 } },
+  { selector: "node[state = 'dormant']", style: { "background-color": "#4d4d4d", "color": C.dim } },
+  { selector: "node[role = 'cand']", style: { "background-color": "#2e5966", "color": C.dim, "font-size": 10 } },
+  { selector: "node[kind = 'bot']", style: { "background-color": C.ink, "shape": "diamond", "width": 26, "height": 26, "font-size": 13, "font-weight": 700, "color": C.ink } },
+  { selector: "node[kind = 'terminal']", style: { "background-color": C.down, "shape": "round-rectangle", "width": 34, "height": 20, "font-size": 13, "font-weight": 700, "color": C.down, "text-max-width": 280 } },
+  { selector: "node[lit = 0][hop > 1]", style: { "label": "", "width": 7, "height": 7 } },
+  { selector: "node[lit = 0][hop = 1]", style: { "font-size": 10, "color": C.dim, "text-max-width": 120 } },
+  { selector: "node[kind = 'caption']", style: { "background-opacity": 0, "width": 1, "height": 1, "color": C.amber, "font-size": 13, "text-valign": "center", "text-halign": "center", "text-background-opacity": 0, "text-max-width": 900, "events": "no" } },
+  { selector: "node.focus", style: { "background-color": C.hi, "color": C.hi, "font-weight": 700, "width": 16, "height": 16 } },
+  { selector: "edge", style: { "width": "data(w)", "line-color": "#5a5a5a", "target-arrow-color": "#5a5a5a", "target-arrow-shape": "triangle", "arrow-scale": 0.7,
+      "curve-style": "bezier", "opacity": 0.7, "label": "data(plabel)", "font-size": 10, "color": C.hi, "text-background-color": C.bg, "text-background-opacity": 1, "text-background-padding": 1 } },
+  { selector: "edge[faint = 1]", style: { "opacity": 0.3, "target-arrow-shape": "none", "curve-style": "haystack", "width": 0.6 } },
+  { selector: "edge[tag = 'best']", style: { "line-color": C.hi, "target-arrow-color": C.hi, "width": 4, "opacity": 1, "z-index": 9 } },
+  { selector: "edge[tag = 'rival']", style: { "line-color": C.amber, "target-arrow-color": C.amber, "width": 2.4, "opacity": 0.9, "line-style": "dashed", "z-index": 8 } },
+  { selector: "edge[tag = 'abstain']", style: { "line-color": C.down, "target-arrow-color": C.down, "width": 2, "opacity": 0.9, "line-style": "dotted", "z-index": 7 } },
+  { selector: ".dim", style: { "opacity": 0.12 } },
+  { selector: ":selected", style: { "border-width": 3, "border-color": C.ink } },
+];
+
+function render() {
+  const v = view === "expl" ? viewExpl() : view === "hood" ? viewHood() : viewFull();
+  if (cy) cy.destroy();
+  cy = cytoscape({ container: $("cy"), elements: v.els, style: STYLE, layout: v.layout, wheelSensitivity: 0.25, minZoom: 0.05, maxZoom: 4 });
+  if (view === "expl") cy.nodes().forEach(n => { if (TREE_NODES.best && TREE_NODES.best.has(n.id()) && n.data("kind") === "narrative") n.addClass("focus"); });
+  if (view === "full") cy.nodes("[lit = 1][kind = 'narrative']").addClass("focus");
+  highlight();
+  cy.on("tap", "node", ev => { selected = ev.target.id(); showNode(selected); post(selected); if (view === "hood") render(); });
+  cy.on("dbltap", "node", ev => { selected = ev.target.id(); setView("hood"); });
+  $("stats").textContent = `· searched ${data.nodes.length} nodes, ${data.edges.length} edges · showing ${cy.nodes().length} / ${cy.edges().length}`;
+  if (v.center) { const n = cy.getElementById(v.center); n.addClass("focus"); showNode(v.center); }
+}
+
+function highlight() {
+  if (!cy || view === "hood") return;
+  const keep = TREE_NODES[focusTag];
+  cy.elements().removeClass("dim");
+  if (view === "expl" && keep && focusTag !== "best") {
+    cy.nodes().forEach(n => { if (!keep.has(n.id())) n.addClass("dim"); });
+    cy.edges().forEach(e => { if (!TREE_EDGES[focusTag].has(e.id())) e.addClass("dim"); });
+  }
+  if (view === "expl") cy.edges().forEach(e => e.data("tag", tagOf(e.data("source"), e.data("target"))));
+}
+
+function side() {
+  const x = data.expl || [];
+  const best = x.find(e => e.rank === 1), abst = x.find(e => e.rank === 0);
+  let h = `<div class="h"><span class="n">1</span>EXPLANATIONS</div>`;
+  for (const e of x) {
+    const cls = e.rank === 1 ? "best" : e.rank === 0 ? "abst" : "";
+    const odds = e.rank === 1 ? (abst ? (Math.exp((abst.cost - e.cost) / 1000)).toFixed(1) + " : 1 vs ∅" : "best") : e.rank === 0 ? "1 : " + e.odds.toFixed(1) : "1 : " + e.odds.toFixed(1);
+    h += `<div class="ex ${cls} ${e.tag === focusTag ? "on" : ""}" data-tag="${e.tag}"><span class="r">${e.rank === 0 ? "∅" : e.rank}</span><span class="l" title="${esc(e.label)}">${esc(e.rank === 0 ? "WE DO NOT KNOW" : nodeLabel(e.entry))}</span><span class="o">${(e.cost / 1000).toFixed(2)} n · ${odds}</span></div>`;
+  }
+  if (!x.length) h += `<div class="pad muted">no investigation open</div>`;
+  h += `<div class="h"><span class="n">2</span>SELECTION</div><div id="sel" class="pad muted">click a node · double-click opens its neighborhood · g in the terminal focuses here</div>`;
+  $("side").innerHTML = h;
+  document.querySelectorAll(".ex").forEach(d => d.onclick = () => { focusTag = d.dataset.tag; side(); if (view === "full") render(); else highlight(); const t = (data.expl || []).find(e => e.tag === focusTag); if (t && t.entry && t.entry !== "BOT") post(t.entry); });
+  if (selected) showNode(selected);
+}
+
+function showNode(id) {
+  const n = N[id] || { label: id };
+  const ins = (IN[id] || []).slice().sort((a, b) => b.p - a.p).slice(0, 10);
+  const outs = (OUT[id] || []).slice().sort((a, b) => b.p - a.p).slice(0, 10);
+  const row = (other, e) => `<div class="row ${tagOf(e.u, e.v) ? "tree" : ""}" data-id="${esc(other)}"><span class="t">${esc(nodeLabel(other))}</span><span class="p">p ${Number(e.p).toFixed(3)}</span></div>`;
+  const s = $("sel"); if (!s) return;
+  s.className = "";
+  s.innerHTML = `<div class="pad"><span class="idc">${esc(id === "BOT" || isTerm(id) ? id : "N:" + id.slice(0, 8))}</span> <span class="muted">${esc(n.kind || "")} ${esc(n.state || "")}</span><br>${esc(nodeLabel(id, true))}</div>
+    <div class="kv"><span class="k">attention came from</span><span class="muted">${(IN[id] || []).length}</span></div>${ins.map(e => row(e.u, e)).join("") || '<div class="pad muted">—</div>'}
+    <div class="kv" style="margin-top:6px"><span class="k">attention went to</span><span class="muted">${(OUT[id] || []).length}</span></div>${outs.map(e => row(e.v, e)).join("") || '<div class="pad muted">—</div>'}`;
+  s.querySelectorAll(".row").forEach(r => r.onclick = () => { selected = r.dataset.id; post(selected); setView("hood"); });
+}
+
+function post(id) { fetch("/select", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) }).catch(() => {}); }
+function setView(v) {
+  view = v;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === v));
+  $("pwrap").classList.toggle("on", v === "full");
+  render();
+}
+async function load() { data = await (await fetch("/graph.json")).json(); boot(); }
+function boot() {
+  index(); $("title").textContent = data.title || "";
+  if (!data.trees || !data.trees.best) focusTag = Object.keys(data.trees || {})[0] || "best";
+  side(); render();
+}
+
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => setView(t.dataset.view));
+document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; if (e.key === "1") setView("expl"); if (e.key === "2") setView("hood"); if (e.key === "3") setView("full"); });
+$("p").addEventListener("input", e => { $("pv").textContent = Number(e.target.value).toFixed(2); if (view === "full") render(); });
 const es = new EventSource("/events");
-es.onopen = () => { const l = document.getElementById("link"); l.textContent = "● terminal link"; l.className = "on"; };
-es.onerror = () => { const l = document.getElementById("link"); l.textContent = "○ terminal link lost"; l.className = ""; };
+es.onopen = () => { $("link").textContent = "● terminal"; $("link").className = "on"; };
+es.onerror = () => { $("link").textContent = "○ terminal lost"; $("link").className = ""; };
 es.onmessage = async m => {
   const msg = JSON.parse(m.data);
-  if (msg.type === "reload") await load();
-  if (msg.type === "focus" && cy) { const n = cy.getElementById(msg.id); if (n && n.length) { cy.elements().unselect(); n.select(); cy.animate({ center: { eles: n }, zoom: 1.6 }, { duration: 400 }); show(n); } }
+  if (msg.type === "reload") { selected = null; focusTag = "best"; await load(); }
+  if (msg.type === "focus" && cy) {
+    selected = msg.id;
+    const n = cy.getElementById(msg.id);
+    if (n && n.length) { cy.elements().unselect(); n.select(); cy.animate({ center: { eles: n }, zoom: Math.max(cy.zoom(), 1.2) }, { duration: 350 }); showNode(msg.id); }
+    else setView("hood");
+  }
 };
-if (data) build(); else load();
+const qv = new URLSearchParams(location.search).get("view");
+if (qv) { view = qv; document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === qv)); $("pwrap").classList.toggle("on", qv === "full"); }
+if (data) boot(); else load();
 </script>
 </body>
 </html>

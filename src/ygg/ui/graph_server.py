@@ -50,6 +50,7 @@ class GraphServer:
             return
         lines = head.decode("latin-1").split("\r\n")
         method, path, *_ = (lines[0].split(" ") + ["", ""])[:3]
+        path = path.split("?", 1)[0]                     # the viewer takes ?view=expl|hood|full
         headers = {k.lower(): v.strip() for k, _, v in (ln.partition(":") for ln in lines[1:] if ln)}
         try:
             if method == "GET" and path in ("/", "/index.html"):
@@ -105,10 +106,12 @@ def payload_for(inv, case_json: dict | None) -> dict:
     """The recorded graph of an investigation plus which edges belong to which explanation."""
     g = ((case_json or {}).get("search", {}).get("groups") or [{}])[0].get("graph") or {}
     nodes, edges = list(g.get("nodes", [])), list(g.get("edges", []))
-    trees = {}
-    for e in inv.explanations:
+    trees, expl = {}, []
+    for e in sorted(inv.explanations, key=lambda e: (e.rank == 0, e.rank)):
         tag = "best" if e.rank == 1 else ("abstain" if e.rank == 0 else f"rival{e.rank}")
         trees[tag] = [[x.src, x.dst] for x in e.edges]
+        expl.append({"tag": tag, "rank": e.rank, "entry": e.entry, "label": e.entry_label, "cost": e.cost_mnats,
+                     "odds": e.odds_vs_best, "p": {f"{x.src}>{x.dst}": x.p for x in e.edges}})
     if not nodes:                                         # no recorded graph (DEMO or an older case file): the trees alone
         seen = {}
         for e in inv.explanations:
@@ -123,4 +126,5 @@ def payload_for(inv, case_json: dict | None) -> dict:
                 seen[f"T{k}"]["label"] = ", ".join(c)
         nodes = list(seen.values())
     return {"title": f"CASE {inv.case_id} · {inv.source} · τ* {inv.tau_star:%Y-%m-%d %H:%M} UTC" if inv.tau_star else f"CASE {inv.case_id}",
-            "nodes": nodes, "edges": edges, "trees": trees, "recorded_graph": bool(g.get("nodes"))}
+            "nodes": nodes, "edges": edges, "trees": trees, "expl": expl, "recorded_graph": bool(g.get("nodes")),
+            "terminal_names": {f"T{k}": ", ".join(c) for k, c in enumerate(inv.clusters)}}
