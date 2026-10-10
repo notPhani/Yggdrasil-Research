@@ -39,7 +39,7 @@ def render_markdown(d: dict) -> str:
         lines += ["", "## Evidence (sample)", ""]
         for h in d["verdicts"]["hypotheses"][:3]:
             for r in h["reports"][:6]:
-                lines.append(f"- [{h['label'][:30]}] tier {r['tier']} {r['source']} first_seen {r['first_seen'][:16]} "
+                lines.append(f"- [{h['label'][:30]}] tier {r['tier']} {r['source']} first_seen {(r.get('first_seen') or 'not seen by Engine 1')[:20]} "
                              f"{'(before tau*)' if r['pre'] else '(after cutoff: truth only)'}: {r['title'][:100]}")
     lines += ["", "_Yggdrasil never forecasts prices and never recommends trades. Edges are timing, not cause._"]
     return "\n".join(lines)
