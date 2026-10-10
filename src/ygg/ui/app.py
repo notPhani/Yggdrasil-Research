@@ -87,8 +87,11 @@ class Bar(Static):
         self.update(bar(self.n, self.title_, self.right, self.size.width or 120))
 
 
+TERMS: set[str] = set()                 # terminal ids of the open investigation (recorded names like "EIX+PCG")
+
+
 def _is_term(nid: str) -> bool:
-    return nid.startswith("T") and nid[1:].isdigit()
+    return nid in TERMS or (nid.startswith("T") and nid[1:].isdigit())
 
 
 def _sid(nid: str) -> str:
@@ -515,6 +518,8 @@ class InvestigationScreen(Screen):
     def __init__(self, inv: Investigation, raw: dict | None = None):
         super().__init__()
         self.inv, self.raw = inv, raw
+        TERMS.clear()
+        TERMS.update(inv.terminals)
         self.clock: datetime | None = None
         self.speed, self.revealed, self.hyp_i, self.focus_i = 8, len(STEPS), 0, -1
         self._timer, self._step_wait, self.view = None, 0, "v_over"
@@ -727,7 +732,7 @@ class InvestigationScreen(Screen):
             terms = sorted({x.dst for x in b.edges if _is_term(x.dst) and x.src != "BOT"})
             if terms:
                 t.append("  →  ", style=DIM)
-                t.append(" + ".join(f"C{int(x[1:]) + 1} {' '.join(inv.clusters[int(x[1:])][:3])}" for x in terms if int(x[1:]) < len(inv.clusters)), style=WHITE)
+                t.append(" + ".join(self._term_label(x) for x in terms), style=WHITE)
             t.append(f"\n      {b.cost_mnats / 1000:.2f} nats", style=WHITE)
             if a:
                 t.append(f"  ·  {a.odds_vs_best:.1f} : 1 against WE DO NOT KNOW", style=UP if a.odds_vs_best > 1 else WARN)
@@ -778,6 +783,18 @@ class InvestigationScreen(Screen):
         leg = "  ".join(f"{s.label}" for s in series)
         self.query_one("#omid Bar", Bar).set(right=f"{leg} · % from the close before τ* · orange = τ* day")
 
+    def _term_label(self, nid: str) -> str:
+        """A terminal as 'C1 SMH+4' (cluster index from the recorded order) or its recorded name."""
+        inv = self.inv
+        if nid in inv.terminals:
+            k = inv.terminals.index(nid)
+        elif nid.startswith("T") and nid[1:].isdigit():
+            k = int(nid[1:])
+        else:
+            return nid
+        c = inv.clusters[k] if k < len(inv.clusters) else ()
+        return f"C{k + 1} {c[0] if c else nid}{'+' + str(len(c) - 1) if len(c) > 1 else ''}"
+
     def render_paths(self) -> None:
         box = self.query_one("#paths", Static)
         inv = self.inv
@@ -798,9 +815,7 @@ class InvestigationScreen(Screen):
                 for x in path:
                     t.append(f" ─{x.p:.2f}→ " if x.p else " ──→ ", style=DIM)
                     if _is_term(x.dst):
-                        c = cl.get(x.dst, ())
-                        t.append(f"C{int(x.dst[1:]) + 1}", style=f"bold {DOWN}")
-                        t.append(f" {c[0] if c else ''}{'+' + str(len(c) - 1) if len(c) > 1 else ''}", style=DIM)
+                        t.append(self._term_label(x.dst), style=f"bold {DOWN}")
                     else:
                         t.append(x.dst_label[:room], style=WHITE)
                 t.append("\n")

@@ -41,8 +41,21 @@ class PageFetcher:
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
         self.cache = json.loads(self.cache_path.read_text()) if self.cache_path.exists() else {}
         self.pause, self.max_bytes = pause_s, max_bytes
+        import threading
 
-    def _get(self, url: str, timeout: float = 40.0) -> bytes:
+        self._lock = threading.Lock()
+
+    def prefetch(self, urls: list[str], tau_star: str, workers: int = 8) -> None:
+        """Fetch many pages concurrently into the cache (network waits overlap). Results are cached per URL exactly as
+        a sequential fetch would cache them, so later sequential reads see the same records (D5)."""
+        from concurrent.futures import ThreadPoolExecutor
+
+        todo = sorted({u for u in urls if f"{u}|{tau_star}" not in self.cache})
+        if todo:
+            with ThreadPoolExecutor(max_workers=workers) as ex:
+                list(ex.map(lambda u: self.fetch(u, tau_star), todo))
+
+    def _get(self, url: str, timeout: float = 20.0) -> bytes:
         time.sleep(self.pause)
         req = urllib.request.Request(url, headers=UA)
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -66,8 +79,9 @@ class PageFetcher:
     def fetch(self, url: str, tau_star: str) -> dict:
         """tau_star as YYYYMMDDhhmmss. Returns {ok, snapshot, before_cutoff, sha256, text_sha256}."""
         key = f"{url}|{tau_star}"
-        if key in self.cache:
-            return self.cache[key]
+        with self._lock:
+            if key in self.cache:
+                return self.cache[key]
         ts, before = self._snapshot(url, tau_star)
         rec = {"url": url, "ok": False, "snapshot": ts, "before_cutoff": before, "sha256": None}
         if ts:
@@ -77,8 +91,9 @@ class PageFetcher:
                 rec["ok"] = True
             except Exception as e:
                 rec["error"] = repr(e)[:200]
-        self.cache[key] = rec
-        self.cache_path.write_text(json.dumps(self.cache, indent=0, sort_keys=True))
+        with self._lock:
+            self.cache[key] = rec
+            self.cache_path.write_text(json.dumps(self.cache, indent=0, sort_keys=True))
         return rec
 
     def text(self, rec: dict) -> str:

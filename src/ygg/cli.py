@@ -227,6 +227,11 @@ def cmd_verdict(args: argparse.Namespace) -> int:
     con = connect(data_dir)
     hyps = build_hypotheses(con, d["search"], d["search"]["t_snap"])
     fetcher = None if args.no_fetch else PageFetcher(data_dir)
+    if fetcher is not None:                         # overlap the Wayback waits; evidence() then reads the cache in order
+        from ygg.verdicts.sources import tier
+
+        want = [d["url"] for h in hyps for d in sorted(h.docs, key=lambda d: (tier(d["source_name"]), d["first_seen"], d["observation_id"]))[:args.fetch_top]]
+        fetcher.prefetch(want, tau.strftime("%Y%m%d%H%M%S"))
     reps = {h.hid: evidence(h, tau, fetcher, fetch_top=args.fetch_top) for h in hyps}
     from ygg.verdicts.engine3b import _subject
     from ygg.verdicts.serpapi import Sensor

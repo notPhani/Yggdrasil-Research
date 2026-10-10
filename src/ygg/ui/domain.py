@@ -133,6 +133,7 @@ class Investigation:
     cfg_hash: str = ""
     source: str = "RECORDED"            # RECORDED / DEMO
     notes: tuple[str, ...] = ()
+    terminals: tuple[str, ...] = ()     # search terminal ids as recorded (one per market cluster)
 
     @property
     def best(self) -> Explanation | None:

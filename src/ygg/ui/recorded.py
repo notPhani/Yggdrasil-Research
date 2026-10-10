@@ -143,7 +143,7 @@ def load_investigation(path: Path | dict, source: str = "RECORDED") -> Investiga
               ("claims", "DONE" if hyps else "PENDING"), ("verdicts", "DONE" if pre else "PENDING"), ("lean", "SKIPPED"))
     return Investigation(day, tau, detected_at(day), str(search.get("t_snap", "")), tuple(inst), clusters, tuple(expl),
                          tuple(hyps), searches, placebo, phases, nodes, edges_n, pre.get("models", 0), alls.get("models", 0),
-                         d.get("cfg_hash", ""), source, tuple(d.get("notes", [])))
+                         d.get("cfg_hash", ""), source, tuple(d.get("notes", [])), tuple(groups[0].get("terminals", [])) if groups else ())
 
 
 def list_cases(data_dir: Path) -> list[CaseRow]:
