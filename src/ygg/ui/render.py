@@ -11,7 +11,7 @@ from rich.tree import Tree
 
 from ygg.ui.domain import LATE, POST, PRE, UNMATCHED, Candle, Evidence, Explanation, Hypothesis, Investigation, short
 
-CYAN, GREEN, AMBER, RED, GRAY, INK = "#58c4dd", "#83c167", "#f4b942", "#fc6255", "#6c7a86", "#d7e0e6"
+from ygg.ui.theme import AMBER_HI as AMBER, DIM as GRAY, DOWN as RED, ID as CYAN, UP as GREEN, WHITE as INK  # one palette
 BLOCKS = " ▁▂▃▄▅▆▇█"
 VERDICT_STYLE = {"SUPPORTED": GREEN, "CONTRADICTED": RED, "UNRESOLVED": AMBER, "CONSISTENT-BUT-UNPROVEN": GRAY, "—": GRAY}
 VERDICT_SHORT = {"SUPPORTED": "SUPPORTED", "CONTRADICTED": "CONTRADICTED", "UNRESOLVED": "UNRESOLVED",
