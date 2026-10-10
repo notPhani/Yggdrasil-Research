@@ -30,6 +30,24 @@ Measured on the replay (2024-12-16 .. 2025-01-31):
 - Stock observer (universe frozen at 2024-12-31, 149 names): 27 Jan 2025 fires unaided on chips {NVDA, AVGO, TSM, MRVL, CDNS (+SMH, XLK)}, power {VST, CEG, NRG, PEG}, ASM.AS and COHR, with tau* = 08:00 UTC; other January cases are the LA wildfire utilities (EIX, PCG) and earnings reactions
 - 2024 acceptance run: cases on 122 of 252 trading days (mostly earnings); search terminals k <= 8 on 251 of 252 days
 
+## Terminal
+
+`ygg ui` opens the control panel; `ygg ui --demo` adds a fixture investigation labelled DEMO.
+
+- **Control panel.** Command line (`NVDA GP`, `CASE 2025-01-13`, `5D`, `C`), watchlist, one central 1-minute price chart (braille line with previous close, VWAP and volume; `C` candles, `D` 1D/5D), quote, the recorded world model (alive/dormant narratives, bursts, edges, BOT share, top narratives), the GDELT feed (latest served batch; the live lag was 45-75 minutes on 10 Oct 2026), investigations, and an F-key bar with the engine status.
+- **Investigation.** Verdict first, then the cluster leads as % from the close before τ*, the ranked explanations (click one for its **brief**: claim, why this path edge by edge, what it was tested against, the verdict and the evidence it hinges on, what would change it, limits), the hypotheses and the evidence of the selected one with the τ* wall. F1-F7: overview, story, evidence, logic, placebo, trace, audit. `R` replays the recorded investigation: panels fill only as the replay clock passes the moment each became knowable.
+- **Graph window.** http://127.0.0.1:8765/ shows the explanation graph exactly as `ygg case` recorded it; `G` in the terminal focuses a node there, clicking a node there selects its hypothesis here.
+- The UI never recomputes a result and never moves τ*. The brief is assembled from the recorded case only; no language model writes it.
+
+## Disclosures
+
+- **AI tools.** Claude (Anthropic) was used for design, code and documentation.
+- **Open models.** sentence-transformers/all-MiniLM-L6-v2 (narrative embeddings, computed on a local GPU and verified against CPU), minishlab/potion-base-8M (near-duplicate step), an NLI cross-encoder and GLiNER in the evidence verifier.
+- **Data.** GDELT 2.0 (public), Yahoo chart API (unofficial endpoint, responses archived), Wayback Machine snapshots for evidence pages, SerpApi for targeted evidence (optional key).
+- **Not fitted, disclosed.** log α = -15 and the entity temperature T = 2 are defaults; κ_s = 250 is supported by the prequential score and the data-implied κ; the adaptive-emergence terms are calibrated on two warmup days; the 300-narrative ceiling enforces the locked capacity.
+- **Scope cut.** Lean certification (stretch) and the live intraday trigger are not implemented; without a SerpApi key, evidence comes from GDELT documents and Wayback pages only.
+- **Prior work.** The design and research in this repository's `blueprint/`, `brief/` and `reports/`.
+
 ## Contents
 
 | Path | What it is |
