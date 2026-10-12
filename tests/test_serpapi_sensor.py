@@ -50,3 +50,48 @@ def test_cached_response_matches_inherit_first_seen_and_unmatched_are_truth_only
     assert by[seen]["first_seen"].startswith("2025-01-21") and by[seen]["pre"] is True
     assert by[unseen]["first_seen"] is None and by[unseen]["pre"] is False
     assert all(r["witness"] is False and r["origin"] == "targeted" for r in extra["h1"])
+
+
+FAKE_KEY = "fake-test-key-7f3a9c0d1e2b"
+
+
+class _Resp:
+    def __init__(self, body: bytes):
+        self.body = body
+
+    def read(self):
+        return self.body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+def _files_containing(root, needle: str) -> list:
+    return [p for p in root.rglob("*") if p.is_file() and needle.encode() in p.read_bytes()]
+
+
+def test_key_never_reaches_the_archive_even_if_the_response_echoes_it(tmp_path, monkeypatch):
+    echoed = {"search_metadata": {"json_endpoint": f"https://serpapi.com/searches/x.json?api_key={FAKE_KEY}"},
+              "search_parameters": {"q": "deepseek", "api_key": FAKE_KEY},
+              "organic_results": [{"link": "https://example.org/a", "title": "A", "snippet": f"leaked {FAKE_KEY} here"}]}
+    monkeypatch.setattr("ygg.verdicts.serpapi.urllib.request.urlopen", lambda req, timeout=60: _Resp(json.dumps(echoed).encode()))
+    s = Sensor(tmp_path, api_key=FAKE_KEY)
+    status, rec, _ = s.search("deepseek", TAU, True)
+    assert status == "DONE"
+    assert FAKE_KEY not in json.dumps(rec)
+    assert _files_containing(tmp_path, FAKE_KEY) == []                 # blob store and cache file alike
+    assert rec["organic_results"][0]["link"] == "https://example.org/a"  # the evidence itself survives
+
+
+def test_key_is_scrubbed_from_error_notes(tmp_path, monkeypatch):
+    def boom(req, timeout=60):
+        raise RuntimeError(f"connection failed for https://serpapi.com/search?api_key={FAKE_KEY}")
+    monkeypatch.setattr("ygg.verdicts.serpapi.urllib.request.urlopen", boom)
+    s = Sensor(tmp_path, api_key=FAKE_KEY)
+    h = SimpleNamespace(hid="h1", entry_label="DeepSeek releases R1")
+    ops, _ = s.run_case([h], TAU, _con([]), {}, lambda h: "deepseek")
+    assert ops and all(o["status"] == "ERROR" for o in ops)
+    assert FAKE_KEY not in json.dumps(ops)

@@ -51,6 +51,24 @@ def queries(subject: str, label: str) -> list[tuple[str, str, bool]]:
 
 
 
+SENSITIVE = ("api_key", "search_metadata")          # request echo and anything named like a credential
+
+
+def sanitize(obj, secret: str | None):
+    """Drop credential-bearing fields and redact the key wherever it appears, before anything is written."""
+    if isinstance(obj, dict):
+        return {k: sanitize(v, secret) for k, v in obj.items() if k not in SENSITIVE}
+    if isinstance(obj, list):
+        return [sanitize(v, secret) for v in obj]
+    if isinstance(obj, str) and secret and secret in obj:
+        return obj.replace(secret, "[redacted]")
+    return obj
+
+
+def scrub(text: str, secret: str | None) -> str:
+    return text.replace(secret, "[redacted]") if secret and text else text
+
+
 def _key_file() -> str | None:
     f = Path.home() / ".config" / "serpapi" / "key"
     try:
@@ -85,10 +103,11 @@ class Sensor:
         url = API + "?" + urllib.parse.urlencode({**params, "api_key": self.key})
         req = urllib.request.Request(url, headers={"User-Agent": "yggdrasil-research/0.1"})
         with urllib.request.urlopen(req, timeout=60) as r:
-            raw = r.read()
-        blob = self.blobs.put(raw, ".json")
-        body = json.loads(raw)
-        body.pop("search_metadata", None)                  # drop the request echo, which carries the key
+            body = sanitize(json.loads(r.read()), self.key)       # sanitized in memory; the raw bytes are never stored
+        clean = json.dumps(body, sort_keys=True, ensure_ascii=False).encode()
+        if self.key and self.key.encode() in clean:
+            raise RuntimeError("refusing to archive a response that still contains the API key")
+        blob = self.blobs.put(clean, ".json")
         rec = {"params": params, "raw_blob": blob, "organic_results": body.get("organic_results", [])}
         tmp = path.with_suffix(".tmp")
         tmp.write_text(json.dumps(rec, indent=1))
@@ -109,7 +128,7 @@ class Sensor:
                     status, rec, ck = self.search(q, tau, bounded)
                 except Exception as e:
                     ops.append({"qid": f"q_{h.hid}_{i}", "hid": h.hid, "kind": kind, "query": q, "provider": "serpapi",
-                                "status": "ERROR", "note": str(e)[:120]})
+                                "status": "ERROR", "note": scrub(str(e), self.key)[:120]})
                     continue
                 spent += status == "DONE"
                 matched = unmatched = 0
