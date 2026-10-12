@@ -125,8 +125,8 @@ def brief(inv: Investigation, e: Explanation, term_label, visible) -> Group:
         t.append(f" P_all ", style=AMBER)
         t.append(f"{hyp.verdict_all}", style=f"bold {VSTYLE.get(hyp.verdict_all, DIM)}")
         t.append(f"  {''.join(map(str, hyp.bits_all)) if hyp.bits_all else ''}   using everything up to report time\n", style=DIM)
-        t.append(" SUPPORTED = the entry narrative's trigger event was reported and corroborated, first seen before τ*, carried\n"
-                 " Yggdrasil's burst and spillover signature, and was not refuted. It does not test relevance to the move.\n", style=DIM)
+        t.append(" SUPPORTED = the entry narrative's trigger event was reported and corroborated, first seen before τ*, carried "
+                 "Yggdrasil's burst and spillover signature, and was not refuted. It does not test relevance to the move.\n", style=DIM)
         t.append(" signature: ", style=AMBER)
         t.append(("burst before τ* ✓ " if hyp.burst else "no burst ✗ ") + ("· spillover surprise on every narrative edge ✓" if hyp.surprise_ok else "· spillover surprise ✗"),
                  style=UP if hyp.signature_ok else DIM)
