@@ -13,25 +13,25 @@
 
 ## I. The overture
 
-On 27 January 2025, shares in Nvidia fell by about seventeen percent, and two of the power companies that had been bought as the electrical backbone of artificial intelligence fell further still. By the afternoon the explanation was settled. A Chinese laboratory called DeepSeek had released a reasoning model that appeared to match American systems at a fraction of the cost, and the market had concluded that the expensive infrastructure it had been pricing in might not be needed after all. The story was coherent, widely repeated, and probably right in its broad outline. What is interesting is how quickly it became impossible to see the day any other way.
+On 27 January 2025, Nvidia shares fell by about seventeen percent, and two power companies bought as the electrical backbone of artificial intelligence fell further still. By afternoon, the explanation seemed settled. A Chinese laboratory called DeepSeek had released a reasoning model that appeared to match American systems at a fraction of the cost, and the market had concluded that the expensive infrastructure it had been pricing in might not be needed after all. The story was coherent, widely repeated, and probably right in its broad outline. What is interesting is how quickly it became impossible to see the day any other way.
 
-That speed is the subject of this project. An event happens, and almost immediately an explanation forms around it. Headlines arrive, analysts write notes, people compare timelines, and within hours there is a version of events that feels less like a hypothesis than a description. Sometimes that version is correct. Sometimes it is wrong in ways nobody checks, because the price has already moved on. And sometimes it is assembled from material that did not exist when the event occurred: a follow-up report, a lawsuit filed weeks later, an interview given after the fact. Each of these is true, and none of them could have caused anything.
+That speed is the subject of this project. An event happens, and almost immediately an explanation forms around it. Headlines arrive, analysts write notes, people compare timelines, and within hours there is a version of events that feels less like a hypothesis than a description. Sometimes that version is correct. Sometimes it is wrong in ways nobody checks, because the price has already moved on. And sometimes it is assembled from material that did not exist when the event occurred: a follow-up report, a lawsuit filed weeks later, an interview given after the fact. Each later report may be true, but information published after the move cannot have caused the move.
 
 The past is not difficult to explain. It is difficult to explain without cheating.
 
 Cheating, here, has a precise meaning. It means letting information from after an event into an account of why the event happened. Almost nobody does it on purpose. It happens because the tools we use to look backward are made of the present. A search engine queried today about a day in January returns what the web knows today, ranked by what has since become important, and the documents that turned out to matter are exactly the ones most likely to surface. Search is a time machine that only runs one way, and it is very good at producing explanations that are coherent precisely because they were written with the outcome in hand.
 
-Coherence is the trap. A good story about a market move connects an announcement to a reaction through a chain of reasonable steps. Each step can be individually plausible while the chain as a whole was never in anyone's mind when the price changed. Markets also produce a great many events. On any given day thousands of stories are in circulation, and with enough of them it is almost always possible to find a chain that seems to lead to whatever happened. So the useful question is rarely whether an explanation can be found. It is whether this explanation is better than one the same procedure would have found on a day when nothing happened at all.
+Coherence is the trap. A good story about a market move connects an announcement to a reaction through a chain of reasonable steps. Each step can be individually plausible while the chain as a whole was never in anyone's mind when the price changed. Markets also produce a great many events. On any given day, thousands of stories are in circulation; with enough of them, it is almost always possible to find a chain that seems to explain whatever happened. So the useful question is rarely whether an explanation can be found. It is whether this explanation is better than one the same procedure would have found on a day when nothing happened at all.
 
-That reframing changes what an honest explanation has to look like. It has to name a moment, the point after which information no longer counts as a possible cause. It has to be built only from what was visible before that moment, and it has to record when each piece of evidence was first seen. It has to compete against alternatives, including the unglamorous alternative that nothing in the record explains the move. It has to say what it was tested against and what would change its mind. And it needs some way of knowing how often the same procedure invents a confident story out of noise. None of this guarantees a correct answer. It makes the answer the kind of thing that can be wrong in a checkable way.
+That reframing changes what an honest explanation has to look like. It has to name a moment, the point after which information no longer counts as a possible cause. It has to be built only from what was visible before that moment, and it has to record when each piece of evidence was first seen. It has to compete with alternatives, including the unglamorous possibility that nothing in the record explains the move. It has to say what it was tested against and what evidence would change its conclusion. And it needs some way of knowing how often the same procedure invents a confident story out of noise. None of this guarantees a correct answer. It makes the answer the kind of thing that can be wrong in a checkable way.
 
-There is a further difficulty that no amount of care with timestamps removes. Even a perfectly dated chain only shows that one thing was published before another and that attention moved in a particular order. It does not show that anyone traded because of it. Markets respond to information, but also to positioning, to flows, to rumours that never reach print, and to one another. A scientist who wanted to know whether a story moved a price would rerun the day without the story, and that experiment is not available. The closest substitute is to ask how the same procedure behaves on days when, as far as anyone can tell, nothing happened. If it finds equally convincing chains on those days, then the chain it found on the interesting day is telling us more about the procedure than about the market. That is what a placebo is for, and it is why an explanation without one sits closer to an anecdote than to a measurement.
+There is a further difficulty that no amount of care with timestamps removes. Even a perfectly dated chain only shows that one thing was published before another and that attention moved in a particular order. It does not show that anyone traded because of it. Markets respond to information, but also to positioning, to flows, to rumours that never reach print, and to one another. A scientist who wanted to know whether a story moved a price would ideally rerun the day without that story. That counterfactual experiment is not available. The closest substitute is to ask how the same procedure behaves on days when, as far as anyone can tell, nothing happened. If it finds equally convincing chains on those days, then the chain it found on the interesting day is telling us more about the procedure than about the market. That is what a placebo is for, and it is why an explanation without one sits closer to an anecdote than to a measurement.
 
 People are very good at the first half of this work and poor at the second. We produce coherent stories without effort, and we find it almost impossible to forget what we already know about how things turned out. A machine has the opposite temperament. It can be made to respect a cutoff mechanically, to look for evidence against its preferred answer with the same diligence it applies to evidence for it, and to write down everything it did. If it is also deterministic, so that the same inputs always produce the same investigation, then an explanation stops being an argument one has to take on trust and becomes an artifact that someone else can rerun, inspect and break. That property matters more than any single result, because an explanation nobody can reproduce is also one nobody can show to be wrong.
 
-Yggdrasil is an attempt to build that discipline into a working system. It keeps a running memory of what the world's news was paying attention to, built from the GDELT stream in fifteen-minute windows, with every document stamped with the moment it was first seen. It groups that stream into narratives and measures how attention moves from one narrative to another. When a stock moves abnormally, it does not ask the present why. It goes back to its own memory as it stood at the cutoff and searches for the cheapest chain of attention leading from new information to the stocks that moved. It weighs that chain against the option of not explaining the move at all, and it repeats the same search on twenty quiet days to see how easily such chains appear. Only then does it turn to the open web, through SerpApi. There it looks for evidence that would contradict each candidate as well as evidence that would support it, keeping a strict account of which results it had already seen before the cutoff and which it is only learning about now.
+Yggdrasil is an attempt to build that discipline into a working system. It keeps a running memory of what the world's news was paying attention to, built from the GDELT stream in fifteen-minute windows, with every document stamped with the moment it was first seen. It groups that stream into narratives and measures how attention moves from one narrative to another. When a stock moves abnormally, it does not ask the present why. It goes back to its own memory as it stood at the cutoff and searches for the cheapest chain of attention leading from new information to the stocks that moved. It weighs that chain against the option of not explaining the move at all, then repeats the search at twenty quiet-day cutoffs to measure how easily similar chains appear when nothing was flagged. Only then does it turn to the open web, through SerpApi. There it looks for evidence that would contradict each candidate as well as evidence that would support it, keeping a strict account of which results it had already seen before the cutoff and which it is only learning about now.
 
-The results so far are modest, and they are reported as they came out. On 13 January 2025, the system's best account of a fall in Edison International and PG&E ran through a narrative about the Eaton Fire, resting on a report it had first seen fourteen and a half hours before the market opened. On 27 January, the day of DeepSeek, its cheapest chain ran through a narrative about helium drilling, which is not a credible explanation of anything, and its own checks declined to endorse it. On both days the placebo searches showed that chains as cheap as the winning one turn up on quiet days far too often for the chain alone to mean much. That is an uncomfortable finding and a useful one. It locates the weakness in a part of the method that can be measured, and it is the kind of result a system built to flatter its author would never have produced.
+The results so far are modest, and they are reported as they came out. On 13 January 2025, the system's best account of a fall in Edison International and PG&E ran through a narrative about the Eaton Fire, resting on a report it had first seen fourteen and a half hours before the market opened. On 27 January, the day of DeepSeek, its cheapest chain ran through a narrative about helium drilling, which is not a credible explanation of anything, and its own checks declined to endorse it. On both days, placebo searches showed that chains as cheap as the winning one appeared on quiet days far too often for the chain alone to mean much. That is an uncomfortable finding and a useful one. It locates the weakness in a part of the method that can be measured, and it is the kind of result a system built to flatter its author would never have produced.
 
 There is a smaller lesson in the same January case. One of the hypotheses that day passed every check the logic program knew how to make. It was a syndicated British newspaper review, which had certainly been published, and widely, before the market opened, and which had nothing to do with semiconductors. The rules had been asked whether a hypothesis's own event happened and was corroborated in time, not whether it mattered, and they answered the question they were asked. Many failures of explanation look like this when they are examined closely: a correct answer to a slightly different question.
 
@@ -41,7 +41,7 @@ Now we can talk about the machinery.
 
 ## II. The laboratory
 
-Every statement below carries one of five labels. The full ledger, including the 14 places where earlier documentation claimed more than the code does, is in [docs/claims-audit.md](docs/claims-audit.md).
+Every statement below carries one of five labels. The full ledger records 14 places where earlier documentation claimed more than the code establishes; it is in [docs/claims-audit.md](docs/claims-audit.md).
 
 | Label | Meaning |
 |---|---|
@@ -55,7 +55,7 @@ Every statement below carries one of five labels. The full ledger, including the
 
 The repository ships a sanitized fixture of both recorded investigations, 3.7 MB in [`fixtures/replay/`](fixtures/replay/). You can inspect them without the 24.6 GB corpus, without network access, and without spending SerpApi credits.
 
-```
+```bash
 git clone https://github.com/notPhani/Yggdrasil-Research && cd Yggdrasil-Research
 python3 -m venv .venv && .venv/bin/pip install -e .
 .venv/bin/ygg verify --data-dir fixtures/replay             # 11 checks, about 6 s, no network
@@ -63,7 +63,7 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 .venv/bin/ygg ui --data-dir fixtures/replay                 # the investigations in the terminal UI
 ```
 
-This workflow was tested in a fresh clone and a fresh virtualenv, with every socket connection and DNS lookup in the process forced to fail: 11 of 11 checks passed. `tests/test_offline_verify.py` repeats it on every test run and also checks that a tampered fixture fails. In the terminal UI the investigations are fully inspectable offline. The live panels, the GDELT feed and the quotes, report that their sources are unavailable.
+This workflow was tested from a fresh clone and virtual environment, with socket connections and DNS lookups forced to fail: all 11 checks passed. `tests/test_offline_verify.py` repeats it on every test run and also checks that a tampered fixture fails. In the terminal UI the investigations are fully inspectable offline. The live panels, the GDELT feed and the quotes, report that their sources are unavailable.
 
 `ygg verify` re-runs production code on the archived inputs and compares the results with what was recorded:
 
@@ -82,7 +82,7 @@ It does **not** re-run the GDELT replay (Engines 1 and 2). That needs the full c
 
 ### 2. One investigation, start to finish
 
-The most instructive recorded case is the one where the system is wrong. On **27 January 2025** it finds a cheap explanation, some of the search results it gathers point the other way, and the verdict layer declines to endorse it. Every number below is recorded output, and `ygg verify` re-derives it.
+The most instructive recorded case is the one where the system goes wrong. On **27 January 2025**, it finds a cheap explanation; some retrieved search results point the other way, and the verdict layer declines to endorse the candidate. Every number below is recorded output, and `ygg verify` re-derives it.
 
 **The event.**
 - The observer works on daily bars and fired on 13 instruments in four clusters: chips {AVGO, CDNS, MRVL, NVDA, SMH, TSM, XLK}, power {CEG, NRG, PEG, VST}, {ASM.AS} and {COHR}.
@@ -100,9 +100,9 @@ The most instructive recorded case is the one where the system is wrong. On **27
 - Nine recorded rivals lie within a factor of 20. The search keeps one per entry narrative, so the second entry of the winning tree counts as one of them. They include "Tickets on sale for Norway Community Dinner and Dance" and "Supermodel Dayle Haddon Dead At 76".
 
 **Scrutiny.**
-- The graph score looks decisive, but the connections are absurd, which says something about the scoring rather than about the world.
+- The graph score looks decisive, but the connections are absurd. That says more about the scoring function than about the world.
 - The p = 0.95 links come from the link score (§3.6). It adds an unbounded robust z-score of a narrative's last-day attention to its log-lift. A narrative reviving from near-zero attention has a tiny median absolute deviation, so its z explodes, and it takes almost all the softmax mass for every cluster.
-- That cause comes from reading the code and has not been measured. It is listed as known failure F1.
+- This diagnosis comes from code inspection and has not yet been measured experimentally. It is recorded as known failure F1.
 - The narrative one would expect did exist. Narrative `4d4b5abe` was born at window 3437, on 20 January, hours after the R1 release, and held 70 DeepSeek-titled stories before the snapshot. It never won the links.
 
 ![The recorded graph: the cheapest tree, the dormant Pulsar Helium narrative with its three p = 0.95 links, the What the papers say candidate, and the full graph](media/parts/graph.gif)
@@ -113,6 +113,8 @@ The most instructive recorded case is the one where the system is wrong. On **27
 - Of 18 planned queries, 15 were sent, 2 were skipped by the per-case cap, and 1 timed out. They returned 69 results.
 - 3 results matched a document GDELT had already seen, and inherited its first-seen time. The other 66 had no earlier sighting and count only toward the retrospective question.
 - One result title yielded a rule-extracted claim. None of it changed a verdict: the verdicts are identical before and after the searches. This is RECORDED; see §3.7 for why.
+
+The query plan has three distinct intents per hypothesis: seek corroboration, seek denial or dispute, and seek corrections or retractions. The subject is selected with a frequency heuristic, and the case-level budget sends the best explanation's queries first. This is **targeted, budgeted query planning**, not a learned optimizer: the current implementation does not estimate expected information gain or adapt each next query to the evidence returned so far. The recorded run makes that distinction visible: query intent is explicit, but the selected subjects can be poor when the narrative itself is noise.
 
 ![The SerpApi trace for 27 January: confirming and disconfirming queries as sent, with result counts and canonical-URL matches, then the Pulsar Helium hypothesis's evidence around the τ* wall](media/parts/serpapi.gif)
 
@@ -341,9 +343,9 @@ This is the exact optimum of a **ranking objective** defined by the model's prob
 | Archive | Responses are parsed, stripped of credential fields, scrubbed of the key, and only then written to a content-addressed store. A final check refuses to write if the key survives (`test_serpapi_sensor.py` uses a fake key echoed in three places). |
 | Budget | 15 searches per case, best explanation first; skipped and failed queries are recorded |
 
-The strongest argument for this design isn't the volume of search. It's that search runs inside a constrained investigation with explicit evidence rules: dated, deliberately disconfirming, archived and replayable. It isn't handed to a language model to write a plausible story.
+The strongest argument for this design is not the volume of search. It is that search runs inside a constrained investigation with explicit evidence rules: results are dated, searches deliberately seek disconfirmation, and the responses are archived for replay. The system is not asked to hand a language model a pile of links and produce a plausible story.
 
-The honest measurement of its effect so far: across both cases, 158 results, 13 rule-extracted claims, and **no verdict changed**. That is RECORDED. The searches documented the retrospective record, including the lawsuits that sit on the far side of the τ* wall on 13 January. None of them produced a contrary claim the rules could use. A claim extractor that reads beyond titles is the obvious next step (question Q5).
+The measured effect so far is modest: across both cases, SerpApi returned 158 results, 13 claims were extracted by deterministic rules, and **no verdict changed**. That is RECORDED. The searches documented the retrospective record, including the lawsuits that sit on the far side of the τ* wall on 13 January. None of them produced a contrary claim the rules could use. A claim extractor that reads beyond titles is the obvious next step (question Q5).
 
 **The verdict program.** It is a tight normal logic program, solved with clingo ([`verdicts/program.py`](src/ygg/verdicts/program.py)). Its core rules:
 
@@ -428,6 +430,7 @@ Each question has a test that would answer it. None should be tuned on the two c
 4. **Q4 Independence.** Map real ownership groups and count each wire story once.
 5. **Q5 Claims.** Replace the title lexicon with a case-agnostic extractor, and wire in and evaluate the existing NLI verifier, so that SerpApi results can contradict. Measure how often verdicts change.
 6. **Q6 Timing.** Use intraday bars to locate the first abnormal print, and measure how much evidence the session-start cutoff excludes.
+7. **Q7 Query selection.** Compare the fixed three-intent template and frequency-based subject heuristic against a budgeted selector that chooses queries by expected marginal yield of unique, relevant, temporally admissible evidence. Evaluate both strategies at the same request budget; report unique results, contrary claims, pre-cutoff matches, and verdict changes per request. Do not tune on the two recorded cases.
 
 ### 6. Tests
 
@@ -446,7 +449,7 @@ Each question has a test that would answer it. None should be tuned on the two c
 
 ### 7. Reproducing everything
 
-```
+```bash
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/ygg fetch                  # GDELT 2.0 English stream, 2024-12-16 .. 2025-01-31: 13,533 files, 24.6 GB, md5-verified, resumable
 .venv/bin/ygg ingest                 # Engine 1: parse, canonical URLs, L1 + L2 dedup, clocks, missing-batch flag
@@ -473,7 +476,7 @@ python scripts/make_fixture.py       # rebuild fixtures/replay from data/
 | [Claims audit](docs/claims-audit.md) | What the code, tests and records do and do not establish |
 | [Demo footage](docs/demo-footage.md) | How every frame of the video and the GIFs was captured from the running application, and which demo ideas the implementation cannot show |
 
-The documents describe the full design, which goes further than the build in three places: Lean certification of verdicts, a push-style search certificate, and Levin tree search. Those are not implemented here.
+The documents describe a fuller design than the current build in three places: Lean certification of verdicts, a push-style search certificate, and Levin tree search. None of these is implemented in this repository.
 
 ### Disclosures
 
