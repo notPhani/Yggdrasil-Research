@@ -24,6 +24,7 @@ for day in days:
 for f in ("daily.parquet", "actions.parquet"):
     shutil.copy2(src / "prices" / f, out / "prices" / f)
 shutil.copy2(src / "universe" / "universe.json", out / "universe" / "universe.json")
+shutil.copy2(src / "cases" / "plan.json", out / "cases" / "plan.json")     # placebo plan, fixed before any case ran
 
 sys.path.insert(0, "src")
 from ygg.verdicts.serpapi import Sensor  # noqa: E402

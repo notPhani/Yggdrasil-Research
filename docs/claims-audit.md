@@ -32,6 +32,7 @@ This file records what the repository can and cannot claim. Every entry was chec
 | 11 | Jan 27: "the hypotheses are CONSISTENT-BUT-UNPROVEN" | 5 of 6 are; "What the papers say" is SUPPORTED (see #7). | RECORDED | Corrected |
 | 12 | Placebo p = 0.43 and 0.33, FER 1.0 | Recomputed from the recorded per-placebo costs: (1 + #{c ≤ real}) / (1 + K) gives 9/21 = 0.4286 and 7/21 = 0.3333. FER is 1.0 on both days. | RECORDED, reproduced | `ygg verify` recomputes these |
 | 13 | The Steiner search finds "the" explanation | DPBF returns the **exact minimum** of a ranking objective, Σ(−ln p + λ), over the recorded graph for at most 8 terminals per group. That is the cheapest chain under the model's edge probabilities, not a causal finding. | IMPLEMENTED | Wording changed; `ygg verify` re-solves the recorded graph |
+| 14 | Claims are checked by an NLI cross-encoder and GLiNER (disclosures, UI brief) | `verdicts/verifier.py` implements that stage, but nothing calls it: the recorded verdicts use rule-based claims only (GKG amounts and quotations, title patterns), grounded verbatim in a fetched page when one exists | IMPLEMENTED, unused | Disclosures and brief corrected |
 
 ## What the recorded experiments do and do not show
 

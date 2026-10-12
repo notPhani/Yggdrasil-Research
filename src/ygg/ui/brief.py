@@ -163,6 +163,6 @@ def brief(inv: Investigation, e: Explanation, term_label, visible) -> Group:
         t.append(" this explanation was not tested as a hypothesis (only distinct entry stories within the budget are)\n", style=DIM)
 
     _h(t, "LIMITS")
-    t.append(" edges are timing, not cause · claims are extracted by rules and a verifier, not proven · source tiers are a frozen registry · "
+    t.append(" edges are timing, not cause · claims are extracted by rules (the NLI verifier is not wired in), not proven · source tiers are a frozen registry · "
              "Lean certification not run\n", style=DIM)
     return Group(t)
