@@ -277,8 +277,16 @@ Because the true move happens at or after τ*, evidence first seen before τ* pr
 - **Edges between narratives.** They are recency-weighted attribution shares, tilted toward edges with surprising recent spillover:
 
 $$
-p_H(j\to i) = \frac{\sum_t w_t\,y_i(t)\,\alpha_{i\leftarrow j}(t)}{\sum_t w_t\,y_i(t)},\quad w_t = \exp\!\left(-\frac{\tau^{*}-t}{3\,\mathrm{d}}\right),\qquad
-p^{*}(j\to i) \propto p_H(j\to i)\,\exp\!\left(\gamma\max(0,\sigma_{ji})\right)
+p_H(j \to i)
+= \frac{\sum_t w_t\,y_i(t)\,\alpha_{i\leftarrow j}(t)}
+       {\sum_t w_t\,y_i(t)},
+\qquad
+w_t = \exp\left(-\frac{\tau^* - t}{3\,\mathrm{d}}\right).
+$$
+
+$$
+p^*(j \to i)
+\propto p_H(j \to i)\,\exp\left(\gamma\max(0,\sigma_{ji})\right).
 $$
 
   These are renormalized together with BOT → i, with γ = 0.5. Here σ is a robust z of the last 24 hours' mean α against earlier daily means.
