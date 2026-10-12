@@ -1,0 +1,2483 @@
+{
+ "as_of": "2024-12-31",
+ "counts": {
+  "nasdaq100": 101,
+  "sox": 30,
+  "sp500_utilities": 31
+ },
+ "etfs": [
+  "QQQ",
+  "SMH",
+  "SPY",
+  "XLK",
+  "XLU"
+ ],
+ "gics_sub": {
+  "A": "Life Sciences Tools & Services",
+  "AAPL": "Technology Hardware, Storage & Peripherals",
+  "ABBV": "Biotechnology",
+  "ABNB": "Hotels, Resorts & Cruise Lines",
+  "ABT": "Health Care Equipment",
+  "ACGL": "Property & Casualty Insurance",
+  "ACN": "IT Consulting & Other Services",
+  "ADBE": "Application Software",
+  "ADI": "Semiconductors",
+  "ADM": "Agricultural Products & Services",
+  "ADP": "Human Resource & Employment Services",
+  "ADSK": "Application Software",
+  "AEE": "Multi-Utilities",
+  "AEP": "Electric Utilities",
+  "AES": "Independent Power Producers & Energy Traders",
+  "AFL": "Life & Health Insurance",
+  "AIG": "Multi-line Insurance",
+  "AIZ": "Multi-line Insurance",
+  "AJG": "Insurance Brokers",
+  "AKAM": "Internet Services & Infrastructure",
+  "ALB": "Specialty Chemicals",
+  "ALGN": "Health Care Supplies",
+  "ALL": "Property & Casualty Insurance",
+  "ALLE": "Building Products",
+  "AMAT": "Semiconductor Equipment",
+  "AMCR": "Paper & Plastic Packaging Products & Materials",
+  "AMD": "Semiconductors",
+  "AME": "Electrical Components & Equipment",
+  "AMGN": "Biotechnology",
+  "AMP": "Asset Management & Custody Banks",
+  "AMT": "Telecom Tower REITs",
+  "AMZN": "Broadline Retail",
+  "ANET": "Communications Equipment",
+  "ANSS": "Application Software",
+  "AON": "Insurance Brokers",
+  "AOS": "Building Products",
+  "APA": "Oil & Gas Exploration & Production",
+  "APD": "Industrial Gases",
+  "APH": "Electronic Components",
+  "APO": "Asset Management & Custody Banks",
+  "APP": "Application Software",
+  "APTV": "Automotive Parts & Equipment",
+  "ARE": "Office REITs",
+  "ARM": "Semiconductors",
+  "ASML": "Semiconductor Equipment",
+  "ATO": "Gas Utilities",
+  "AVB": "Multi-Family Residential REITs",
+  "AVGO": "Semiconductors",
+  "AVY": "Paper & Plastic Packaging Products & Materials",
+  "AWK": "Water Utilities",
+  "AXON": "Aerospace & Defense",
+  "AXP": "Consumer Finance",
+  "AZN": "Pharmaceuticals",
+  "AZO": "Automotive Retail",
+  "BA": "Aerospace & Defense",
+  "BAC": "Diversified Banks",
+  "BALL": "Metal, Glass & Plastic Containers",
+  "BAX": "Health Care Equipment",
+  "BBY": "Computer & Electronics Retail",
+  "BDX": "Health Care Equipment",
+  "BEN": "Asset Management & Custody Banks",
+  "BG": "Agricultural Products & Services",
+  "BIIB": "Biotechnology",
+  "BK": "Asset Management & Custody Banks",
+  "BKNG": "Hotels, Resorts & Cruise Lines",
+  "BKR": "Oil & Gas Equipment & Services",
+  "BLDR": "Building Products",
+  "BLK": "Asset Management & Custody Banks",
+  "BMY": "Pharmaceuticals",
+  "BR": "Data Processing & Outsourced Services",
+  "BRO": "Insurance Brokers",
+  "BSX": "Health Care Equipment",
+  "BWA": "Automotive Parts & Equipment",
+  "BX": "Asset Management & Custody Banks",
+  "BXP": "Office REITs",
+  "C": "Diversified Banks",
+  "CAG": "Packaged Foods & Meats",
+  "CAH": "Health Care Distributors",
+  "CARR": "Building Products",
+  "CAT": "Construction Machinery & Heavy Transportation Equipment",
+  "CB": "Property & Casualty Insurance",
+  "CBRE": "Real Estate Services",
+  "CCEP": "Soft Drinks & Non-alcoholic Beverages",
+  "CCI": "Telecom Tower REITs",
+  "CCL": "Hotels, Resorts & Cruise Lines",
+  "CDNS": "Application Software",
+  "CDW": "Technology Distributors",
+  "CE": "Specialty Chemicals",
+  "CEG": "Electric Utilities",
+  "CF": "Fertilizers & Agricultural Chemicals",
+  "CFG": "Regional Banks",
+  "CHD": "Household Products",
+  "CHRW": "Air Freight & Logistics",
+  "CHTR": "Cable & Satellite",
+  "CI": "Health Care Services",
+  "CINF": "Property & Casualty Insurance",
+  "CL": "Household Products",
+  "CLX": "Household Products",
+  "CMCSA": "Cable & Satellite",
+  "CME": "Financial Exchanges & Data",
+  "CMG": "Restaurants",
+  "CMI": "Construction Machinery & Heavy Transportation Equipment",
+  "CMS": "Multi-Utilities",
+  "CNC": "Managed Health Care",
+  "CNP": "Multi-Utilities",
+  "COF": "Consumer Finance",
+  "COO": "Health Care Supplies",
+  "COP": "Oil & Gas Exploration & Production",
+  "COR": "Health Care Distributors",
+  "COST": "Consumer Staples Merchandise Retail",
+  "CPAY": "Transaction & Payment Processing Services",
+  "CPB": "Packaged Foods & Meats",
+  "CPRT": "Diversified Support Services",
+  "CPT": "Multi-Family Residential REITs",
+  "CRL": "Life Sciences Tools & Services",
+  "CRM": "Application Software",
+  "CRWD": "Systems Software",
+  "CSCO": "Communications Equipment",
+  "CSGP": "Real Estate Services",
+  "CSX": "Rail Transportation",
+  "CTAS": "Diversified Support Services",
+  "CTRA": "Oil & Gas Exploration & Production",
+  "CTSH": "IT Consulting & Other Services",
+  "CTVA": "Fertilizers & Agricultural Chemicals",
+  "CVS": "Health Care Services",
+  "CVX": "Integrated Oil & Gas",
+  "CZR": "Casinos & Gaming",
+  "D": "Multi-Utilities",
+  "DAL": "Passenger Airlines",
+  "DASH": "Specialized Consumer Services",
+  "DAY": "Human Resource & Employment Services",
+  "DD": "Specialty Chemicals",
+  "DDOG": "Application Software",
+  "DE": "Agricultural & Farm Machinery",
+  "DECK": "Footwear",
+  "DELL": "Technology Hardware, Storage & Peripherals",
+  "DFS": "Consumer Finance",
+  "DG": "Consumer Staples Merchandise Retail",
+  "DGX": "Health Care Services",
+  "DHI": "Homebuilding",
+  "DHR": "Life Sciences Tools & Services",
+  "DIS": "Movies & Entertainment",
+  "DLR": "Data Center REITs",
+  "DLTR": "Consumer Staples Merchandise Retail",
+  "DOC": "Health Care REITs",
+  "DOV": "Industrial Machinery & Supplies & Components",
+  "DOW": "Commodity Chemicals",
+  "DPZ": "Restaurants",
+  "DRI": "Restaurants",
+  "DTE": "Multi-Utilities",
+  "DUK": "Electric Utilities",
+  "DVA": "Health Care Services",
+  "DVN": "Oil & Gas Exploration & Production",
+  "DXCM": "Health Care Equipment",
+  "EA": "Interactive Home Entertainment",
+  "EBAY": "Broadline Retail",
+  "ECL": "Specialty Chemicals",
+  "ED": "Multi-Utilities",
+  "EFX": "Research & Consulting Services",
+  "EG": "Reinsurance",
+  "EIX": "Electric Utilities",
+  "EL": "Personal Care Products",
+  "ELV": "Managed Health Care",
+  "EMN": "Specialty Chemicals",
+  "EMR": "Electrical Components & Equipment",
+  "ENPH": "Semiconductor Materials & Equipment",
+  "EOG": "Oil & Gas Exploration & Production",
+  "EPAM": "IT Consulting & Other Services",
+  "EQIX": "Data Center REITs",
+  "EQR": "Multi-Family Residential REITs",
+  "EQT": "Oil & Gas Exploration & Production",
+  "ERIE": "Insurance Brokers",
+  "ES": "Electric Utilities",
+  "ESS": "Multi-Family Residential REITs",
+  "ETN": "Electrical Components & Equipment",
+  "ETR": "Electric Utilities",
+  "EVRG": "Electric Utilities",
+  "EW": "Health Care Equipment",
+  "EXC": "Electric Utilities",
+  "EXPD": "Air Freight & Logistics",
+  "EXPE": "Hotels, Resorts & Cruise Lines",
+  "EXR": "Self-Storage REITs",
+  "F": "Automobile Manufacturers",
+  "FANG": "Oil & Gas Exploration & Production",
+  "FAST": "Trading Companies & Distributors",
+  "FCX": "Copper",
+  "FDS": "Financial Exchanges & Data",
+  "FDX": "Air Freight & Logistics",
+  "FE": "Electric Utilities",
+  "FFIV": "Communications Equipment",
+  "FI": "Transaction & Payment Processing Services",
+  "FICO": "Application Software",
+  "FIS": "Transaction & Payment Processing Services",
+  "FITB": "Regional Banks",
+  "FMC": "Fertilizers & Agricultural Chemicals",
+  "FOX": "Broadcasting",
+  "FOXA": "Broadcasting",
+  "FRT": "Retail REITs",
+  "FSLR": "Semiconductors",
+  "FTNT": "Systems Software",
+  "FTV": "Industrial Machinery & Supplies & Components",
+  "GD": "Aerospace & Defense",
+  "GDDY": "Internet Services & Infrastructure",
+  "GE": "Aerospace & Defense",
+  "GEHC": "Health Care Equipment",
+  "GEN": "Systems Software",
+  "GEV": "Heavy Electrical Equipment",
+  "GFS": "Semiconductors",
+  "GILD": "Biotechnology",
+  "GIS": "Packaged Foods & Meats",
+  "GL": "Life & Health Insurance",
+  "GLW": "Electronic Components",
+  "GM": "Automobile Manufacturers",
+  "GNRC": "Electrical Components & Equipment",
+  "GOOG": "Interactive Media & Services",
+  "GOOGL": "Interactive Media & Services",
+  "GPC": "Distributors",
+  "GPN": "Transaction & Payment Processing Services",
+  "GRMN": "Consumer Electronics",
+  "GS": "Investment Banking & Brokerage",
+  "GWW": "Industrial Machinery & Supplies & Components",
+  "HAL": "Oil & Gas Equipment & Services",
+  "HAS": "Leisure Products",
+  "HBAN": "Regional Banks",
+  "HCA": "Health Care Facilities",
+  "HD": "Home Improvement Retail",
+  "HES": "Integrated Oil & Gas",
+  "HIG": "Property & Casualty Insurance",
+  "HII": "Aerospace & Defense",
+  "HLT": "Hotels, Resorts & Cruise Lines",
+  "HOLX": "Health Care Equipment",
+  "HON": "Industrial Conglomerates",
+  "HPE": "Technology Hardware, Storage & Peripherals",
+  "HPQ": "Technology Hardware, Storage & Peripherals",
+  "HRL": "Packaged Foods & Meats",
+  "HSIC": "Health Care Distributors",
+  "HST": "Hotel & Resort REITs",
+  "HSY": "Packaged Foods & Meats",
+  "HUBB": "Industrial Machinery & Supplies & Components",
+  "HUM": "Managed Health Care",
+  "HWM": "Aerospace & Defense",
+  "IBM": "IT Consulting & Other Services",
+  "ICE": "Financial Exchanges & Data",
+  "IDXX": "Health Care Equipment",
+  "IEX": "Industrial Machinery & Supplies & Components",
+  "IFF": "Specialty Chemicals",
+  "INCY": "Biotechnology",
+  "INTC": "Semiconductors",
+  "INTU": "Application Software",
+  "INVH": "Single-Family Residential REITs",
+  "IP": "Paper & Plastic Packaging Products & Materials",
+  "IPG": "Advertising",
+  "IQV": "Life Sciences Tools & Services",
+  "IR": "Industrial Machinery & Supplies & Components",
+  "IRM": "Other Specialized REITs",
+  "ISRG": "Health Care Equipment",
+  "IT": "IT Consulting & Other Services",
+  "ITW": "Industrial Machinery & Supplies & Components",
+  "IVZ": "Asset Management & Custody Banks",
+  "J": "Construction & Engineering",
+  "JBHT": "Cargo Ground Transportation",
+  "JBL": "Electronic Manufacturing Services",
+  "JCI": "Building Products",
+  "JKHY": "Transaction & Payment Processing Services",
+  "JNJ": "Pharmaceuticals",
+  "JNPR": "Communications Equipment",
+  "JPM": "Diversified Banks",
+  "K": "Packaged Foods & Meats",
+  "KDP": "Soft Drinks & Non-alcoholic Beverages",
+  "KEY": "Regional Banks",
+  "KEYS": "Electronic Equipment & Instruments",
+  "KHC": "Packaged Foods & Meats",
+  "KIM": "Retail REITs",
+  "KKR": "Asset Management & Custody Banks",
+  "KLAC": "Semiconductor Equipment",
+  "KMB": "Household Products",
+  "KMI": "Oil & Gas Storage & Transportation",
+  "KMX": "Automotive Retail",
+  "KO": "Soft Drinks & Non-alcoholic Beverages",
+  "KR": "Food Retail",
+  "KVUE": "Personal Care Products",
+  "L": "Multi-line Insurance",
+  "LDOS": "Diversified Support Services",
+  "LEN": "Homebuilding",
+  "LH": "Health Care Services",
+  "LHX": "Aerospace & Defense",
+  "LII": "Building Products",
+  "LIN": "Industrial Gases",
+  "LKQ": "Distributors",
+  "LLY": "Pharmaceuticals",
+  "LMT": "Aerospace & Defense",
+  "LNT": "Electric Utilities",
+  "LOW": "Home Improvement Retail",
+  "LRCX": "Semiconductor Equipment",
+  "LULU": "Apparel, Accessories & Luxury Goods",
+  "LUV": "Passenger Airlines",
+  "LVS": "Casinos & Gaming",
+  "LW": "Packaged Foods & Meats",
+  "LYB": "Specialty Chemicals",
+  "LYV": "Movies & Entertainment",
+  "MA": "Transaction & Payment Processing Services",
+  "MAA": "Multi-Family Residential REITs",
+  "MAR": "Hotels, Resorts & Cruise Lines",
+  "MAS": "Building Products",
+  "MCD": "Restaurants",
+  "MCHP": "Semiconductors",
+  "MCK": "Health Care Distributors",
+  "MCO": "Financial Exchanges & Data",
+  "MDB": "Systems Software",
+  "MDLZ": "Packaged Foods & Meats",
+  "MDT": "Health Care Equipment",
+  "MELI": "Broadline Retail",
+  "MET": "Life & Health Insurance",
+  "META": "Interactive Media & Services",
+  "MGM": "Casinos & Gaming",
+  "MHK": "Home Furnishings",
+  "MKC": "Packaged Foods & Meats",
+  "MKTX": "Financial Exchanges & Data",
+  "MLM": "Construction Materials",
+  "MMC": "Insurance Brokers",
+  "MMM": "Industrial Conglomerates",
+  "MNST": "Soft Drinks & Non-alcoholic Beverages",
+  "MO": "Tobacco",
+  "MOH": "Managed Health Care",
+  "MOS": "Fertilizers & Agricultural Chemicals",
+  "MPC": "Oil & Gas Refining & Marketing",
+  "MPWR": "Semiconductors",
+  "MRK": "Pharmaceuticals",
+  "MRNA": "Biotechnology",
+  "MRVL": "Application Software",
+  "MS": "Investment Banking & Brokerage",
+  "MSCI": "Financial Exchanges & Data",
+  "MSFT": "Systems Software",
+  "MSI": "Communications Equipment",
+  "MSTR": "Application Software",
+  "MTB": "Regional Banks",
+  "MTCH": "Interactive Media & Services",
+  "MTD": "Life Sciences Tools & Services",
+  "MU": "Semiconductors",
+  "NCLH": "Hotels, Resorts & Cruise Lines",
+  "NDAQ": "Financial Exchanges & Data",
+  "NDSN": "Industrial Machinery & Supplies & Components",
+  "NEE": "Multi-Utilities",
+  "NEM": "Gold",
+  "NFLX": "Movies & Entertainment",
+  "NI": "Multi-Utilities",
+  "NKE": "Apparel, Accessories & Luxury Goods",
+  "NOC": "Aerospace & Defense",
+  "NOW": "Systems Software",
+  "NRG": "Independent Power Producers & Energy Traders",
+  "NSC": "Rail Transportation",
+  "NTAP": "Technology Hardware, Storage & Peripherals",
+  "NTRS": "Asset Management & Custody Banks",
+  "NUE": "Steel",
+  "NVDA": "Semiconductors",
+  "NVR": "Homebuilding",
+  "NWS": "Publishing",
+  "NWSA": "Publishing",
+  "NXPI": "Semiconductors",
+  "O": "Retail REITs",
+  "ODFL": "Cargo Ground Transportation",
+  "OKE": "Oil & Gas Storage & Transportation",
+  "OMC": "Advertising",
+  "ON": "Semiconductors",
+  "ORCL": "Application Software",
+  "ORLY": "Automotive Retail",
+  "OTIS": "Industrial Machinery & Supplies & Components",
+  "OXY": "Oil & Gas Exploration & Production",
+  "PANW": "Systems Software",
+  "PARA": "Movies & Entertainment",
+  "PAYC": "Human Resource & Employment Services",
+  "PAYX": "Human Resource & Employment Services",
+  "PCAR": "Construction Machinery & Heavy Transportation Equipment",
+  "PCG": "Multi-Utilities",
+  "PDD": "Broadline Retail",
+  "PEG": "Electric Utilities",
+  "PEP": "Soft Drinks & Non-alcoholic Beverages",
+  "PFE": "Pharmaceuticals",
+  "PFG": "Life & Health Insurance",
+  "PG": "Personal Care Products",
+  "PGR": "Property & Casualty Insurance",
+  "PH": "Industrial Machinery & Supplies & Components",
+  "PHM": "Homebuilding",
+  "PKG": "Paper & Plastic Packaging Products & Materials",
+  "PLD": "Industrial REITs",
+  "PLTR": "Internet Services & Infrastructure",
+  "PM": "Tobacco",
+  "PNC": "Diversified Banks",
+  "PNR": "Industrial Machinery & Supplies & Components",
+  "PNW": "Multi-Utilities",
+  "PODD": "Health Care Equipment",
+  "POOL": "Distributors",
+  "PPG": "Specialty Chemicals",
+  "PPL": "Electric Utilities",
+  "PRU": "Life & Health Insurance",
+  "PSA": "Self-Storage REITs",
+  "PSX": "Oil & Gas Refining & Marketing",
+  "PTC": "Application Software",
+  "PWR": "Construction & Engineering",
+  "PYPL": "Transaction & Payment Processing Services",
+  "QCOM": "Semiconductors",
+  "RCL": "Hotels, Resorts & Cruise Lines",
+  "REG": "Retail REITs",
+  "REGN": "Biotechnology",
+  "RF": "Regional Banks",
+  "RJF": "Investment Banking & Brokerage",
+  "RL": "Apparel, Accessories & Luxury Goods",
+  "RMD": "Health Care Equipment",
+  "ROK": "Electrical Components & Equipment",
+  "ROL": "Environmental & Facilities Services",
+  "ROP": "Electronic Equipment & Instruments",
+  "ROST": "Apparel Retail",
+  "RSG": "Environmental & Facilities Services",
+  "RTX": "Aerospace & Defense",
+  "RVTY": "Health Care Equipment",
+  "SBAC": "Telecom Tower REITs",
+  "SBUX": "Restaurants",
+  "SCHW": "Investment Banking & Brokerage",
+  "SHW": "Specialty Chemicals",
+  "SJM": "Packaged Foods & Meats",
+  "SLB": "Oil & Gas Equipment & Services",
+  "SMCI": "Technology Hardware, Storage & Peripherals",
+  "SNA": "Industrial Machinery & Supplies & Components",
+  "SNPS": "Application Software",
+  "SO": "Electric Utilities",
+  "SOLV": "Health Care Technology",
+  "SPG": "Retail REITs",
+  "SPGI": "Financial Exchanges & Data",
+  "SRE": "Multi-Utilities",
+  "STE": "Health Care Equipment",
+  "STLD": "Steel",
+  "STT": "Asset Management & Custody Banks",
+  "STX": "Technology Hardware, Storage & Peripherals",
+  "STZ": "Distillers & Vintners",
+  "SW": "Paper & Plastic Packaging Products & Materials",
+  "SWK": "Industrial Machinery & Supplies & Components",
+  "SWKS": "Semiconductors",
+  "SYF": "Consumer Finance",
+  "SYK": "Health Care Equipment",
+  "SYY": "Food Distributors",
+  "T": "Integrated Telecommunication Services",
+  "TAP": "Brewers",
+  "TDG": "Aerospace & Defense",
+  "TDY": "Electronic Equipment & Instruments",
+  "TEAM": "Application Software",
+  "TECH": "Life Sciences Tools & Services",
+  "TEL": "Electronic Manufacturing Services",
+  "TER": "Semiconductor Materials & Equipment",
+  "TFC": "Diversified Banks",
+  "TFX": "Health Care Equipment",
+  "TGT": "Consumer Staples Merchandise Retail",
+  "TJX": "Apparel Retail",
+  "TMO": "Life Sciences Tools & Services",
+  "TMUS": "Wireless Telecommunication Services",
+  "TPL": "Oil & Gas Exploration & Production",
+  "TPR": "Apparel, Accessories & Luxury Goods",
+  "TRGP": "Oil & Gas Storage & Transportation",
+  "TRMB": "Electronic Equipment & Instruments",
+  "TROW": "Asset Management & Custody Banks",
+  "TRV": "Property & Casualty Insurance",
+  "TSCO": "Other Specialty Retail",
+  "TSLA": "Automobile Manufacturers",
+  "TSN": "Packaged Foods & Meats",
+  "TT": "Building Products",
+  "TTD": "Advertising",
+  "TTWO": "Interactive Home Entertainment",
+  "TXN": "Semiconductors",
+  "TXT": "Aerospace & Defense",
+  "TYL": "Application Software",
+  "UAL": "Passenger Airlines",
+  "UBER": "Passenger Ground Transportation",
+  "UDR": "Multi-Family Residential REITs",
+  "UHS": "Health Care Facilities",
+  "ULTA": "Other Specialty Retail",
+  "UNH": "Managed Health Care",
+  "UNP": "Rail Transportation",
+  "UPS": "Air Freight & Logistics",
+  "URI": "Trading Companies & Distributors",
+  "USB": "Diversified Banks",
+  "V": "Transaction & Payment Processing Services",
+  "VICI": "Hotel & Resort REITs",
+  "VLO": "Oil & Gas Refining & Marketing",
+  "VLTO": "Environmental & Facilities Services",
+  "VMC": "Construction Materials",
+  "VRSK": "Research & Consulting Services",
+  "VRSN": "Internet Services & Infrastructure",
+  "VRTX": "Biotechnology",
+  "VST": "Electric Utilities",
+  "VTR": "Health Care REITs",
+  "VTRS": "Pharmaceuticals",
+  "VZ": "Integrated Telecommunication Services",
+  "WAB": "Construction Machinery & Heavy Transportation Equipment",
+  "WAT": "Life Sciences Tools & Services",
+  "WBA": "Drug Retail",
+  "WBD": "Broadcasting",
+  "WDAY": "Application Software",
+  "WDC": "Technology Hardware, Storage & Peripherals",
+  "WEC": "Electric Utilities",
+  "WELL": "Health Care REITs",
+  "WFC": "Diversified Banks",
+  "WM": "Environmental & Facilities Services",
+  "WMB": "Oil & Gas Storage & Transportation",
+  "WMT": "Consumer Staples Merchandise Retail",
+  "WRB": "Property & Casualty Insurance",
+  "WST": "Health Care Supplies",
+  "WTW": "Insurance Brokers",
+  "WY": "Timber REITs",
+  "WYNN": "Casinos & Gaming",
+  "XEL": "Multi-Utilities",
+  "XOM": "Integrated Oil & Gas",
+  "XYL": "Industrial Machinery & Supplies & Components",
+  "YUM": "Restaurants",
+  "ZBH": "Health Care Equipment",
+  "ZBRA": "Electronic Equipment & Instruments",
+  "ZS": "Application Software",
+  "ZTS": "Pharmaceuticals"
+ },
+ "names": {
+  "A": [
+   "Agilent Technologies"
+  ],
+  "AAPL": [
+   "Apple Inc."
+  ],
+  "ABBV": [
+   "AbbVie"
+  ],
+  "ABNB": [
+   "Airbnb"
+  ],
+  "ABT": [
+   "Abbott Laboratories"
+  ],
+  "ACGL": [
+   "Arch Capital Group"
+  ],
+  "ACLS": [
+   "Axcelis Technologies Inc."
+  ],
+  "ACN": [
+   "Accenture"
+  ],
+  "ADBE": [
+   "Adobe Inc."
+  ],
+  "ADI": [
+   "Analog Devices",
+   "Analog Devices Inc."
+  ],
+  "ADM": [
+   "Archer Daniels Midland"
+  ],
+  "ADP": [
+   "ADP",
+   "Automatic Data Processing"
+  ],
+  "ADSK": [
+   "Autodesk"
+  ],
+  "AEE": [
+   "Ameren"
+  ],
+  "AEP": [
+   "American Electric Power"
+  ],
+  "AES": [
+   "AES Corporation"
+  ],
+  "AFL": [
+   "Aflac"
+  ],
+  "AIG": [
+   "American International Group"
+  ],
+  "AIZ": [
+   "Assurant"
+  ],
+  "AJG": [
+   "Arthur J. Gallagher & Co."
+  ],
+  "AKAM": [
+   "Akamai Technologies"
+  ],
+  "ALB": [
+   "Albemarle Corporation"
+  ],
+  "ALGM": [
+   "Allegro Microsystems Inc."
+  ],
+  "ALGN": [
+   "Align Technology"
+  ],
+  "ALL": [
+   "Allstate"
+  ],
+  "ALLE": [
+   "Allegion"
+  ],
+  "AMAT": [
+   "Applied Materials",
+   "Applied Materials Inc."
+  ],
+  "AMCR": [
+   "Amcor"
+  ],
+  "AMD": [
+   "AMD",
+   "Advanced Micro Devices",
+   "Advanced Micro Devices Inc."
+  ],
+  "AME": [
+   "Ametek"
+  ],
+  "AMGN": [
+   "Amgen"
+  ],
+  "AMKR": [
+   "Amkor Technology Inc."
+  ],
+  "AMP": [
+   "Ameriprise Financial"
+  ],
+  "AMT": [
+   "American Tower"
+  ],
+  "AMZN": [
+   "Amazon"
+  ],
+  "ANET": [
+   "Arista Networks"
+  ],
+  "ANSS": [
+   "Ansys"
+  ],
+  "AON": [
+   "Aon"
+  ],
+  "AOS": [
+   "A. O. Smith"
+  ],
+  "APA": [
+   "APA Corporation"
+  ],
+  "APD": [
+   "Air Products"
+  ],
+  "APH": [
+   "Amphenol"
+  ],
+  "APO": [
+   "Apollo Global Management"
+  ],
+  "APP": [
+   "AppLovin"
+  ],
+  "APTV": [
+   "Aptiv"
+  ],
+  "ARE": [
+   "Alexandria Real Estate Equities"
+  ],
+  "ARM": [
+   "Arm Holdings"
+  ],
+  "ASM.AS": [
+   "ASM International"
+  ],
+  "ASML": [
+   "ASML Holding",
+   "ASML Holding N.V."
+  ],
+  "ASML.AS": [
+   "ASML",
+   "ASML Holding"
+  ],
+  "ATO": [
+   "Atmos Energy"
+  ],
+  "AVB": [
+   "AvalonBay Communities"
+  ],
+  "AVGO": [
+   "Broadcom",
+   "Broadcom Inc."
+  ],
+  "AVY": [
+   "Avery Dennison"
+  ],
+  "AWK": [
+   "American Water Works"
+  ],
+  "AXON": [
+   "Axon Enterprise"
+  ],
+  "AXP": [
+   "American Express"
+  ],
+  "AZN": [
+   "AstraZeneca"
+  ],
+  "AZO": [
+   "AutoZone"
+  ],
+  "BA": [
+   "Boeing"
+  ],
+  "BAC": [
+   "Bank of America"
+  ],
+  "BALL": [
+   "Ball Corporation"
+  ],
+  "BAX": [
+   "Baxter International"
+  ],
+  "BBY": [
+   "Best Buy"
+  ],
+  "BDX": [
+   "BD",
+   "Becton Dickinson"
+  ],
+  "BEN": [
+   "Franklin Resources"
+  ],
+  "BESI.AS": [
+   "BE Semiconductor Industries",
+   "Besi"
+  ],
+  "BG": [
+   "Bunge Global"
+  ],
+  "BIIB": [
+   "Biogen"
+  ],
+  "BK": [
+   "BNY Mellon"
+  ],
+  "BKNG": [
+   "Booking Holdings"
+  ],
+  "BKR": [
+   "Baker Hughes"
+  ],
+  "BLDR": [
+   "Builders FirstSource"
+  ],
+  "BLK": [
+   "BlackRock"
+  ],
+  "BMY": [
+   "Bristol Myers Squibb"
+  ],
+  "BR": [
+   "Broadridge Financial Solutions"
+  ],
+  "BRO": [
+   "Brown & Brown"
+  ],
+  "BSX": [
+   "Boston Scientific"
+  ],
+  "BWA": [
+   "BorgWarner"
+  ],
+  "BX": [
+   "Blackstone Inc."
+  ],
+  "BXP": [
+   "BXP, Inc."
+  ],
+  "C": [
+   "Citigroup"
+  ],
+  "CAG": [
+   "Conagra Brands"
+  ],
+  "CAH": [
+   "Cardinal Health"
+  ],
+  "CARR": [
+   "Carrier Global"
+  ],
+  "CAT": [
+   "Caterpillar Inc."
+  ],
+  "CB": [
+   "Chubb Limited"
+  ],
+  "CBRE": [
+   "CBRE Group"
+  ],
+  "CCEP": [
+   "Coca-Cola Europacific Partners"
+  ],
+  "CCI": [
+   "Crown Castle"
+  ],
+  "CCL": [
+   "Carnival",
+   "Carnival Corporation & plc"
+  ],
+  "CDNS": [
+   "Cadence Design Systems"
+  ],
+  "CDW": [
+   "CDW",
+   "CDW Corporation"
+  ],
+  "CE": [
+   "Celanese"
+  ],
+  "CEG": [
+   "Constellation Energy"
+  ],
+  "CF": [
+   "CF Industries"
+  ],
+  "CFG": [
+   "Citizens Financial Group"
+  ],
+  "CHD": [
+   "Church & Dwight"
+  ],
+  "CHRW": [
+   "C.H. Robinson"
+  ],
+  "CHTR": [
+   "Charter Communications"
+  ],
+  "CI": [
+   "Cigna"
+  ],
+  "CINF": [
+   "Cincinnati Financial"
+  ],
+  "CL": [
+   "Colgate-Palmolive"
+  ],
+  "CLX": [
+   "Clorox"
+  ],
+  "CMCSA": [
+   "Comcast"
+  ],
+  "CME": [
+   "CME Group"
+  ],
+  "CMG": [
+   "Chipotle Mexican Grill"
+  ],
+  "CMI": [
+   "Cummins"
+  ],
+  "CMS": [
+   "CMS Energy"
+  ],
+  "CNC": [
+   "Centene Corporation"
+  ],
+  "CNP": [
+   "CenterPoint Energy"
+  ],
+  "COF": [
+   "Capital One"
+  ],
+  "COHR": [
+   "Coherent Corp."
+  ],
+  "COO": [
+   "Cooper Companies (The)",
+   "The Cooper Companies"
+  ],
+  "COP": [
+   "ConocoPhillips"
+  ],
+  "COR": [
+   "Cencora"
+  ],
+  "COST": [
+   "Costco"
+  ],
+  "CPAY": [
+   "Corpay"
+  ],
+  "CPB": [
+   "Campbell Soup Company"
+  ],
+  "CPRT": [
+   "Copart"
+  ],
+  "CPT": [
+   "Camden Property Trust"
+  ],
+  "CRL": [
+   "Charles River Laboratories"
+  ],
+  "CRM": [
+   "Salesforce"
+  ],
+  "CRWD": [
+   "CrowdStrike"
+  ],
+  "CSCO": [
+   "Cisco"
+  ],
+  "CSGP": [
+   "CoStar Group"
+  ],
+  "CSX": [
+   "CSX Corporation"
+  ],
+  "CTAS": [
+   "Cintas"
+  ],
+  "CTRA": [
+   "Coterra"
+  ],
+  "CTSH": [
+   "Cognizant"
+  ],
+  "CTVA": [
+   "Corteva"
+  ],
+  "CVS": [
+   "CVS Health"
+  ],
+  "CVX": [
+   "Chevron Corporation"
+  ],
+  "CZR": [
+   "Caesars Entertainment"
+  ],
+  "D": [
+   "Dominion Energy"
+  ],
+  "DAL": [
+   "Delta Air Lines"
+  ],
+  "DASH": [
+   "DoorDash"
+  ],
+  "DAY": [
+   "Dayforce"
+  ],
+  "DD": [
+   "DuPont"
+  ],
+  "DDOG": [
+   "Datadog"
+  ],
+  "DE": [
+   "Deere & Company"
+  ],
+  "DECK": [
+   "Deckers Brands"
+  ],
+  "DELL": [
+   "Dell Technologies"
+  ],
+  "DFS": [
+   "Discover Financial"
+  ],
+  "DG": [
+   "Dollar General"
+  ],
+  "DGX": [
+   "Quest Diagnostics"
+  ],
+  "DHI": [
+   "D. R. Horton"
+  ],
+  "DHR": [
+   "Danaher Corporation"
+  ],
+  "DIS": [
+   "The Walt Disney Company",
+   "Walt Disney Company (The)"
+  ],
+  "DLR": [
+   "Digital Realty"
+  ],
+  "DLTR": [
+   "Dollar Tree"
+  ],
+  "DOC": [
+   "Healthpeak Properties"
+  ],
+  "DOV": [
+   "Dover Corporation"
+  ],
+  "DOW": [
+   "Dow Inc."
+  ],
+  "DPZ": [
+   "Domino's"
+  ],
+  "DRI": [
+   "Darden Restaurants"
+  ],
+  "DTE": [
+   "DTE Energy"
+  ],
+  "DUK": [
+   "Duke Energy"
+  ],
+  "DVA": [
+   "DaVita"
+  ],
+  "DVN": [
+   "Devon Energy"
+  ],
+  "DXCM": [
+   "DexCom",
+   "Dexcom"
+  ],
+  "EA": [
+   "Electronic Arts"
+  ],
+  "EBAY": [
+   "eBay"
+  ],
+  "ECL": [
+   "Ecolab"
+  ],
+  "ED": [
+   "Consolidated Edison"
+  ],
+  "EFX": [
+   "Equifax"
+  ],
+  "EG": [
+   "Everest Group"
+  ],
+  "EIX": [
+   "Edison International"
+  ],
+  "EL": [
+   "Est\u00e9e Lauder Companies (The)",
+   "The Est\u00e9e Lauder Companies"
+  ],
+  "ELV": [
+   "Elevance Health"
+  ],
+  "EMN": [
+   "Eastman Chemical Company"
+  ],
+  "EMR": [
+   "Emerson Electric"
+  ],
+  "ENPH": [
+   "Enphase Energy"
+  ],
+  "ENTG": [
+   "Entegris Inc."
+  ],
+  "EOG": [
+   "EOG Resources"
+  ],
+  "EPAM": [
+   "EPAM Systems"
+  ],
+  "EQIX": [
+   "Equinix"
+  ],
+  "EQR": [
+   "Equity Residential"
+  ],
+  "EQT": [
+   "EQT Corporation"
+  ],
+  "ERIE": [
+   "Erie Indemnity",
+   "Erie Insurance Group"
+  ],
+  "ES": [
+   "Eversource Energy"
+  ],
+  "ESS": [
+   "Essex Property Trust"
+  ],
+  "ETN": [
+   "Eaton Corporation"
+  ],
+  "ETR": [
+   "Entergy"
+  ],
+  "EVRG": [
+   "Evergy"
+  ],
+  "EW": [
+   "Edwards Lifesciences"
+  ],
+  "EXC": [
+   "Exelon"
+  ],
+  "EXPD": [
+   "Expeditors International"
+  ],
+  "EXPE": [
+   "Expedia Group"
+  ],
+  "EXR": [
+   "Extra Space Storage"
+  ],
+  "F": [
+   "Ford Motor Company"
+  ],
+  "FANG": [
+   "Diamondback Energy"
+  ],
+  "FAST": [
+   "Fastenal"
+  ],
+  "FCX": [
+   "Freeport-McMoRan"
+  ],
+  "FDS": [
+   "FactSet"
+  ],
+  "FDX": [
+   "FedEx"
+  ],
+  "FE": [
+   "FirstEnergy"
+  ],
+  "FFIV": [
+   "F5, Inc."
+  ],
+  "FI": [
+   "Fiserv"
+  ],
+  "FICO": [
+   "FICO",
+   "Fair Isaac"
+  ],
+  "FIS": [
+   "FIS",
+   "Fidelity National Information Services"
+  ],
+  "FITB": [
+   "Fifth Third Bancorp"
+  ],
+  "FMC": [
+   "FMC Corporation"
+  ],
+  "FOX": [
+   "Fox Corporation"
+  ],
+  "FOXA": [
+   "Fox Corporation"
+  ],
+  "FRT": [
+   "Federal Realty Investment Trust"
+  ],
+  "FSLR": [
+   "First Solar"
+  ],
+  "FTNT": [
+   "Fortinet"
+  ],
+  "FTV": [
+   "Fortive"
+  ],
+  "GD": [
+   "General Dynamics"
+  ],
+  "GDDY": [
+   "GoDaddy"
+  ],
+  "GE": [
+   "GE Aerospace"
+  ],
+  "GEHC": [
+   "GE HealthCare"
+  ],
+  "GEN": [
+   "Gen Digital"
+  ],
+  "GEV": [
+   "GE Vernova"
+  ],
+  "GFS": [
+   "GLOBALFOUNDRIES Inc.",
+   "GlobalFoundries"
+  ],
+  "GILD": [
+   "Gilead Sciences"
+  ],
+  "GIS": [
+   "General Mills"
+  ],
+  "GL": [
+   "Globe Life"
+  ],
+  "GLW": [
+   "Corning Inc."
+  ],
+  "GM": [
+   "General Motors"
+  ],
+  "GNRC": [
+   "Generac"
+  ],
+  "GOOG": [
+   "Alphabet Inc."
+  ],
+  "GOOGL": [
+   "Alphabet Inc."
+  ],
+  "GPC": [
+   "Genuine Parts Company"
+  ],
+  "GPN": [
+   "Global Payments"
+  ],
+  "GRMN": [
+   "Garmin"
+  ],
+  "GS": [
+   "Goldman Sachs"
+  ],
+  "GWW": [
+   "W. W. Grainger"
+  ],
+  "HAL": [
+   "Halliburton"
+  ],
+  "HAS": [
+   "Hasbro"
+  ],
+  "HBAN": [
+   "Huntington Bancshares"
+  ],
+  "HCA": [
+   "HCA Healthcare"
+  ],
+  "HD": [
+   "Home Depot",
+   "Home Depot (The)"
+  ],
+  "HES": [
+   "Hess Corporation"
+  ],
+  "HIG": [
+   "Hartford (The)",
+   "The Hartford"
+  ],
+  "HII": [
+   "Huntington Ingalls Industries"
+  ],
+  "HLT": [
+   "Hilton Worldwide"
+  ],
+  "HOLX": [
+   "Hologic"
+  ],
+  "HON": [
+   "Honeywell"
+  ],
+  "HPE": [
+   "Hewlett Packard Enterprise"
+  ],
+  "HPQ": [
+   "HP Inc."
+  ],
+  "HRL": [
+   "Hormel Foods"
+  ],
+  "HSIC": [
+   "Henry Schein"
+  ],
+  "HST": [
+   "Host Hotels & Resorts"
+  ],
+  "HSY": [
+   "Hershey Company (The)",
+   "The Hershey Company"
+  ],
+  "HUBB": [
+   "Hubbell Incorporated"
+  ],
+  "HUM": [
+   "Humana"
+  ],
+  "HWM": [
+   "Howmet Aerospace"
+  ],
+  "IBM": [
+   "IBM"
+  ],
+  "ICE": [
+   "Intercontinental Exchange"
+  ],
+  "IDXX": [
+   "Idexx Laboratories"
+  ],
+  "IEX": [
+   "IDEX Corporation"
+  ],
+  "IFF": [
+   "International Flavors & Fragrances"
+  ],
+  "INCY": [
+   "Incyte"
+  ],
+  "INTC": [
+   "Intel",
+   "Intel Corporation"
+  ],
+  "INTU": [
+   "Intuit"
+  ],
+  "INVH": [
+   "Invitation Homes"
+  ],
+  "IP": [
+   "International Paper"
+  ],
+  "IPG": [
+   "Interpublic Group of Companies (The)",
+   "The Interpublic Group of Companies"
+  ],
+  "IQV": [
+   "IQVIA"
+  ],
+  "IR": [
+   "Ingersoll Rand"
+  ],
+  "IRM": [
+   "Iron Mountain"
+  ],
+  "ISRG": [
+   "Intuitive Surgical"
+  ],
+  "IT": [
+   "Gartner"
+  ],
+  "ITW": [
+   "Illinois Tool Works"
+  ],
+  "IVZ": [
+   "Invesco"
+  ],
+  "J": [
+   "Jacobs Solutions"
+  ],
+  "JBHT": [
+   "J.B. Hunt"
+  ],
+  "JBL": [
+   "Jabil"
+  ],
+  "JCI": [
+   "Johnson Controls"
+  ],
+  "JKHY": [
+   "Jack Henry & Associates"
+  ],
+  "JNJ": [
+   "Johnson & Johnson"
+  ],
+  "JNPR": [
+   "Juniper Networks"
+  ],
+  "JPM": [
+   "JPMorgan Chase"
+  ],
+  "K": [
+   "Kellanova"
+  ],
+  "KDP": [
+   "Keurig Dr Pepper"
+  ],
+  "KEY": [
+   "KeyCorp"
+  ],
+  "KEYS": [
+   "Keysight Technologies"
+  ],
+  "KHC": [
+   "Kraft Heinz"
+  ],
+  "KIM": [
+   "Kimco Realty"
+  ],
+  "KKR": [
+   "KKR",
+   "Kohlberg Kravis Roberts"
+  ],
+  "KLAC": [
+   "KLA Corporation"
+  ],
+  "KMB": [
+   "Kimberly-Clark"
+  ],
+  "KMI": [
+   "Kinder Morgan"
+  ],
+  "KMX": [
+   "CarMax"
+  ],
+  "KO": [
+   "Coca-Cola Company (The)",
+   "The Coca-Cola Company"
+  ],
+  "KR": [
+   "Kroger"
+  ],
+  "KVUE": [
+   "Kenvue"
+  ],
+  "L": [
+   "Loews Corporation"
+  ],
+  "LDOS": [
+   "Leidos"
+  ],
+  "LEN": [
+   "Lennar"
+  ],
+  "LH": [
+   "LabCorp"
+  ],
+  "LHX": [
+   "L3Harris"
+  ],
+  "LII": [
+   "Lennox International"
+  ],
+  "LIN": [
+   "Linde plc"
+  ],
+  "LKQ": [
+   "LKQ Corporation"
+  ],
+  "LLY": [
+   "Eli Lilly and Company",
+   "Lilly (Eli)"
+  ],
+  "LMT": [
+   "Lockheed Martin"
+  ],
+  "LNT": [
+   "Alliant Energy"
+  ],
+  "LOW": [
+   "Lowe's"
+  ],
+  "LRCX": [
+   "Lam Research",
+   "Lam Research Corporation"
+  ],
+  "LSCC": [
+   "Lattice Semiconductor Corporation"
+  ],
+  "LULU": [
+   "Lululemon Athletica"
+  ],
+  "LUV": [
+   "Southwest Airlines"
+  ],
+  "LVS": [
+   "Las Vegas Sands"
+  ],
+  "LW": [
+   "Lamb Weston"
+  ],
+  "LYB": [
+   "LyondellBasell"
+  ],
+  "LYV": [
+   "Live Nation Entertainment"
+  ],
+  "MA": [
+   "Mastercard"
+  ],
+  "MAA": [
+   "Mid-America Apartment Communities"
+  ],
+  "MAR": [
+   "Marriott International"
+  ],
+  "MAS": [
+   "Masco"
+  ],
+  "MCD": [
+   "McDonald's"
+  ],
+  "MCHP": [
+   "Microchip Technology",
+   "Microchip Technology Incorporated"
+  ],
+  "MCK": [
+   "McKesson Corporation"
+  ],
+  "MCO": [
+   "Moody's Corporation"
+  ],
+  "MDB": [
+   "MongoDB Inc."
+  ],
+  "MDLZ": [
+   "Mondelez International"
+  ],
+  "MDT": [
+   "Medtronic"
+  ],
+  "MELI": [
+   "MercadoLibre"
+  ],
+  "MET": [
+   "MetLife"
+  ],
+  "META": [
+   "Meta Platforms"
+  ],
+  "MGM": [
+   "MGM Resorts"
+  ],
+  "MHK": [
+   "Mohawk Industries"
+  ],
+  "MKC": [
+   "McCormick & Company"
+  ],
+  "MKTX": [
+   "MarketAxess"
+  ],
+  "MLM": [
+   "Martin Marietta Materials"
+  ],
+  "MMC": [
+   "Marsh McLennan"
+  ],
+  "MMM": [
+   "3M"
+  ],
+  "MNST": [
+   "Monster Beverage"
+  ],
+  "MO": [
+   "Altria"
+  ],
+  "MOH": [
+   "Molina Healthcare"
+  ],
+  "MOS": [
+   "Mosaic Company (The)",
+   "The Mosaic Company"
+  ],
+  "MPC": [
+   "Marathon Petroleum"
+  ],
+  "MPWR": [
+   "Monolithic Power Systems",
+   "Monolithic Power Systems Inc."
+  ],
+  "MRK": [
+   "Merck & Co."
+  ],
+  "MRNA": [
+   "Moderna"
+  ],
+  "MRVL": [
+   "Marvell Technology",
+   "Marvell Technology Inc."
+  ],
+  "MS": [
+   "Morgan Stanley"
+  ],
+  "MSCI": [
+   "MSCI"
+  ],
+  "MSFT": [
+   "Microsoft"
+  ],
+  "MSI": [
+   "Motorola Solutions"
+  ],
+  "MSTR": [
+   "MicroStrategy"
+  ],
+  "MTB": [
+   "M&T Bank"
+  ],
+  "MTCH": [
+   "Match Group"
+  ],
+  "MTD": [
+   "Mettler Toledo"
+  ],
+  "MU": [
+   "Micron Technology",
+   "Micron Technology Inc."
+  ],
+  "NCLH": [
+   "Norwegian Cruise Line Holdings"
+  ],
+  "NDAQ": [
+   "Nasdaq, Inc."
+  ],
+  "NDSN": [
+   "Nordson Corporation"
+  ],
+  "NEE": [
+   "NextEra Energy"
+  ],
+  "NEM": [
+   "Newmont"
+  ],
+  "NFLX": [
+   "Netflix",
+   "Netflix, Inc."
+  ],
+  "NI": [
+   "NiSource"
+  ],
+  "NKE": [
+   "Nike, Inc."
+  ],
+  "NOC": [
+   "Northrop Grumman"
+  ],
+  "NOW": [
+   "ServiceNow"
+  ],
+  "NRG": [
+   "NRG Energy"
+  ],
+  "NSC": [
+   "Norfolk Southern Railway"
+  ],
+  "NTAP": [
+   "NetApp"
+  ],
+  "NTRS": [
+   "Northern Trust"
+  ],
+  "NUE": [
+   "Nucor"
+  ],
+  "NVDA": [
+   "NVIDIA Corporation",
+   "Nvidia"
+  ],
+  "NVR": [
+   "NVR, Inc."
+  ],
+  "NWS": [
+   "News Corp"
+  ],
+  "NWSA": [
+   "News Corp"
+  ],
+  "NXPI": [
+   "NXP Semiconductors",
+   "NXP Semiconductors N.V."
+  ],
+  "O": [
+   "Realty Income"
+  ],
+  "ODFL": [
+   "Old Dominion",
+   "Old Dominion Freight Line"
+  ],
+  "OKE": [
+   "ONEOK",
+   "Oneok"
+  ],
+  "OMC": [
+   "Omnicom Group"
+  ],
+  "ON": [
+   "ON Semiconductor",
+   "ON Semiconductor Corporation",
+   "Onsemi"
+  ],
+  "ORCL": [
+   "Oracle Corporation"
+  ],
+  "ORLY": [
+   "O'Reilly Auto Parts",
+   "O'Reilly Automotive"
+  ],
+  "OTIS": [
+   "Otis Worldwide"
+  ],
+  "OXY": [
+   "Occidental Petroleum"
+  ],
+  "PANW": [
+   "Palo Alto Networks"
+  ],
+  "PARA": [
+   "Paramount Global"
+  ],
+  "PAYC": [
+   "Paycom"
+  ],
+  "PAYX": [
+   "Paychex"
+  ],
+  "PCAR": [
+   "Paccar"
+  ],
+  "PCG": [
+   "PG&E",
+   "PG&E Corporation"
+  ],
+  "PDD": [
+   "PDD Holdings",
+   "Pinduoduo"
+  ],
+  "PEG": [
+   "Public Service Enterprise Group"
+  ],
+  "PEP": [
+   "PepsiCo"
+  ],
+  "PFE": [
+   "Pfizer"
+  ],
+  "PFG": [
+   "Principal Financial Group"
+  ],
+  "PG": [
+   "Procter & Gamble"
+  ],
+  "PGR": [
+   "Progressive Corporation"
+  ],
+  "PH": [
+   "Parker Hannifin"
+  ],
+  "PHM": [
+   "PulteGroup"
+  ],
+  "PKG": [
+   "Packaging Corporation of America"
+  ],
+  "PLD": [
+   "Prologis"
+  ],
+  "PLTR": [
+   "Palantir Technologies"
+  ],
+  "PM": [
+   "Philip Morris International"
+  ],
+  "PNC": [
+   "PNC Financial Services"
+  ],
+  "PNR": [
+   "Pentair"
+  ],
+  "PNW": [
+   "Pinnacle West"
+  ],
+  "PODD": [
+   "Insulet Corporation"
+  ],
+  "POOL": [
+   "Pool Corporation"
+  ],
+  "PPG": [
+   "PPG Industries"
+  ],
+  "PPL": [
+   "PPL Corporation"
+  ],
+  "PRU": [
+   "Prudential Financial"
+  ],
+  "PSA": [
+   "Public Storage"
+  ],
+  "PSX": [
+   "Phillips 66"
+  ],
+  "PTC": [
+   "PTC",
+   "PTC Inc."
+  ],
+  "PWR": [
+   "Quanta Services"
+  ],
+  "PYPL": [
+   "PayPal"
+  ],
+  "QCOM": [
+   "QUALCOMM Incorporated",
+   "Qualcomm"
+  ],
+  "QRVO": [
+   "Qorvo Inc."
+  ],
+  "RCL": [
+   "Royal Caribbean Group"
+  ],
+  "REG": [
+   "Regency Centers"
+  ],
+  "REGN": [
+   "Regeneron Pharmaceuticals"
+  ],
+  "RF": [
+   "Regions Financial Corporation"
+  ],
+  "RJF": [
+   "Raymond James Financial"
+  ],
+  "RL": [
+   "Ralph Lauren Corporation"
+  ],
+  "RMBS": [
+   "Rambus Inc."
+  ],
+  "RMD": [
+   "ResMed"
+  ],
+  "ROK": [
+   "Rockwell Automation"
+  ],
+  "ROL": [
+   "Rollins, Inc."
+  ],
+  "ROP": [
+   "Roper Technologies"
+  ],
+  "ROST": [
+   "Ross Stores"
+  ],
+  "RSG": [
+   "Republic Services"
+  ],
+  "RTX": [
+   "RTX Corporation"
+  ],
+  "RVTY": [
+   "Revvity"
+  ],
+  "SBAC": [
+   "SBA Communications"
+  ],
+  "SBUX": [
+   "Starbucks"
+  ],
+  "SCHW": [
+   "Charles Schwab Corporation"
+  ],
+  "SHW": [
+   "Sherwin-Williams"
+  ],
+  "SJM": [
+   "J.M. Smucker Company (The)",
+   "The J.M. Smucker Company"
+  ],
+  "SLB": [
+   "Schlumberger"
+  ],
+  "SMCI": [
+   "Supermicro"
+  ],
+  "SNA": [
+   "Snap-on"
+  ],
+  "SNPS": [
+   "Synopsys"
+  ],
+  "SO": [
+   "Southern Company"
+  ],
+  "SOLV": [
+   "Solventum"
+  ],
+  "SPG": [
+   "Simon Property Group"
+  ],
+  "SPGI": [
+   "S&P Global"
+  ],
+  "SRE": [
+   "Sempra"
+  ],
+  "STE": [
+   "Steris"
+  ],
+  "STLD": [
+   "Steel Dynamics"
+  ],
+  "STT": [
+   "State Street Corporation"
+  ],
+  "STX": [
+   "Seagate Technology"
+  ],
+  "STZ": [
+   "Constellation Brands"
+  ],
+  "SW": [
+   "Smurfit WestRock"
+  ],
+  "SWK": [
+   "Stanley Black & Decker"
+  ],
+  "SWKS": [
+   "Skyworks Solutions",
+   "Skyworks Solutions Inc."
+  ],
+  "SYF": [
+   "Synchrony Financial"
+  ],
+  "SYK": [
+   "Stryker Corporation"
+  ],
+  "SYY": [
+   "Sysco"
+  ],
+  "T": [
+   "AT&T"
+  ],
+  "TAP": [
+   "Molson Coors Beverage Company"
+  ],
+  "TDG": [
+   "TransDigm Group"
+  ],
+  "TDY": [
+   "Teledyne Technologies"
+  ],
+  "TEAM": [
+   "Atlassian"
+  ],
+  "TECH": [
+   "Bio-Techne"
+  ],
+  "TEL": [
+   "TE Connectivity"
+  ],
+  "TER": [
+   "Teradyne",
+   "Teradyne Inc."
+  ],
+  "TFC": [
+   "Truist Financial"
+  ],
+  "TFX": [
+   "Teleflex"
+  ],
+  "TGT": [
+   "Target Corporation"
+  ],
+  "TJX": [
+   "TJX Companies"
+  ],
+  "TMO": [
+   "Thermo Fisher Scientific"
+  ],
+  "TMUS": [
+   "T-Mobile US"
+  ],
+  "TPL": [
+   "Texas Pacific Land Corporation"
+  ],
+  "TPR": [
+   "Tapestry, Inc."
+  ],
+  "TRGP": [
+   "Targa Resources"
+  ],
+  "TRMB": [
+   "Trimble Inc."
+  ],
+  "TROW": [
+   "T. Rowe Price"
+  ],
+  "TRV": [
+   "The Travelers Companies",
+   "Travelers Companies (The)"
+  ],
+  "TSCO": [
+   "Tractor Supply"
+  ],
+  "TSLA": [
+   "Tesla, Inc."
+  ],
+  "TSM": [
+   "TSMC",
+   "Taiwan Semiconductor Manufacturing Company Limited"
+  ],
+  "TSN": [
+   "Tyson Foods"
+  ],
+  "TT": [
+   "Trane Technologies"
+  ],
+  "TTD": [
+   "The Trade Desk",
+   "Trade Desk (The)"
+  ],
+  "TTWO": [
+   "Take-Two Interactive"
+  ],
+  "TXN": [
+   "Texas Instruments",
+   "Texas Instruments Incorporated"
+  ],
+  "TXT": [
+   "Textron"
+  ],
+  "TYL": [
+   "Tyler Technologies"
+  ],
+  "UAL": [
+   "United Airlines Holdings"
+  ],
+  "UBER": [
+   "Uber"
+  ],
+  "UDR": [
+   "UDR, Inc."
+  ],
+  "UHS": [
+   "Universal Health Services"
+  ],
+  "ULTA": [
+   "Ulta Beauty"
+  ],
+  "UNH": [
+   "UnitedHealth Group"
+  ],
+  "UNP": [
+   "Union Pacific Corporation"
+  ],
+  "UPS": [
+   "United Parcel Service"
+  ],
+  "URI": [
+   "United Rentals"
+  ],
+  "USB": [
+   "U.S. Bancorp"
+  ],
+  "V": [
+   "Visa Inc."
+  ],
+  "VICI": [
+   "Vici Properties"
+  ],
+  "VLO": [
+   "Valero Energy"
+  ],
+  "VLTO": [
+   "Veralto"
+  ],
+  "VMC": [
+   "Vulcan Materials Company"
+  ],
+  "VRSK": [
+   "Verisk Analytics"
+  ],
+  "VRSN": [
+   "Verisign"
+  ],
+  "VRTX": [
+   "Vertex Pharmaceuticals"
+  ],
+  "VST": [
+   "Vistra Corp ."
+  ],
+  "VTR": [
+   "Ventas"
+  ],
+  "VTRS": [
+   "Viatris"
+  ],
+  "VZ": [
+   "Verizon"
+  ],
+  "WAB": [
+   "Wabtec"
+  ],
+  "WAT": [
+   "Waters Corporation"
+  ],
+  "WBA": [
+   "Walgreens Boots Alliance"
+  ],
+  "WBD": [
+   "Warner Bros. Discovery"
+  ],
+  "WDAY": [
+   "Workday, Inc."
+  ],
+  "WDC": [
+   "Western Digital"
+  ],
+  "WEC": [
+   "WEC Energy Group"
+  ],
+  "WELL": [
+   "Welltower"
+  ],
+  "WFC": [
+   "Wells Fargo"
+  ],
+  "WM": [
+   "Waste Management",
+   "Waste Management, Inc."
+  ],
+  "WMB": [
+   "Williams Companies"
+  ],
+  "WMT": [
+   "Walmart"
+  ],
+  "WOLF": [
+   "Wolfspeed Inc."
+  ],
+  "WRB": [
+   "W. R. Berkley Corporation"
+  ],
+  "WST": [
+   "West Pharmaceutical Services"
+  ],
+  "WTW": [
+   "Willis Towers Watson"
+  ],
+  "WY": [
+   "Weyerhaeuser"
+  ],
+  "WYNN": [
+   "Wynn Resorts"
+  ],
+  "XEL": [
+   "Xcel Energy"
+  ],
+  "XOM": [
+   "ExxonMobil"
+  ],
+  "XYL": [
+   "Xylem Inc."
+  ],
+  "YUM": [
+   "Yum! Brands"
+  ],
+  "ZBH": [
+   "Zimmer Biomet"
+  ],
+  "ZBRA": [
+   "Zebra Technologies"
+  ],
+  "ZS": [
+   "Zscaler"
+  ],
+  "ZTS": [
+   "Zoetis"
+  ]
+ },
+ "revisions": {
+  "nasdaq100": 1265020752,
+  "sox": 1246738930,
+  "sp500": 1265285344
+ },
+ "sector": {
+  "AAPL": "tech",
+  "ABNB": "other",
+  "ACLS": "semis",
+  "ADBE": "tech",
+  "ADI": "semis",
+  "ADP": "other",
+  "ADSK": "tech",
+  "AEE": "utilities",
+  "AEP": "utilities",
+  "AES": "utilities",
+  "ALGM": "semis",
+  "AMAT": "semis",
+  "AMD": "semis",
+  "AMGN": "other",
+  "AMKR": "semis",
+  "AMZN": "other",
+  "ANSS": "tech",
+  "APP": "tech",
+  "ARM": "tech",
+  "ASM.AS": "semis",
+  "ASML": "semis",
+  "ASML.AS": "semis",
+  "ATO": "utilities",
+  "AVGO": "semis",
+  "AWK": "utilities",
+  "AXON": "other",
+  "AZN": "other",
+  "BESI.AS": "semis",
+  "BIIB": "other",
+  "BKNG": "other",
+  "BKR": "other",
+  "CCEP": "other",
+  "CDNS": "tech",
+  "CDW": "tech",
+  "CEG": "utilities",
+  "CHTR": "other",
+  "CMCSA": "other",
+  "CMS": "utilities",
+  "CNP": "utilities",
+  "COHR": "semis",
+  "COST": "other",
+  "CPRT": "other",
+  "CRWD": "tech",
+  "CSCO": "tech",
+  "CSGP": "other",
+  "CSX": "other",
+  "CTAS": "other",
+  "CTSH": "tech",
+  "D": "utilities",
+  "DASH": "other",
+  "DDOG": "tech",
+  "DTE": "utilities",
+  "DUK": "utilities",
+  "DXCM": "other",
+  "EA": "other",
+  "ED": "utilities",
+  "EIX": "utilities",
+  "ENTG": "semis",
+  "ES": "utilities",
+  "ETR": "utilities",
+  "EVRG": "utilities",
+  "EXC": "utilities",
+  "FANG": "other",
+  "FAST": "other",
+  "FE": "utilities",
+  "FTNT": "tech",
+  "GEHC": "other",
+  "GFS": "semis",
+  "GILD": "other",
+  "GOOG": "other",
+  "GOOGL": "other",
+  "HON": "other",
+  "IDXX": "other",
+  "INTC": "semis",
+  "INTU": "tech",
+  "ISRG": "other",
+  "KDP": "other",
+  "KHC": "other",
+  "KLAC": "semis",
+  "LIN": "other",
+  "LNT": "utilities",
+  "LRCX": "semis",
+  "LSCC": "semis",
+  "LULU": "other",
+  "MAR": "other",
+  "MCHP": "semis",
+  "MDB": "tech",
+  "MDLZ": "other",
+  "MELI": "other",
+  "META": "other",
+  "MNST": "other",
+  "MPWR": "semis",
+  "MRVL": "semis",
+  "MSFT": "tech",
+  "MSTR": "tech",
+  "MU": "semis",
+  "NEE": "utilities",
+  "NFLX": "other",
+  "NI": "utilities",
+  "NRG": "utilities",
+  "NVDA": "semis",
+  "NXPI": "semis",
+  "ODFL": "other",
+  "ON": "semis",
+  "ORLY": "other",
+  "PANW": "tech",
+  "PAYX": "other",
+  "PCAR": "other",
+  "PCG": "utilities",
+  "PDD": "other",
+  "PEG": "utilities",
+  "PEP": "other",
+  "PLTR": "tech",
+  "PNW": "utilities",
+  "PPL": "utilities",
+  "PYPL": "other",
+  "QCOM": "semis",
+  "QRVO": "semis",
+  "REGN": "other",
+  "RMBS": "semis",
+  "ROP": "tech",
+  "ROST": "other",
+  "SBUX": "other",
+  "SNPS": "tech",
+  "SO": "utilities",
+  "SRE": "utilities",
+  "SWKS": "semis",
+  "TEAM": "tech",
+  "TER": "semis",
+  "TMUS": "other",
+  "TSLA": "other",
+  "TSM": "semis",
+  "TTD": "other",
+  "TTWO": "other",
+  "TXN": "semis",
+  "VRSK": "other",
+  "VRTX": "other",
+  "VST": "utilities",
+  "WBD": "other",
+  "WDAY": "tech",
+  "WEC": "utilities",
+  "WOLF": "semis",
+  "XEL": "utilities",
+  "ZS": "tech"
+ },
+ "sector_etf": {
+  "semis": "SMH",
+  "tech": "XLK",
+  "utilities": "XLU"
+ },
+ "symbols": [
+  "AAPL",
+  "ABNB",
+  "ACLS",
+  "ADBE",
+  "ADI",
+  "ADP",
+  "ADSK",
+  "AEE",
+  "AEP",
+  "AES",
+  "ALGM",
+  "AMAT",
+  "AMD",
+  "AMGN",
+  "AMKR",
+  "AMZN",
+  "ANSS",
+  "APP",
+  "ARM",
+  "ASM.AS",
+  "ASML",
+  "ASML.AS",
+  "ATO",
+  "AVGO",
+  "AWK",
+  "AXON",
+  "AZN",
+  "BESI.AS",
+  "BIIB",
+  "BKNG",
+  "BKR",
+  "CCEP",
+  "CDNS",
+  "CDW",
+  "CEG",
+  "CHTR",
+  "CMCSA",
+  "CMS",
+  "CNP",
+  "COHR",
+  "COST",
+  "CPRT",
+  "CRWD",
+  "CSCO",
+  "CSGP",
+  "CSX",
+  "CTAS",
+  "CTSH",
+  "D",
+  "DASH",
+  "DDOG",
+  "DTE",
+  "DUK",
+  "DXCM",
+  "EA",
+  "ED",
+  "EIX",
+  "ENTG",
+  "ES",
+  "ETR",
+  "EVRG",
+  "EXC",
+  "FANG",
+  "FAST",
+  "FE",
+  "FTNT",
+  "GEHC",
+  "GFS",
+  "GILD",
+  "GOOG",
+  "GOOGL",
+  "HON",
+  "IDXX",
+  "INTC",
+  "INTU",
+  "ISRG",
+  "KDP",
+  "KHC",
+  "KLAC",
+  "LIN",
+  "LNT",
+  "LRCX",
+  "LSCC",
+  "LULU",
+  "MAR",
+  "MCHP",
+  "MDB",
+  "MDLZ",
+  "MELI",
+  "META",
+  "MNST",
+  "MPWR",
+  "MRVL",
+  "MSFT",
+  "MSTR",
+  "MU",
+  "NEE",
+  "NFLX",
+  "NI",
+  "NRG",
+  "NVDA",
+  "NXPI",
+  "ODFL",
+  "ON",
+  "ORLY",
+  "PANW",
+  "PAYX",
+  "PCAR",
+  "PCG",
+  "PDD",
+  "PEG",
+  "PEP",
+  "PLTR",
+  "PNW",
+  "PPL",
+  "PYPL",
+  "QCOM",
+  "QQQ",
+  "QRVO",
+  "REGN",
+  "RMBS",
+  "ROP",
+  "ROST",
+  "SBUX",
+  "SMH",
+  "SNPS",
+  "SO",
+  "SPY",
+  "SRE",
+  "SWKS",
+  "TEAM",
+  "TER",
+  "TMUS",
+  "TSLA",
+  "TSM",
+  "TTD",
+  "TTWO",
+  "TXN",
+  "VRSK",
+  "VRTX",
+  "VST",
+  "WBD",
+  "WDAY",
+  "WEC",
+  "WOLF",
+  "XEL",
+  "XLK",
+  "XLU",
+  "ZS"
+ ]
+}

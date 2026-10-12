@@ -1,0 +1,22 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.sportskeeda.com/us/olympics/news-ariarne-titmus-makes-feelings-known-local-pool-named",
+   "position": 1,
+   "title": "Ariarne Titmus makes her feelings known on local pool ..."
+  },
+  {
+   "link": "https://au.news.yahoo.com/ariarne-titmus-rules-out-major-event-as-aussie-swimming-champion-makes-huge-call-on-future-232104068.html",
+   "position": 2,
+   "title": "Ariarne Titmus rules out major event as Aussie swimming ..."
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"national arboretum canberra\" Ariarne Titmus line be 2025 denied OR false OR misleading OR disputed",
+  "tbs": "cdr:1,cd_min:1/13/2025,cd_max:1/27/2025"
+ }
+}

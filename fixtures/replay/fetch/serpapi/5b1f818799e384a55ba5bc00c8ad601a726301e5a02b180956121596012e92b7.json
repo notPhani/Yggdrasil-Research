@@ -1,0 +1,62 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.consilium.europa.eu/en/press/press-releases/2025/01/25/democratic-republic-of-the-congo-statement-by-the-high-representative-on-behalf-of-the-eu-on-the-latest-escalation-in-eastern-drc/",
+   "position": 1,
+   "title": "Democratic Republic of the Congo: Statement by the High ..."
+  },
+  {
+   "link": "https://www.aphis.usda.gov/news/agency-announcements/usda-reduces-hpai-restrictions-poultry-france-european-union",
+   "position": 2,
+   "title": "USDA Reduces HPAI Restrictions on Poultry from France and ..."
+  },
+  {
+   "link": "https://www.undp.org/european-union",
+   "position": 3,
+   "title": "European Union | United Nations Development Programme"
+  },
+  {
+   "link": "https://www.reddit.com/r/RedAutumnSPD/comments/1i6hce4/how_to_form_the_european_union/",
+   "position": 4,
+   "title": "How to form the European Union : r/RedAutumnSPD"
+  },
+  {
+   "link": "https://www.hrw.org/world-report/2025/country-chapters/european-union",
+   "position": 5,
+   "title": "World Report 2025: European Union"
+  },
+  {
+   "link": "https://pubmed.ncbi.nlm.nih.gov/39874899/",
+   "position": 6,
+   "title": "Health networking on cancer in the European Union"
+  },
+  {
+   "link": "https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/article_1210104611.html",
+   "position": 7,
+   "title": "European Union Electronic Invoicing Overview"
+  },
+  {
+   "link": "https://www.unesco.org/en/fieldoffice/brussels",
+   "position": 8,
+   "title": "UNESCO and the European Union"
+  },
+  {
+   "link": "https://www.youtube.com/watch?v=gZKDUEvWiLk",
+   "position": 9,
+   "title": "North Macedonia on the Path to the European Union"
+  },
+  {
+   "link": "https://www.congress.gov/crs-product/IN11897",
+   "position": 10,
+   "title": "Russia's War Against Ukraine: European Union ..."
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"european union\" What papers say December 30",
+  "tbs": "cdr:1,cd_min:1/13/2025,cd_max:1/27/2025"
+ }
+}

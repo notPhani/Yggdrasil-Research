@@ -1,0 +1,11 @@
+{
+ "organic_results": [],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"daily pivots\" Bangkok Post JTC boost trade",
+  "tbs": "cdr:1,cd_min:12/30/2024,cd_max:1/13/2025"
+ }
+}

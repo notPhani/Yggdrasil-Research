@@ -1,0 +1,17 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.wsbradio.com/news/local/one-mans-opinion-man-made-dantes-inferno/6FL5MI434JEXHCSBOWQ3MJ6V4A/",
+   "position": 1,
+   "title": "One Man's Opinion: A Man Made Dante's Inferno"
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"golden valley\" 95.5 WSB denied OR false OR misleading OR disputed",
+  "tbs": "cdr:1,cd_min:1/13/2025,cd_max:1/27/2025"
+ }
+}

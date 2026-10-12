@@ -1,0 +1,61 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.wdtn.com/news/business/ap-business/ap-southern-california-edison-equipment-blamed-for-2025-eaton-fire-in-los-angeles/",
+   "position": 1,
+   "title": "Utility's idle transmission tower caused 2025 Eaton fire that ..."
+  },
+  {
+   "link": "https://espnharrisonburg.com/news/030030-utilitys-idle-transmission-tower-caused-2025-eaton-fire-that-killed-19-los-angeles-officials-say/",
+   "position": 2,
+   "title": "Utility's idle transmission tower caused 2025 Eaton fire that ..."
+  },
+  {
+   "link": "https://wnax.com/news/030030-utilitys-idle-transmission-tower-caused-2025-eaton-fire-that-killed-19-los-angeles-officials-say/",
+   "position": 3,
+   "title": "Utility's idle transmission tower caused 2025 Eaton fire that ..."
+  },
+  {
+   "link": "https://wgnradio.com/news/business-news/ap-southern-california-edison-equipment-blamed-for-2025-eaton-fire-in-los-angeles/",
+   "position": 4,
+   "title": "Utility's idle transmission tower caused 2025 Eaton fire that ..."
+  },
+  {
+   "link": "https://wkne.com/news/030030-utilitys-idle-transmission-tower-caused-2025-eaton-fire-that-killed-19-los-angeles-officials-say/",
+   "position": 5,
+   "title": "Utility's idle transmission tower caused 2025 Eaton fire that ..."
+  },
+  {
+   "link": "https://ca.finance.yahoo.com/news/u-sues-southern-california-edison-161124840.html",
+   "position": 6,
+   "title": "US sues Southern California Edison, blames it for Eaton ..."
+  },
+  {
+   "link": "https://www.tristatehomepage.com/business/ap-business/ap-southern-california-edison-equipment-blamed-for-2025-eaton-fire-in-los-angeles/",
+   "position": 7,
+   "title": "Utility's idle transmission tower caused 2025 Eaton fire that ..."
+  },
+  {
+   "link": "https://san.com/cc/lawyers-blame-decommissioned-transmission-tower-for-deadly-eaton-fire/",
+   "position": 8,
+   "title": "Lawyers blame decommissioned transmission tower for ..."
+  },
+  {
+   "link": "https://www.yahoo.com/news/eaton-fire-human-toll-legal-063529526.html",
+   "position": 9,
+   "title": "Eaton Fire human toll and legal fallout"
+  },
+  {
+   "link": "https://www.yahoo.com/news/regulators-criticized-edisons-wildfire-safety-203317883.html",
+   "position": 10,
+   "title": "Regulators criticized Edison's wildfire safety actions ..."
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"california public utilities commission\" Eaton Fire death toll rises excludes OR retracted OR correction OR overstated"
+ }
+}

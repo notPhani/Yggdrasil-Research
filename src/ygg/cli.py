@@ -271,6 +271,36 @@ def cmd_ui(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verify(args: argparse.Namespace) -> int:
+    """Re-check recorded investigations from archived artifacts only: no network, no SerpApi credits."""
+    from rich.console import Console
+    from rich.table import Table
+
+    from ygg.verify import verify
+
+    cfg = load_config(args.config)
+    checks = verify(Path(args.data_dir or cfg["paths"]["data_dir"]), args.days or None)
+    t = Table(box=None, header_style="bold")
+    for c in ("case", "check", "result", "detail"):
+        t.add_column(c)
+    for c in checks:
+        t.add_row(c.case, c.name, "[green]PASS[/]" if c.ok else "[red]FAIL[/]", c.detail)
+    Console().print(t)
+    failed = sum(not c.ok for c in checks)
+    print(f"{len(checks) - failed}/{len(checks)} checks passed")
+    return 1 if failed or not checks else 0
+
+
+def cmd_show(args: argparse.Namespace) -> int:
+    """Print the recorded dossier of one investigation (offline)."""
+    from ygg.dossier import render_terminal
+
+    cfg = load_config(args.config)
+    data_dir = Path(args.data_dir or cfg["paths"]["data_dir"])
+    render_terminal(json.loads((data_dir / "cases" / f"{args.day}.json").read_text()))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="ygg", description="Yggdrasil: market event forensics")
     p.add_argument("--config", default=None, help="TOML config (default: config/default.toml)")
@@ -347,6 +377,16 @@ def main(argv: list[str] | None = None) -> int:
     v.add_argument("--fetch-top", type=int, default=6)
     v.add_argument("--data-dir", default=None)
     v.set_defaults(func=cmd_verdict)
+
+    vf = sub.add_parser("verify", help="re-check recorded investigations offline (observer, search, verdicts, placebo, SerpApi archive)")
+    vf.add_argument("days", nargs="*", help="case days (default: every case in DATA_DIR/cases)")
+    vf.add_argument("--data-dir", default=None)
+    vf.set_defaults(func=cmd_verify)
+
+    sh = sub.add_parser("show", help="print the recorded dossier of one investigation (offline)")
+    sh.add_argument("day")
+    sh.add_argument("--data-dir", default=None)
+    sh.set_defaults(func=cmd_show)
 
     ui = sub.add_parser("ui", help="terminal UI: live control panel, investigations, recorded replay")
     ui.add_argument("--demo", action="store_true", help="add the DEMO investigation fixture (labelled MODE: DEMO)")

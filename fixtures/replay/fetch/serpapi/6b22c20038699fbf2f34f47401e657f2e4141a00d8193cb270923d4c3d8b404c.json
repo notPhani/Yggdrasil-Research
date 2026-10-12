@@ -1,0 +1,27 @@
+{
+ "organic_results": [
+  {
+   "link": "https://global.chinadaily.com.cn/a/202501/09/WS677f1d15a310f1265a1d9c46.html",
+   "position": 1,
+   "title": "China's parcel delivery on record high"
+  },
+  {
+   "link": "https://global.chinadaily.com.cn/a/202501/04/WS677887d6a310f1265a1d8f19.html",
+   "position": 2,
+   "title": "Beibu Gulf Port retains double-digit growth"
+  },
+  {
+   "link": "https://nbuviap.gov.ua/images/informaciyni_vidanya/akt_problem_intelekt_vlasnosti/2024_Aktualni_problemu_no12.pdf",
+   "position": 3,
+   "title": "\u0410\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u0456 \u043f\u0440\u043e\u0431\u043b\u0435\u043c\u0438 \u0456\u043d\u0442\u0435\u043b\u0435\u043a\u0442\u0443\u0430\u043b\u044c\u043d\u043e\u0457 \u0432\u043b\u0430\u0441\u043d\u043e\u0441\u0442\u0456 \u0432 ..."
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"china daily information co\" China Daily Website Connecting China denied OR false OR misleading OR disputed",
+  "tbs": "cdr:1,cd_min:12/30/2024,cd_max:1/13/2025"
+ }
+}

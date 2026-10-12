@@ -1,0 +1,62 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.whqr.org/national/2025-01-13/lawsuits-allege-power-company-involvement-in-la-wildfires",
+   "position": 1,
+   "title": "Lawsuits allege power company involvement in LA wildfires"
+  },
+  {
+   "link": "https://www.kgou.org/politics-and-government/2025-01-13/lawsuits-allege-power-company-involvement-in-la-wildfires",
+   "position": 2,
+   "title": "Lawsuits allege power company involvement in LA wildfires"
+  },
+  {
+   "link": "https://www.wbur.org/npr/g-s1-42603/lawsuits-allege-power-company-involvement-in-la-wildfires",
+   "position": 3,
+   "title": "Lawsuits allege power company involvement in LA wildfires"
+  },
+  {
+   "link": "https://www.seattletimes.com/nation-world/nation/lawsuit-claims-utilitys-equipment-sparked-devastating-eaton-fire-but-investigation-still-ongoing/",
+   "position": 4,
+   "title": "Lawsuits claims utility's equipment sparked devastating ..."
+  },
+  {
+   "link": "https://www.wclk.com/2025-01-13/lawsuits-allege-power-company-involvement-in-la-wildfires",
+   "position": 5,
+   "title": "Lawsuits allege power company involvement in LA wildfires"
+  },
+  {
+   "link": "https://www.ctpublic.org/2025-01-13/lawsuits-allege-power-company-involvement-in-la-wildfires",
+   "position": 6,
+   "title": "Lawsuits allege power company involvement in LA wildfires"
+  },
+  {
+   "link": "https://www.yahoo.com/news/eaton-fire-human-toll-legal-063529526.html",
+   "position": 7,
+   "title": "Eaton Fire human toll and legal fallout"
+  },
+  {
+   "link": "https://www.newsday.com/news/nation/california-wildfires-eaton-cause-utility-fireworks-v02940",
+   "position": 8,
+   "title": "Lawsuits claims utility's equipment sparked devastating ..."
+  },
+  {
+   "link": "https://www.law360.com/articles/2283493/socal-edison-hit-with-flurry-of-suits-over-eaton-fire",
+   "position": 9,
+   "title": "SoCal Edison Hit With Flurry Of Suits Over Eaton Fire"
+  },
+  {
+   "link": "https://www.investing.com/news/stock-market-news/factboxutilities-face-increasing-scrutiny-in-la-wildfires-3810556",
+   "position": 10,
+   "title": "Factbox-Utilities face increasing scrutiny in LA wildfires"
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"california public utilities commission\" Eaton Fire death toll rises denied OR false OR misleading OR disputed",
+  "tbs": "cdr:1,cd_min:12/30/2024,cd_max:1/13/2025"
+ }
+}

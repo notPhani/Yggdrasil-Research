@@ -1,0 +1,56 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.bangkokpost.com/business/general/2352222/exercise-caution-before-the-next-long-weekend",
+   "position": 1,
+   "title": "Exercise caution before the next long weekend"
+  },
+  {
+   "link": "https://www.bangkokpost.com/business/general/1498994/trade-fears-hit-global-shares-but-set-stays-above-1-600",
+   "position": 2,
+   "title": "Trade fears hit global shares but SET stays above ..."
+  },
+  {
+   "link": "https://www.bangkokpost.com/business/general/2051871/focus-on-earnings-as-market-moves-sideways",
+   "position": 3,
+   "title": "Focus on earnings as market moves sideways"
+  },
+  {
+   "link": "https://www.bangkokpost.com/business/general/1597170/set-index-gains-on-rate-hike-other-se-asia-stocks-end-firmer",
+   "position": 4,
+   "title": "SET index gains on rate hike, other SE Asia stocks end firmer"
+  },
+  {
+   "link": "https://www.bangkokpost.com/business/general/2886487/traders-cautious-amid-mixed-signals-from-china",
+   "position": 5,
+   "title": "Traders cautious amid mixed signals from China"
+  },
+  {
+   "link": "https://www.bangkokpost.com/opinion/opinion/3177233/2026-outlook-calls-for-recalibration",
+   "position": 6,
+   "title": "2026 outlook calls for recalibration"
+  },
+  {
+   "link": "https://www.bangkokpost.com/business/general/3107702/bot-sees-no-unusual-baht-speculation",
+   "position": 7,
+   "title": "BoT sees no unusual baht speculation"
+  },
+  {
+   "link": "https://www.bangkokpost.com/business/general/3040696/tisco-points-to-ways-to-navigate-volatility",
+   "position": 8,
+   "title": "Tisco points to ways to navigate volatility"
+  },
+  {
+   "link": "https://www.bangkokpost.com/business/general/450222/stock-regulators-urge-caution",
+   "position": 9,
+   "title": "Stock regulators urge caution"
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"daily pivots\" Bangkok Post JTC boost trade excludes OR retracted OR correction OR overstated"
+ }
+}

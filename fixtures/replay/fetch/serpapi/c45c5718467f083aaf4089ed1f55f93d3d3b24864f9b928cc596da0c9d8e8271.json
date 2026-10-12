@@ -1,0 +1,56 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.wsbradio.com/lifestyles/home/things-that-reader-swear-work/zodHCPxKHd3g1TdybpHDcP/",
+   "position": 1,
+   "title": "95.5 WSB"
+  },
+  {
+   "link": "https://www.wsbradio.com/on-air/kulture-city-their-work-sensory-overload/154f5ed3-a499-475d-8eb3-f9a9941e6243/",
+   "position": 2,
+   "title": "Kulture City and their work on Sensory Overload"
+  },
+  {
+   "link": "https://www.wsbradio.com/on-air/yes-i-was-right/63a9a8bb-cf53-4ad2-8e63-fac062558867/",
+   "position": 3,
+   "title": "yes i was right"
+  },
+  {
+   "link": "https://www.wsbradio.com/news/opinion-blogs/the-mysterious-misinterpretations-news-articles/IKaZa2InnaanXbJ0NihUAN/",
+   "position": 4,
+   "title": "The Mysterious Misinterpretations of News Articles"
+  },
+  {
+   "link": "https://www.wsbradio.com/on-air/supreme-court-is-not-problem/27edc20b-0861-4ccf-a560-0ce91e1964e8/",
+   "position": 5,
+   "title": "Supreme Court is not the problem"
+  },
+  {
+   "link": "https://www.wsbradio.com/on-air/pam-bondi-proved-me-correct-again/c4ffbf5e-00f8-4626-ac27-8c136751dce0/",
+   "position": 6,
+   "title": "Pam Bondi proved me correct AGAIN"
+  },
+  {
+   "link": "https://www.wsbradio.com/on-air/supreme-court-rules-doge-can-look-our-personal-info/37994af2-41a5-4462-a906-b307ea764239/",
+   "position": 7,
+   "title": "Supreme Court rules DOGE can look at our personal info"
+  },
+  {
+   "link": "https://www.wsbradio.com/on-demand/law-street/fbd7e23e-2d37-43cd-b587-ea2cb2aecb68/",
+   "position": 8,
+   "title": "Law on the Street"
+  },
+  {
+   "link": "https://www.wsbradio.com/on-air/we-lost/5ff6c807-0148-4d2e-bee2-5e465bdc1f36/",
+   "position": 9,
+   "title": "We lost"
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"golden valley\" 95.5 WSB excludes OR retracted OR correction OR overstated"
+ }
+}

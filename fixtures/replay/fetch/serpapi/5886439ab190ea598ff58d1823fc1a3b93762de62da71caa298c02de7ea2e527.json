@@ -1,0 +1,56 @@
+{
+ "organic_results": [
+  {
+   "link": "https://finance.yahoo.com/news/intrepid-potash-ipi-best-potash-120701646.html",
+   "position": 1,
+   "title": "Is Intrepid Potash (IPI) the Best Potash Stock to Buy ..."
+  },
+  {
+   "link": "https://finance.yahoo.com/news/sociedad-qu-mica-y-minera-121409660.html",
+   "position": 2,
+   "title": "Is Sociedad Qu\u00edmica y Minera de Chile S.A. (SQM) the Best ..."
+  },
+  {
+   "link": "https://x.com/RossouwBeyers",
+   "position": 3,
+   "title": "Beyers Rossouw (@RossouwBeyers) / ..."
+  },
+  {
+   "link": "https://finance.yahoo.com/news/icl-group-ltd-icl-best-120906046.html",
+   "position": 4,
+   "title": "Is ICL Group Ltd (ICL) the Best Potash Stock to Buy ..."
+  },
+  {
+   "link": "https://finance.yahoo.com/news/nutrien-ltd-ntr-best-potash-122418355.html",
+   "position": 5,
+   "title": "Is Nutrien Ltd. (NTR) the Best Potash Stock to Buy ..."
+  },
+  {
+   "link": "https://finance.yahoo.com/news/brazil-potash-corp-gro-best-123430645.html",
+   "position": 6,
+   "title": "Is Brazil Potash Corp. (GRO) the Best Potash Stock to Buy ..."
+  },
+  {
+   "link": "https://finance.yahoo.com/news/why-bhp-group-bhp-among-121640183.html",
+   "position": 7,
+   "title": "Why BHP Group (BHP) Is Among the Best Potash Stocks to ..."
+  },
+  {
+   "link": "https://finance.yahoo.com/news/archer-daniels-midland-company-adm-122800083.html",
+   "position": 8,
+   "title": "Is Archer-Daniels-Midland Company (ADM) the Best ..."
+  },
+  {
+   "link": "https://finance.yahoo.com/news/compass-minerals-cmp-best-potash-121928808.html",
+   "position": 9,
+   "title": "Is Compass Minerals (CMP) the Best Potash Stock to Buy ..."
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"africa stocks to buy right\" Stock Market Sectors Stock market excludes OR retracted OR correction OR overstated"
+ }
+}

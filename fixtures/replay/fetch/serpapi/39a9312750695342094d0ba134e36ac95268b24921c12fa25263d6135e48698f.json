@@ -1,0 +1,27 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.prnewswire.com/news-releases/mu-investor-alert-bronstein-gewirtz--grossman-llc-announces-that-micron-technology-inc-investors-with-substantial-losses-have-opportunity-to-lead-class-action-lawsuit-302348143.html",
+   "position": 1,
+   "title": "MU INVESTOR ALERT: Bronstein, Gewirtz & Grossman ..."
+  },
+  {
+   "link": "https://www.businesswire.com/news/home/20250123360137/en/MU-INVESTOR-ALERT-Bronstein-Gewirtz-Grossman-LLC-Announces-that-Micron-Technology-Inc.-Investors-with-Substantial-Losses-Have-Opportunity-to-Lead-Class-Action-Lawsuit",
+   "position": 2,
+   "title": "MU INVESTOR ALERT: Bronstein, Gewirtz & Grossman ..."
+  },
+  {
+   "link": "https://www.businesswire.com/news/home/20250115200780/en/MU-INVESTOR-ALERT-Bronstein-Gewirtz-Grossman-LLC-Announces-that-Micron-Technology-Inc.-Investors-with-Substantial-Losses-Have-Opportunity-to-Lead-Class-Action-Lawsuit",
+   "position": 3,
+   "title": "MU INVESTOR ALERT: Bronstein, Gewirtz & Grossman ..."
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"semiconductor solutions\" APLT INVESTOR ALERT Bronstein Gewirtz",
+  "tbs": "cdr:1,cd_min:1/13/2025,cd_max:1/27/2025"
+ }
+}

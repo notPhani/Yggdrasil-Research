@@ -57,7 +57,7 @@ def brief(inv: Investigation, e: Explanation, term_label, visible) -> Group:
     else:
         terms = sorted({x.dst for x in e.edges if is_term(x.dst) and x.src != "BOT"})
         t.append(f"“{e.entry_label}”", style=f"bold {WHITE}")
-        t.append(" moved ", style=DIM)
+        t.append(" is the cheapest chain under the model to ", style=DIM)
         t.append(" and ".join(term_label(x) for x in terms) or "no market cluster", style=f"bold {DOWN}")
         t.append(".\n", style=DIM)
         odds_abst = math.exp(((abst.cost_mnats if abst else e.cost_mnats) - e.cost_mnats) / 1000)
@@ -121,10 +121,12 @@ def brief(inv: Investigation, e: Explanation, term_label, visible) -> Group:
         _h(t, "VERDICT")
         t.append(f" P_pre ", style=AMBER)
         t.append(f"{hyp.verdict_pre}", style=f"bold {VSTYLE.get(hyp.verdict_pre, DIM)}")
-        t.append(f"  {''.join(map(str, hyp.bits_pre)) if hyp.bits_pre else ''}   could it have moved the price (evidence first seen before τ*)\n", style=DIM)
+        t.append(f"  {''.join(map(str, hyp.bits_pre)) if hyp.bits_pre else ''}   using only evidence first seen before τ*\n", style=DIM)
         t.append(f" P_all ", style=AMBER)
         t.append(f"{hyp.verdict_all}", style=f"bold {VSTYLE.get(hyp.verdict_all, DIM)}")
-        t.append(f"  {''.join(map(str, hyp.bits_all)) if hyp.bits_all else ''}   is it true (everything up to report time)\n", style=DIM)
+        t.append(f"  {''.join(map(str, hyp.bits_all)) if hyp.bits_all else ''}   using everything up to report time\n", style=DIM)
+        t.append(" SUPPORTED = the entry narrative's trigger event was reported and corroborated, first seen before τ*, carried\n"
+                 " Yggdrasil's burst and spillover signature, and was not refuted. It does not test relevance to the move.\n", style=DIM)
         t.append(" signature: ", style=AMBER)
         t.append(("burst before τ* ✓ " if hyp.burst else "no burst ✗ ") + ("· spillover surprise on every narrative edge ✓" if hyp.surprise_ok else "· spillover surprise ✗"),
                  style=UP if hyp.signature_ok else DIM)

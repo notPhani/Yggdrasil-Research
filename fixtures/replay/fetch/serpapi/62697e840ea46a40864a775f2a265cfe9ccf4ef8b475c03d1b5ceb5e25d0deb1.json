@@ -1,0 +1,56 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.reuters.com/article/world/china-quarterly-says-publisher-to-repost-articles-taken-down-in-china-idUSKCN1B11PX/",
+   "position": 1,
+   "title": "China Quarterly says publisher to repost articles taken ..."
+  },
+  {
+   "link": "https://chronicle.lu/category/international-news/45268-china-shuts-100k-fake-news-social-media-accounts-ramps-up-content-cleanup",
+   "position": 2,
+   "title": "China Shuts 100k Fake News Social Media Accounts ..."
+  },
+  {
+   "link": "https://www.caixinglobal.com/2021-03-31/china-was-the-source-of-370-retracted-scientific-papers-nature-reports-101682757.html",
+   "position": 3,
+   "title": "China Was the Source of 370 Retracted Scientific Papers ..."
+  },
+  {
+   "link": "https://www.researchgate.net/publication/372665220_Retracted_The_Construction_of_National_Image_of_China_by_English_World_Media_in_Public_Health_Emergencies",
+   "position": 4,
+   "title": "The Construction of National Image of China by English ..."
+  },
+  {
+   "link": "https://x.com/RetractionWatch/status/1907553821657591903",
+   "position": 5,
+   "title": "Retraction Watch"
+  },
+  {
+   "link": "https://www.thestar.com.my/aseanplus/aseanplus-news/2026/07/21/china-removes-759-fake-websites-in-scam-crackdown",
+   "position": 6,
+   "title": "China removes 759 fake websites in scam crackdown"
+  },
+  {
+   "link": "https://www.deccanherald.com/world/correct-your-mistakes-china-tells-us-after-state-department-website-removes-taiwan-independence-reference-3409189",
+   "position": 7,
+   "title": "'Correct your mistakes': China tells US after State ..."
+  },
+  {
+   "link": "https://sg.news.yahoo.com/taiwan-bars-china-reporter-spreading-fake-news-072016111.html",
+   "position": 8,
+   "title": "Taiwan bars China reporter for spreading of \"fake news\""
+  },
+  {
+   "link": "https://www.chronicle.com/article/china-cracks-down-on-textbook-copying/",
+   "position": 9,
+   "title": "China Cracks Down on Textbook Copying"
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"china daily information co\" China Daily Website Connecting China excludes OR retracted OR correction OR overstated"
+ }
+}

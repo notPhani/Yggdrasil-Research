@@ -1,0 +1,27 @@
+{
+ "organic_results": [
+  {
+   "link": "https://avinah2.com/news/",
+   "position": 1,
+   "title": "News \u2013 Avina Inc."
+  },
+  {
+   "link": "https://www.gasworld.com/story/avina-completes-feed-for-800000-tonne-clean-ammonia-facility-in-texas-targets-2028-operations/2149206.article/",
+   "position": 2,
+   "title": "Avina completes FEED for 800000 tonne clean ammonia ..."
+  },
+  {
+   "link": "https://www.youtube.com/watch?v=YBfCWVrXByI",
+   "position": 3,
+   "title": "Helix Exploration raises \u00a35mln in placing as it upgrades helium ..."
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"avina clean hydrogen\" Pulsar Helium Announces Drilling Has",
+  "tbs": "cdr:1,cd_min:1/13/2025,cd_max:1/27/2025"
+ }
+}

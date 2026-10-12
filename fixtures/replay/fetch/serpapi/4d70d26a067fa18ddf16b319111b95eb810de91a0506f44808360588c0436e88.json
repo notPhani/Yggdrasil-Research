@@ -1,0 +1,52 @@
+{
+ "organic_results": [
+  {
+   "link": "https://thehill.com/policy/energy-environment/5080557-death-toll-from-california-wildfires-rises-to-11/",
+   "position": 1,
+   "title": "Death toll from California wildfires rises to 11"
+  },
+  {
+   "link": "https://www.newsday.com/news/nation/california-wildfires-eaton-cause-utility-fireworks-v02940",
+   "position": 2,
+   "title": "Lawsuits claims utility's equipment sparked devastating ..."
+  },
+  {
+   "link": "https://www.youtube.com/watch?v=JMNOnhDIHYU&xstg=CAMSBhUDze3xHw%3D%3D",
+   "position": 3,
+   "title": "Eaton fire leaves 2 people dead, over 1000 buildings destroyed ..."
+  },
+  {
+   "link": "https://www.renewableenergyworld.com/power-grid/outage-management/utility-says-its-being-investigated-in-connection-to-one-of-the-california-wildfires/",
+   "position": 4,
+   "title": "Utility says it's being investigated in connection to one of ..."
+  },
+  {
+   "link": "https://www.yahoo.com/news/death-toll-rises-los-angeles-193559081.html",
+   "position": 5,
+   "title": "Death Toll Rises in Los Angeles as Firefighters Brace for ..."
+  },
+  {
+   "link": "https://accessnorthga.com/ap_article/utilitys-idle-transmission-tower-caused-2025-eaton-fire-that-killed-19-los-angeles-officials-say",
+   "position": 6,
+   "title": "Utility's idle transmission tower caused 2025 Eaton fire that ..."
+  },
+  {
+   "link": "https://www.yahoo.com/news/l-fires-death-toll-grows-150439183.html",
+   "position": 7,
+   "title": "L.A. Fires Death Toll Grows to 24 as Investigators Say They ..."
+  },
+  {
+   "link": "https://cedarnews.net/alert/806010/death-toll-in-los-angeles-county-california-wildfires-rises-to-25/",
+   "position": 8,
+   "title": "Death toll in Los Angeles County, California wildfires rises to 25"
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"california public utilities commission\" Eaton Fire death toll rises",
+  "tbs": "cdr:1,cd_min:12/30/2024,cd_max:1/13/2025"
+ }
+}

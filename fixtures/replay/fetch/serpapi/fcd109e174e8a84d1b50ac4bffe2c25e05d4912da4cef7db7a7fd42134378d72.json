@@ -1,0 +1,22 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.youtube.com/watch?v=pjfIQC0z24M",
+   "position": 1,
+   "title": "Investing in African stock markets in 2025"
+  },
+  {
+   "link": "https://dabafinance.com/en/insights/the-best-african-stock-markets-of-2024",
+   "position": 2,
+   "title": "The Best African Stock Markets of 2024"
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"africa stocks to buy right\" Stock Market Sectors Stock market",
+  "tbs": "cdr:1,cd_min:12/30/2024,cd_max:1/13/2025"
+ }
+}

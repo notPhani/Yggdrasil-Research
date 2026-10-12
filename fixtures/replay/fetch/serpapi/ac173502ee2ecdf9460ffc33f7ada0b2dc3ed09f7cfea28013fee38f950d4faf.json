@@ -1,0 +1,22 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.wsbradio.com/on-air/boys-girls-sports/78257431-7436-4813-980f-d44fd165a015/",
+   "position": 1,
+   "title": "Boys in Girls Sports"
+  },
+  {
+   "link": "https://www.wsbradio.com/on-air/give-bev-some-love/5d9b6584-4e25-4660-a95f-0a77cbfdf7b0/",
+   "position": 2,
+   "title": "Give Bev some Love"
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"golden valley\" 95.5 WSB",
+  "tbs": "cdr:1,cd_min:1/13/2025,cd_max:1/27/2025"
+ }
+}

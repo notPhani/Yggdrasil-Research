@@ -1,0 +1,22 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.instagram.com/p/DFHS40jTd8h/",
+   "position": 1,
+   "title": "The National Arboretum is honoured to host the 2025 ..."
+  },
+  {
+   "link": "https://www.sportskeeda.com/us/olympics/news-ariarne-titmus-makes-feelings-known-local-pool-named",
+   "position": 2,
+   "title": "Ariarne Titmus makes her feelings known on local pool ..."
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"national arboretum canberra\" Ariarne Titmus line be 2025",
+  "tbs": "cdr:1,cd_min:1/13/2025,cd_max:1/27/2025"
+ }
+}

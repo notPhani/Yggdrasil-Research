@@ -1,0 +1,17 @@
+{
+ "organic_results": [
+  {
+   "link": "https://www.youtube.com/watch?v=dFs4DRebwuQ",
+   "position": 1,
+   "title": "The Cardinals protected its nest against the Eagles ..."
+  }
+ ],
+ "params": {
+  "engine": "google",
+  "gl": "us",
+  "hl": "en",
+  "num": 10,
+  "q": "\"south china sea\" Cardinals Caravan 2025 100.5 WYMG",
+  "tbs": "cdr:1,cd_min:12/30/2024,cd_max:1/13/2025"
+ }
+}
