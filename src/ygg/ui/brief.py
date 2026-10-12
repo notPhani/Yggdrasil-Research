@@ -57,7 +57,7 @@ def brief(inv: Investigation, e: Explanation, term_label, visible) -> Group:
     else:
         terms = sorted({x.dst for x in e.edges if is_term(x.dst) and x.src != "BOT"})
         t.append(f"“{e.entry_label}”", style=f"bold {WHITE}")
-        t.append(" is the cheapest chain under the model to ", style=DIM)
+        t.append(" is the cheapest chain under the model to " if e.rank == 1 else " is the cheapest chain through this narrative to ", style=DIM)
         t.append(" and ".join(term_label(x) for x in terms) or "no market cluster", style=f"bold {DOWN}")
         t.append(".\n", style=DIM)
         odds_abst = math.exp(((abst.cost_mnats if abst else e.cost_mnats) - e.cost_mnats) / 1000)

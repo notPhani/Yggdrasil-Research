@@ -600,7 +600,7 @@ class InvestigationScreen(Screen):
                       Text(sig, style=UP if hy.signature_ok else DIM), str(n_pre), str(len(hy.evidence) - n_pre),
                       Text(str(sum(1 for e in hy.evidence if e.diagnostic)), style=AMBER_HI), key=str(k))
         x = self.query_one("#expl", DataTable)
-        for col, wd in (("#", 2), ("", 14), ("NATS", 6), ("ODDS", 8), ("ENTRY STORY", 60)):
+        for col, wd in (("#", 2), ("", 14), ("NATS", 6), ("ODDS", 10), ("ENTRY STORY", 58)):
             x.add_column(col, key=col or "tag", width=wd)
         for k, e in enumerate(sorted(self.inv.explanations, key=lambda e: (e.rank == 0, e.rank))):
             tag = "BEST" if e.rank == 1 else ("WE DON'T KNOW" if e.rank == 0 else f"RIVAL {e.rank}")

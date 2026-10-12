@@ -296,7 +296,11 @@ async function load() { data = await (await fetch("/graph.json")).json(); boot()
 function boot() {
   index(); $("title").textContent = data.title || "";
   if (!data.trees || !data.trees.best) focusTag = Object.keys(data.trees || {})[0] || "best";
+  const q = new URLSearchParams(location.search);              // deep links: ?tree=<candidate tag>&focus=<node id>
+  if (q.get("tree") && data.trees && data.trees[q.get("tree")]) focusTag = q.get("tree");
+  if (q.get("focus") && N[q.get("focus")]) selected = q.get("focus");
   side(); render();
+  if (selected && cy) { const n = cy.getElementById(selected); if (n && n.length) { n.select(); showNode(selected); } }
 }
 
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => setView(t.dataset.view));

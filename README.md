@@ -78,6 +78,8 @@ This workflow was tested in a fresh clone and a fresh virtualenv, with every soc
 
 It does **not** re-run the GDELT replay (Engines 1 and 2). That needs the full corpus; see [section 7](#7-reproducing-everything).
 
+![The recorded replay, then ygg verify re-deriving both investigations offline: 11 of 11 checks pass](media/parts/replay.gif)
+
 ### 2. One investigation, start to finish
 
 The most instructive recorded case is the one where the system is wrong. On **27 January 2025** it finds a cheap explanation, some of the search results it gathers point the other way, and the verdict layer declines to endorse it. Every number below is recorded output, and `ygg verify` re-derives it.
@@ -87,13 +89,15 @@ The most instructive recorded case is the one where the system is wrong. On **27
 - The largest moves were VST −28.3% (SAR −7.8), CEG −20.8% (SAR −5.9), MRVL −19.1%, COHR −18.9% and NVDA −17.0% (SAR −5.1).
 - The event cutoff τ* is **08:00 UTC**, the start of the Amsterdam session, where ASM International opened −8.8%. τ* is derived from daily bars as the earliest session start in which the move could have printed. It is not an observed intraday print (see [§3.5](#35-the-observer)).
 
+![The 27 January investigation in the terminal: overview, ranked explanations, and the brief of the cheapest chain](media/parts/investigation.gif)
+
 **Competing explanations.**
 - The explanation graph at the τ* snapshot has 1,038 nodes and 8,173 edges.
 - DPBF returns the exact minimum of the ranking objective, 3.917 nats:
   - BOT → "Pulsar Helium Announces Drilling Has Commenced…" (p = 0.547) → chips, power and COHR (p = 0.95 each).
   - BOT → "Zebrafish Protein Reactivates Repair Genes…" (p = 1.00) → ASM.AS (p = 0.256).
 - "We do not know" costs 13.184 nats: 4 clusters × (−ln 0.05 + 0.3). Under the model's own probabilities, that puts the junk chain at 10,583 : 1 against abstention.
-- Nine rivals lie within a factor of 20. They include "Tickets on sale for Norway Community Dinner and Dance" and "Supermodel Dayle Haddon Dead At 76".
+- Nine recorded rivals lie within a factor of 20. The search keeps one per entry narrative, so the second entry of the winning tree counts as one of them. They include "Tickets on sale for Norway Community Dinner and Dance" and "Supermodel Dayle Haddon Dead At 76".
 
 **Scrutiny.**
 - The graph score looks decisive, but the connections are absurd, which says something about the scoring rather than about the world.
@@ -101,12 +105,16 @@ The most instructive recorded case is the one where the system is wrong. On **27
 - That cause comes from reading the code and has not been measured. It is listed as known failure F1.
 - The narrative one would expect did exist. Narrative `4d4b5abe` was born at window 3437, on 20 January, hours after the R1 release, and held 70 DeepSeek-titled stories before the snapshot. It never won the links.
 
+![The recorded graph: the cheapest tree, the dormant Pulsar Helium narrative with its three p = 0.95 links, the What the papers say candidate, and the full graph](media/parts/graph.gif)
+
 **SerpApi.**
 - Each of the six distinct entry narratives became a hypothesis, and each got one confirming and two disconfirming Google searches built from its central subject.
 - The subject is the most frequent organization in the hypothesis's documents, which for junk narratives gives odd results: `"google" Zebrafish Protein Reactivates Repair Genes` and `"avina clean hydrogen" Pulsar Helium Announces Drilling Has … denied OR false OR misleading OR disputed`.
 - Of 18 planned queries, 15 were sent, 2 were skipped by the per-case cap, and 1 timed out. They returned 69 results.
 - 3 results matched a document GDELT had already seen, and inherited its first-seen time. The other 66 had no earlier sighting and count only toward the retrospective question.
 - One result title yielded a rule-extracted claim. None of it changed a verdict: the verdicts are identical before and after the searches. This is RECORDED; see §3.7 for why.
+
+![The SerpApi trace for 27 January: confirming and disconfirming queries as sent, with result counts and canonical-URL matches, then the Pulsar Helium hypothesis's evidence around the τ* wall](media/parts/serpapi.gif)
 
 **Admissible versus retrospective.** Each verdict is computed twice.
 - **P_pre** admits only reports first seen before τ*. When a page was fetched, its Wayback text must also date from before τ*.
@@ -117,6 +125,8 @@ The most instructive recorded case is the one where the system is wrong. On **27
 - The sixth, "What the papers say", is **SUPPORTED**. Its trigger event, a Press Association newspaper review syndicated to dozens of UK local sites, was reported, first seen before τ*, carried the signature, and was not contradicted. Its link to the move is p = 0.029.
 - This is the clearest demonstration of what SUPPORTED does and does not mean (§3.7). It also exposes known failure F3: the source registry treats each local paper as an independent owner.
 
+![Verdicts for 27 January: five of six hypotheses CONSISTENT-BUT-UNPROVEN, the Pulsar Helium brief, the SUPPORTED newspaper review, and the clingo bits](media/parts/verdict.gif)
+
 **The audit trail.**
 - The case file records the observer statistics, the full searched graph, every tree, every hypothesis with every report and claim, every SerpApi query with its status and counts, and both verdict programs' outputs.
 - The 15 SerpApi responses are archived and replay offline.
@@ -124,7 +134,7 @@ The most instructive recorded case is the one where the system is wrong. On **27
 
 **The contrast: 13 January 2025.**
 - EIX and PCG fell at the US open. τ* is 14:30 UTC, the regular open, since neither gapped enough for the pre-market rule.
-- The best chain is BOT → "Eaton Fire death toll rises…" → {EIX, PCG}, at 1.872 nats against 3.296 for abstention: 4.2 : 1 under the model, with seven rivals within 20 : 1.
+- The best chain is BOT → "Eaton Fire death toll rises…" → {EIX, PCG}, at 1.872 nats against 3.296 for abstention: 4.2 : 1 under the model, with eight recorded rivals within 20 : 1. One of those is an alternate tree through the same Eaton Fire narrative, so the UI lists seven.
 - The verdict is SUPPORTED on both counts. The item whose removal flips it is a yahoo.com report, "Investigators probe Eaton Canyon electrical tower area as possible origin of Altadena fire", first seen 00:00 UTC, 14.5 hours before τ*.
 - SerpApi sent 15 queries and skipped 9 by the cap. Of the results, 6 matched earlier GDELT sightings and 83 were truth-only. The truth-only side includes "Lawsuits allege power company involvement in LA wildfires" and later reports that the utility's equipment caused the fire. Those are true, but they fall on the far side of the τ* wall and cannot count toward P_pre.
 - The placebo p is 0.43, with a false-explanation rate of 1.00.
@@ -379,7 +389,7 @@ Four bits per hypothesis come from brave and cautious reasoning over stable mode
 | Graph | 715 nodes, 3,116 edges | 1,038 nodes, 8,173 edges |
 | Best chain | Eaton Fire narrative → {EIX, PCG} | Pulsar Helium and Zebrafish narratives → four clusters |
 | Cost vs abstention | 1.872 vs 3.296 nats (4.2 : 1) | 3.917 vs 13.184 nats (10,583 : 1) |
-| Rivals within 20 : 1 | 7 | 9 |
+| Rivals within 20 : 1 (recorded, one per entry narrative) | 8 | 9 |
 | Verdicts (P_all) | 2 SUPPORTED, 6 unproven | 1 SUPPORTED ("What the papers say"), 5 unproven |
 | SerpApi | 15 sent, 9 capped, 6 matched, 83 truth-only | 15 sent, 2 capped, 1 timeout, 3 matched, 66 truth-only |
 | Verdicts changed by SerpApi | none | none |
@@ -461,6 +471,7 @@ python scripts/make_fixture.py       # rebuild fixtures/replay from data/
 | [Report](reports/Yggdrasil%20attention%20model%20and%20search.md) | The architecture as mathematics, with proofs and a ledger of cited theorems, each labelled PROVEN, DERIVED, CONJECTURE, MEASURED or EMPIRICAL |
 | [Research notes](research_notes/Yggdrasil%20attention%20model%20and%20search/) | Six tracks: point processes, conservation, formal evidence reasoning, search guarantees, ingestion, market attribution |
 | [Claims audit](docs/claims-audit.md) | What the code, tests and records do and do not establish |
+| [Demo footage](docs/demo-footage.md) | How every frame of the video and the GIFs was captured from the running application, and which demo ideas the implementation cannot show |
 
 The documents describe the full design, which goes further than the build in three places: Lean certification of verdicts, a push-style search certificate, and Levin tree search. Those are not implemented here.
 

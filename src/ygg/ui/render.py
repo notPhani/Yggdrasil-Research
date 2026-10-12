@@ -36,8 +36,12 @@ def fmt_t(t: datetime | None, full: bool = False) -> str:
     return t.strftime("%Y-%m-%d %H:%M" if full else "%m-%d %H:%M")
 
 
+def _odds_num(x: float) -> str:
+    return f"{x:.1f}" if x < 100 else f"{x:,.0f}" if x < 1e5 else f"{x:.1e}"
+
+
 def odds_text(x: float) -> str:
-    return "1 : 1" if abs(x - 1.0) < 1e-9 else f"1 : {x:.1f}" if x >= 1 else f"{1 / x:.1f} : 1"
+    return "1 : 1" if abs(x - 1.0) < 1e-9 else f"1 : {_odds_num(x)}" if x >= 1 else f"{_odds_num(1 / x)} : 1"
 
 
 def sparkline(values: list[float], width: int | None = None, vmax: float | None = None) -> str:
