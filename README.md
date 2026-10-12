@@ -10,6 +10,23 @@
 - [Blueprint](https://notphani.github.io/Yggdrasil-Research/blueprint/)
 
 ---
+### 0. The idea
+
+A market moves. Then the headlines arrive. By evening, the internet has a story.
+
+**Yggdrasil investigates whether that story survives without hindsight.** It reconstructs historical news as evolving narratives, freezes the evidence at a defined cutoff, and searches a graph for competing explanations of unusual market movements.
+
+SerpApi then helps investigate those hypotheses through targeted corroboration and disconfirmation searches. Retrieved evidence is checked against the historical news record, distinguishing what was observed before the cutoff from what was discovered afterward.
+
+**What makes Yggdrasil different**
+
+- **A historical evidence boundary.** Later discoveries cannot simply be treated as information available before the market event.
+- **Competing explanations, not just the cheapest story.** Graph search, alternative candidates, and placebo investigations expose when the model produces convincing-looking explanations from noise.
+- **Search as part of the research process.** SerpApi queries, results, and provenance are archived so the investigation can be inspected and replayed.
+
+**Research status:** Two recorded investigations demonstrate the working pipeline, not validated explanatory accuracy. Both have a placebo false-explanation rate of 1.00, and SerpApi evidence changed neither verdict. These are documented limitations the next experiments must address.
+
+---
 ## I. The Introduction
 
 On 27 January 2025, Nvidia shares fell by about seventeen percent, and two power companies tied to the AI infrastructure boom fell further still. The explanation seemed settled by afternoon. DeepSeek, a Chinese laboratory, had released a reasoning model that appeared to rival American systems at a fraction of the cost. Perhaps the infrastructure investors had been pricing in was no longer necessary. The story was coherent, widely repeated, and probably right in its broad outline. What is interesting is how quickly it became difficult to see the day any other way.
