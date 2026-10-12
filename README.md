@@ -277,8 +277,8 @@ Because the true move happens at or after τ*, evidence first seen before τ* pr
 - **Edges between narratives.** They are recency-weighted attribution shares, tilted toward edges with surprising recent spillover:
 
 $$
-p_H(j\to i) = \frac{\sum_t w_t\,y_i(t)\,\alpha_{i\leftarrow j}(t)}{\sum_t w_t\,y_i(t)},\quad w_t = e^{-(\tau^*-t)/3\text{d}},\qquad
-p^*(j\to i) \propto p_H\,e^{\gamma\max(0,\sigma_{ji})}
+p_H(j\to i) = \frac{\sum_t w_t\,y_i(t)\,\alpha_{i\leftarrow j}(t)}{\sum_t w_t\,y_i(t)},\quad w_t = \exp\!\left(-\frac{\tau^{*}-t}{3\,\mathrm{d}}\right),\qquad
+p^{*}(j\to i) \propto p_H(j\to i)\,\exp\!\left(\gamma\max(0,\sigma_{ji})\right)
 $$
 
   These are renormalized together with BOT → i, with γ = 0.5. Here σ is a robust z of the last 24 hours' mean α against earlier daily means.
@@ -286,7 +286,7 @@ $$
 
 $$
 \text{lift}_{u,x} = \frac{A_u(T_x)/A_u}{A(T_x)/A},\qquad
-p_{\text{link}}(u\to x) = (1-p_0)\,\operatorname{softmax}_u\big(\log(\text{lift}_{u,x}+\epsilon) + z^{\text{att}}_u\big).
+p_{\text{link}}(u\to x) = (1-p_0)\,\mathrm{softmax}_u\!\big(\log(\mathrm{lift}_{u,x}+\epsilon) + z^{\mathrm{att}}_u\big).
 $$
 
   $z^{\text{att}}_u$ is unbounded. That is known failure F1.
@@ -300,7 +300,7 @@ This is the exact optimum of a **ranking objective** defined by the model's prob
 - **Cutoffs:** 20, from trading-hour windows on days when nothing fired.
 - **Terminals:** each placebo uses the same number of terminals as the real case, built from instruments with |SAR| < 1.
 - **Reported statistics:**
-  - the **empirical p**, $(1 + \#\{c_{\text{placebo}} \le c_{\text{real}}\})/(1+K)$;
+  - the **empirical p-value**, $(1 + \sum_{k=1}^{K}\mathbf{1}\!\left(c_{\text{placebo},k} \le c_{\text{real}}\right))/(1+K)$;
   - the **false-explanation rate**, the share of placebo terminals given a non-abstention explanation, with a target of 0.05;
   - **hub frequencies.**
 - Each placebo search is memoised under its snapshot id, terminals and search configuration.
