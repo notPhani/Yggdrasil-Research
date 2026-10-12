@@ -10,7 +10,7 @@
 - [Blueprint](https://notphani.github.io/Yggdrasil-Research/blueprint/)
 
 ---
-## I. The overture
+## I. The Introduction
 
 On 27 January 2025, Nvidia shares fell by about seventeen percent, and two power companies tied to the AI infrastructure boom fell further still. The explanation seemed settled by afternoon. DeepSeek, a Chinese laboratory, had released a reasoning model that appeared to rival American systems at a fraction of the cost. Perhaps the infrastructure investors had been pricing in was no longer necessary. The story was coherent, widely repeated, and probably right in its broad outline. What is interesting is how quickly it became difficult to see the day any other way.
 
