@@ -6,8 +6,11 @@
   fire = (|SAR| >= 4 or |Mz| >= 5) and (Mv >= 3.5 or |Mg| >= 5)
 Clusters: fired instruments linked when estimation residuals correlate at >= rho0 with the same sign.
 ETFs are members but never terminals; secondary(x) = |Mg| >= 5 and not fired (opening shocks).
-tau*: the earliest first-abnormal time; a gap shock counts from its venue's first print, otherwise the
-regular open. When unsure, the earlier time.
+tau* (the event cutoff): detection runs on DAILY bars, so no intraday print is observed. tau* is the start of the
+earliest session in which a fired instrument could have shown the abnormal move: the pre-market open for a gap
+shock, otherwise the regular open (Amsterdam: the 09:00 local open). The true move happens at or after tau*, so
+evidence first seen before tau* predates the move; evidence between tau* and the actual move is excluded
+(conservative).
 """
 from __future__ import annotations
 
@@ -22,6 +25,7 @@ import zoneinfo
 
 MAD_K = 0.6745
 ET = zoneinfo.ZoneInfo("America/New_York")
+AMS = zoneinfo.ZoneInfo("Europe/Amsterdam")
 
 def get_market_times_utc(day_str: str) -> tuple[tuple[int, int], tuple[int, int]]:
     """Returns ((pre_h, pre_m), (open_h, open_m)) in UTC for the given YYYY-MM-DD date."""
@@ -146,8 +150,9 @@ def venue(sym: str) -> str:
 def first_abnormal_utc(st: dict, day: str, th: Thresholds) -> datetime:
     (pre_h, pre_m), (reg_h, reg_m) = get_market_times_utc(day)
     v = venue(st["symbol"])
-    if v == "AS":
-        h, mnt = 8, 0
+    if v == "AS":                                          # Euronext Amsterdam opens 09:00 local (CET/CEST)
+        loc = datetime.fromisoformat(f"{day}T09:00:00").replace(tzinfo=AMS).astimezone(timezone.utc)
+        h, mnt = loc.hour, loc.minute
     else:
         h, mnt = (pre_h, pre_m) if abs(st["Mg"]) >= th.mg else (reg_h, reg_m)
     d = datetime.strptime(day, "%Y-%m-%d")

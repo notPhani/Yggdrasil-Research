@@ -9,7 +9,7 @@ ABSTAIN = "no admissible explanation in observed English news before tau*"
 
 def render_markdown(d: dict) -> str:
     c, s = d["case"], d["search"]
-    lines = [f"# Case {c['day']}", "", f"**tau\\* = {c['tau_star']}** (earliest first abnormal print; earlier time when unsure)", "",
+    lines = [f"# Case {c['day']}", "", f"**tau\\* = {c['tau_star']}** (event cutoff: start of the earliest abnormal session, from daily bars)", "",
              "## Clusters (search terminals)", ""]
     for g in c["terminal_clusters"]:
         lines.append(f"- {', '.join(g)}")

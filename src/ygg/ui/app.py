@@ -734,7 +734,7 @@ class InvestigationScreen(Screen):
         t = Text(no_wrap=True, overflow="crop")
         t.append(f" CASE {inv.case_id} ", style=f"bold #000000 on {AMBER}")
         t.append(f"  τ* {inv.tau_star:%Y-%m-%d %H:%M} UTC" if inv.tau_star else "  τ* n/a", style=f"bold {AMBER_HI}")
-        t.append(" first abnormal print", style=DIM)
+        t.append(" event cutoff · session start, daily bars", style=DIM)
         t.append(f"   DETECTED {inv.detected:%m-%d %H:%M}" if inv.detected else "", style=WHITE)
         t.append(" daily close", style=DIM)
         t.append(f"   SNAPSHOT w{inv.snapshot}", style=WHITE)
@@ -1024,7 +1024,7 @@ class InvestigationScreen(Screen):
         t = Text()
         for k, v in (("SOURCE", inv.source), ("CFG HASH", inv.cfg_hash or "not recorded"), ("SNAPSHOT", f"window {inv.snapshot}"),
                      ("GRAPH", f"{inv.graph_nodes} nodes · {inv.graph_edges} edges · exact DPBF"),
-                     ("τ* RULE", "earliest first abnormal print across the clusters; venue session start in replay; earlier when unsure"),
+                     ("τ* RULE", "event cutoff: start of the earliest abnormal session (pre-market for a gap shock, else the open), from daily bars; no intraday print is observed"),
                      ("DETECTION", "daily close (the replay trigger runs on daily bars)"),
                      ("ADMISSIBILITY", "first_seen < τ* for P_pre; everything up to report time for P_all"),
                      ("DETERMINISM", "no wall clock · keyed Philox · fixed reductions, pinned threads · tie keys · archived calls · cfg stamps"),
