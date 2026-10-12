@@ -3,7 +3,7 @@
 *An attempt to explain market moves using only what was knowable at the time.*
 
 **Quick links:**
-- [Demo video, 2:43](https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@96194e35dd0a65d5a35b467894cfe955f4ce075b/media/yggdrasil-demo.mp4)
+- [Demo video, 2:43](https://cdn.jsdelivr.net/gh/notPhani/Yggdrasil-Research@2361489d83a077d3afdef85e9f7a2e603d290695/media/yggdrasil-demo.mp4)
 - [Verify a recorded investigation in one command](#1-the-first-five-minutes)
 - [One investigation, start to finish](#2-one-investigation-start-to-finish)
 - [Claims audit](docs/claims-audit.md)
